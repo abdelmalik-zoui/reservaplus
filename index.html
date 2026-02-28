@@ -1,1 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReservaPlus</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --text: #f0f0f5;
+    --muted: #7070a0;
+    --card: #13131c;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
+  /* ---- PAGES ---- */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; }
+
+  /* ---- AUTH PAGE ---- */
+  #auth-page {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  #auth-page::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,106,247,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .auth-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    text-align: center;
+    margin-bottom: 0.3rem;
+  }
+  .auth-logo span { color: var(--accent); }
+  .auth-subtitle { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
+
+  .auth-tabs {
+    display: flex;
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 1.8rem;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 0.55rem;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 7px;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+  .auth-tab.active { background: var(--accent); color: white; }
+
+  .form-group { margin-bottom: 1.1rem; }
+  .form-group label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .form-group input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.7rem 1rem;
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { outline: none; border-color: var(--accent); }
+
+  .btn-submit {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 0.5rem;
+  }
+  .btn-submit:hover { background: #6a58e5; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .alert {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .alert.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--red); display: block; }
+  .alert.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); display: block; }
+
+  /* ---- DASHBOARD ---- */
+  #dashboard-page { flex-direction: column; }
+
+  /* NAV */
+  .dash-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .dash-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; }
+  .dash-logo span { color: var(--accent); }
+  .dash-user { display: flex; align-items: center; gap: 1rem; }
+  .user-email { color: var(--muted); font-size: 0.82rem; }
+  .btn-logout {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.4rem 1rem;
+    border-radius: 7px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+  /* DASH CONTENT */
+  .dash-content { display: flex; flex: 1; }
+
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    flex-shrink: 0;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-item:hover { background: rgba(124,106,247,0.08); color: var(--text); }
+  .nav-item.active { background: rgba(124,106,247,0.12); color: var(--accent); }
+
+  .main-area { flex: 1; padding: 2rem; overflow-y: auto; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .view-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+  /* KPI GRID */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+  }
+  .kpi-label { color: var(--muted); font-size: 0.75rem; margin-bottom: 0.5rem; }
+  .kpi-val { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 700; }
+  .kpi-sub { font-size: 0.72rem; color: var(--green); margin-top: 0.2rem; }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 100px;
+    padding: 0.7rem 1.2rem;
+    background: var(--surface);
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 100px;
+    padding: 0.85rem 1.2rem;
+    font-size: 0.83rem;
+    border-bottom: 1px solid rgba(30,30,46,0.5);
+    align-items: center;
+    transition: background 0.15s;
+  }
+  .table-row:hover { background: rgba(124,106,247,0.04); }
+  .table-row:last-child { border-bottom: none; }
+  .table-empty { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+
+  .badge { padding: 0.22rem 0.65rem; border-radius: 100px; font-size: 0.7rem; font-weight: 500; }
+  .badge-green { background: rgba(74,222,128,0.1); color: var(--green); }
+  .badge-yellow { background: rgba(251,191,36,0.1); color: var(--yellow); }
+  .badge-red { background: rgba(248,113,113,0.1); color: var(--red); }
+
+  /* BOOKING FORM */
+  .booking-form-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem;
+    max-width: 500px;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .btn-add {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 0.5rem;
+  }
+  .btn-add:hover { background: #6a58e5; }
+
+  /* LINK PAGE */
+  .link-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+  }
+  .link-url {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    font-size: 0.83rem;
+    color: var(--accent);
+    word-break: break-all;
+    margin: 1rem 0;
+  }
+  .btn-copy {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* LOADING */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .table-head, .table-row { grid-template-columns: 2fr 1fr 100px; }
+    .table-head > *:nth-child(2), .table-row > *:nth-child(2),
+    .table-head > *:nth-child(4), .table-row > *:nth-child(4) { display: none; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== AUTH PAGE ===== -->
+<div id="auth-page" class="page active">
+  <div class="auth-box">
+    <div class="auth-logo">Reserva<span>Plus</span></div>
+    <div class="auth-subtitle">Gérez vos réservations facilement</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Se connecter</button>
+      <button class="auth-tab" onclick="switchTab('register')">S'inscrire</button>
+    </div>
+
+    <div id="auth-alert"></div>
+
+    <!-- LOGIN -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="votre@email.com">
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn-submit" onclick="login()">Se connecter</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Nom de votre établissement</label>
+        <input type="text" id="reg-name" placeholder="Ex: Salon Ahmed">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="votre@email.com">
+      </div>
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input type="tel" id="reg-phone" placeholder="+212 6XX XXX XXX">
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="reg-password" placeholder="••••••••">
+      </div>
+      <button class="btn-submit" onclick="register()">Créer mon compte</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD PAGE ===== -->
+<div id="dashboard-page" class="page">
+  <nav class="dash-nav">
+    <div class="dash-logo">Reserva<span>Plus</span></div>
+    <div class="dash-user">
+      <span class="user-email" id="user-email-display"></span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </nav>
+
+  <div class="dash-content">
+    <div class="sidebar">
+      <button class="nav-item active" onclick="showView('overview', this)">📊 &nbsp;Vue générale</button>
+      <button class="nav-item" onclick="showView('reservations', this)">📅 &nbsp;Réservations</button>
+      <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
+      <button class="nav-item" onclick="showView('my-link', this)">🔗 &nbsp;Mon lien</button>
+    </div>
+
+    <div class="main-area">
+
+      <!-- OVERVIEW -->
+      <div id="view-overview" class="view active">
+        <div class="view-title">Tableau de bord</div>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Total réservations</div>
+            <div class="kpi-val" id="kpi-total">—</div>
+            <div class="kpi-sub">Toutes les réservations</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Confirmées</div>
+            <div class="kpi-val" id="kpi-confirmed">—</div>
+            <div class="kpi-sub" style="color:var(--green);">✓ Confirmées</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">En attente</div>
+            <div class="kpi-val" id="kpi-pending">—</div>
+            <div class="kpi-sub" style="color:var(--yellow);">⏳ En attente</div>
+          </div>
+        </div>
+        <div class="view-title" style="font-size:1rem;">Dernières réservations</div>
+        <div class="table-wrap" id="overview-table">
+          <div class="table-head">
+            <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
+          </div>
+          <div class="table-empty">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- RESERVATIONS -->
+      <div id="view-reservations" class="view">
+        <div class="view-title">Toutes les réservations</div>
+        <div class="table-wrap" id="all-reservations-table">
+          <div class="table-head">
+            <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
+          </div>
+          <div class="table-empty">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- NEW RESERVATION -->
+      <div id="view-new-reservation" class="view">
+        <div class="view-title">Nouveau rendez-vous</div>
+        <div class="booking-form-wrap">
+          <div id="booking-alert"></div>
+          <div class="form-group">
+            <label>Nom du client</label>
+            <input type="text" id="b-name" placeholder="Ex: Youssef Alami">
+          </div>
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="tel" id="b-phone" placeholder="+212 6XX XXX XXX">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Service</label>
+              <input type="text" id="b-service" placeholder="Ex: Coupe homme">
+            </div>
+            <div class="form-group">
+              <label>Statut</label>
+              <select id="b-status" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                <option value="en_attente">En attente</option>
+                <option value="confirme">Confirmé</option>
+                <option value="annule">Annulé</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="b-date">
+            </div>
+            <div class="form-group">
+              <label>Heure</label>
+              <input type="time" id="b-time">
+            </div>
+          </div>
+          <button class="btn-add" onclick="addReservation()">Ajouter le rendez-vous</button>
+        </div>
+      </div>
+
+      <!-- MY LINK -->
+      <div id="view-my-link" class="view">
+        <div class="view-title">Mon lien de réservation</div>
+        <div class="link-box">
+          <p style="color:var(--muted);font-size:0.88rem;margin-bottom:0.5rem;">Partagez ce lien à vos clients pour qu'ils puissent réserver en ligne.</p>
+          <div class="link-url" id="my-link-url">Chargement...</div>
+          <button class="btn-copy" onclick="copyLink()">📋 Copier le lien</button>
+          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;">Partagez aussi via:</div>
+            <button class="btn-copy" onclick="shareWhatsApp()" style="margin-right:0.5rem;">💬 WhatsApp</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- SUPABASE INIT ----
+  const { createClient } = supabase;
+  const sb = createClient(
+    'https://lnpssiouhfkaqapmxqxe.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxucHNzaW91aGZrYXFhcG14cXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMTk2NDIsImV4cCI6MjA4Nzg5NTY0Mn0.Q25A7bEJ4XaRxwMtIsOrJ0MREDsOnChzajpreoiya-M'
+  );
+
+  let currentUser = null;
+  let currentBusiness = null;
+
+  // ---- CHECK SESSION ----
+  async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      await loadBusiness();
+      showDashboard();
+    }
+  }
+
+  // ---- AUTH FUNCTIONS ----
+  function switchTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+    });
+    document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+    clearAlert('auth-alert');
+  }
+
+  async function register() {
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const password = document.getElementById('reg-password').value;
+
+    if (!name || !email || !password) return showAlert('auth-alert', 'Veuillez remplir tous les champs.', 'error');
+
+    const btn = document.querySelector('#register-form .btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Création...';
+
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) {
+      showAlert('auth-alert', error.message, 'error');
+      btn.disabled = false; btn.textContent = "Créer mon compte";
+      return;
+    }
+
+    currentUser = data.user;
+
+    // Save business info
+    await sb.from('businesses').insert({ name, email, phone });
+    await loadBusiness();
+    showDashboard();
+  }
+
+  async function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) return showAlert('auth-alert', 'Veuillez remplir tous les champs.', 'error');
+
+    const btn = document.querySelector('#login-form .btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Connexion...';
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      showAlert('auth-alert', 'Email ou mot de passe incorrect.', 'error');
+      btn.disabled = false; btn.textContent = "Se connecter";
+      return;
+    }
+
+    currentUser = data.user;
+    await loadBusiness();
+    showDashboard();
+  }
+
+  async function logout() {
+    await sb.auth.signOut();
+    currentUser = null; currentBusiness = null;
+    document.getElementById('dashboard-page').classList.remove('active');
+    document.getElementById('auth-page').classList.add('active');
+  }
+
+  // ---- BUSINESS ----
+  async function loadBusiness() {
+    const { data } = await sb.from('businesses').select('*').eq('email', currentUser.email).single();
+    currentBusiness = data;
+  }
+
+  // ---- SHOW DASHBOARD ----
+  function showDashboard() {
+    document.getElementById('auth-page').classList.remove('active');
+    document.getElementById('dashboard-page').classList.add('active');
+    document.getElementById('user-email-display').textContent = currentUser.email;
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('b-date').value = today;
+    document.getElementById('my-link-url').textContent = window.location.href + '?business=' + (currentBusiness?.id || currentUser.id);
+    loadReservations();
+  }
+
+  // ---- RESERVATIONS ----
+  async function loadReservations() {
+    if (!currentBusiness) return;
+    const { data } = await sb.from('reservations').select('*').eq('business_id', currentBusiness.id).order('date', { ascending: false });
+    const reservations = data || [];
+
+    // KPIs
+    document.getElementById('kpi-total').textContent = reservations.length;
+    document.getElementById('kpi-confirmed').textContent = reservations.filter(r => r.status === 'confirme').length;
+    document.getElementById('kpi-pending').textContent = reservations.filter(r => r.status === 'en_attente').length;
+
+    // Tables
+    renderTable('overview-table', reservations.slice(0, 5));
+    renderTable('all-reservations-table', reservations);
+  }
+
+  function renderTable(id, reservations) {
+    const wrap = document.getElementById(id);
+    const header = `<div class="table-head"><span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span></div>`;
+    if (!reservations.length) {
+      wrap.innerHTML = header + '<div class="table-empty">Aucune réservation pour le moment.</div>';
+      return;
+    }
+    const rows = reservations.map(r => {
+      const badgeClass = r.status === 'confirme' ? 'badge-green' : r.status === 'annule' ? 'badge-red' : 'badge-yellow';
+      const statusLabel = r.status === 'confirme' ? 'Confirmé' : r.status === 'annule' ? 'Annulé' : 'En attente';
+      return `<div class="table-row">
+        <span>${r.client_name}</span>
+        <span>${r.service_name || '—'}</span>
+        <span>${r.date}</span>
+        <span>${r.time?.slice(0,5) || '—'}</span>
+        <span><span class="badge ${badgeClass}">${statusLabel}</span></span>
+      </div>`;
+    }).join('');
+    wrap.innerHTML = header + rows;
+  }
+
+  async function addReservation() {
+    const name = document.getElementById('b-name').value.trim();
+    const phone = document.getElementById('b-phone').value.trim();
+    const service = document.getElementById('b-service').value.trim();
+    const date = document.getElementById('b-date').value;
+    const time = document.getElementById('b-time').value;
+    const status = document.getElementById('b-status').value;
+
+    if (!name || !date || !time) return showAlert('booking-alert', 'Nom, date et heure sont obligatoires.', 'error');
+
+    const btn = document.querySelector('#view-new-reservation .btn-add');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Ajout...';
+
+    const { error } = await sb.from('reservations').insert({
+      business_id: currentBusiness.id,
+      client_name: name,
+      client_phone: phone,
+      service_name: service,
+      date, time, status
+    });
+
+    if (error) {
+      showAlert('booking-alert', 'Erreur: ' + error.message, 'error');
+    } else {
+      showAlert('booking-alert', '✓ Rendez-vous ajouté avec succès!', 'success');
+      document.getElementById('b-name').value = '';
+      document.getElementById('b-phone').value = '';
+      document.getElementById('b-service').value = '';
+      document.getElementById('b-time').value = '';
+      await loadReservations();
+    }
+
+    btn.disabled = false; btn.textContent = 'Ajouter le rendez-vous';
+  }
+
+  // ---- NAVIGATION ----
+  function showView(view, btn) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ---- LINK ----
+  function copyLink() {
+    navigator.clipboard.writeText(document.getElementById('my-link-url').textContent);
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copié!';
+    setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
+  }
+  function shareWhatsApp() {
+    const link = document.getElementById('my-link-url').textContent;
+    window.open('https://wa.me/?text=Réservez votre rendez-vous ici: ' + encodeURIComponent(link));
+  }
+
+  // ---- UTILS ----
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'alert ' + type;
+  }
+  function clearAlert(id) {
+    const el = document.getElementById(id);
+    el.className = 'alert';
+    el.textContent = '';
+  }
+
+  // ---- START ----
+  checkSession();
+</script>
+</body>
+</html>
