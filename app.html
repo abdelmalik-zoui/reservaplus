@@ -617,7 +617,7 @@
               <option value="60">60 min</option>
             </select>
           </div>
-          <button class="btn-add" onclick="saveHours()">💾 Enregistrer les horaires</button>
+          <button id="save-hours-btn" class="btn-add" onclick="saveHours()">💾 Enregistrer les horaires</button>
         </div>
 
         <!-- SERVICES -->
@@ -1268,8 +1268,8 @@
     const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(opening) || !timeRegex.test(closing)) return showAlert('hours-alert', 'Format invalide. Utilisez HH:MM (ex: 09:00)', 'error');
 
-    const btn = document.querySelector('#view-services .btn-add');
-    btn.disabled = true; btn.textContent = 'Enregistrement...';
+    const btn = document.getElementById('save-hours-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
 
     const { error } = await sb.from('businesses').update({
       opening_time: opening,
@@ -1285,7 +1285,7 @@
       currentBusiness.slot_duration = slotDuration;
       showAlert('hours-alert', '✓ Horaires enregistrés!', 'success');
     }
-    btn.disabled = false; btn.textContent = '💾 Enregistrer les horaires';
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer les horaires'; }
   }
 
   // ---- SERVICES ----
