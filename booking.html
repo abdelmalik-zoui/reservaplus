@@ -126,6 +126,7 @@
   }
   .slot:hover { border-color: var(--accent); }
   .slot.selected { background: var(--accent); border-color: var(--accent); color: white; }
+  .slot.occupied { background: rgba(248,113,113,0.05); border-color: rgba(248,113,113,0.15); color: var(--muted); cursor: not-allowed; text-decoration: line-through; opacity: 0.45; pointer-events: none; }
 
   /* FORM */
   .form-group { margin-bottom: 1rem; }
@@ -360,12 +361,27 @@
     selectedService = name;
   }
 
-  function updateSlots() {
+  async function updateSlots() {
     selectedTime = null;
+    const date = document.getElementById('booking-date').value;
     const grid = document.getElementById('slots-grid');
-    grid.innerHTML = slots.map(s => `
-      <div class="slot" onclick="selectSlot(this, '${s}')">${s}</div>
-    `).join('');
+    grid.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Chargement...</div>';
+
+    // Fetch reserved slots for this date
+    const { data: reservations } = await sb.from('reservations')
+      .select('time')
+      .eq('business_id', businessId)
+      .eq('date', date)
+      .neq('status', 'annule');
+
+    const occupiedTimes = (reservations || []).map(r => r.time.slice(0, 5));
+
+    grid.innerHTML = slots.map(s => {
+      const occupied = occupiedTimes.includes(s);
+      return occupied
+        ? `<div class="slot occupied" title="Créneau occupé">${s}</div>`
+        : `<div class="slot" onclick="selectSlot(this, '${s}')">${s}</div>`;
+    }).join('');
   }
 
   function selectSlot(el, time) {
