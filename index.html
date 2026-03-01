@@ -613,20 +613,22 @@
 
   // ---- REAL-TIME ----
   function startRealtime() {
-    sb.channel('reservations-changes')
+    // Real-time Supabase
+    sb.channel('reservations-' + currentBusiness.id)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'reservations',
-        filter: `business_id=eq.${currentBusiness.id}`
+        table: 'reservations'
       }, payload => {
-        // تحديث تلقائي كل ما جات reservation جديدة أو تبدلت
         loadReservations();
         if (payload.eventType === 'INSERT') {
           showToast('🔔 Nouvelle réservation de ' + payload.new.client_name + '!');
         }
       })
       .subscribe();
+
+    // Auto-refresh كل 15 ثانية كحل احتياطي
+    setInterval(() => loadReservations(), 15000);
   }
 
   // ---- TOAST NOTIFICATION ----
