@@ -384,6 +384,7 @@
       <button class="nav-item active" onclick="showView('overview', this)">📊 &nbsp;Vue générale</button>
       <button class="nav-item" onclick="showView('reservations', this)">📅 &nbsp;Réservations</button>
       <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
+      <button class="nav-item" onclick="showView('services', this)">⚙️ &nbsp;Mes services</button>
       <button class="nav-item" onclick="showView('my-link', this)">🔗 &nbsp;Mon lien</button>
     </div>
 
@@ -468,6 +469,39 @@
           </div>
           <button class="btn-add" onclick="addReservation()">Ajouter le rendez-vous</button>
         </div>
+      </div>
+
+      <!-- SERVICES -->
+      <div id="view-services" class="view">
+        <div class="view-title">Mes services</div>
+        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
+          <div style="font-size:0.88rem;font-weight:600;margin-bottom:1rem;">➕ Ajouter un service</div>
+          <div id="service-alert"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom du service</label>
+              <input type="text" id="svc-name" placeholder="Ex: Coupe homme">
+            </div>
+            <div class="form-group">
+              <label>Durée (minutes)</label>
+              <input type="number" id="svc-duration" placeholder="Ex: 30" min="5">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prix (MAD)</label>
+              <input type="number" id="svc-price" placeholder="Ex: 50" min="0">
+            </div>
+            <div class="form-group">
+              <label>Description (optionnel)</label>
+              <input type="text" id="svc-desc" placeholder="Ex: Coupe + finition">
+            </div>
+          </div>
+          <button class="btn-add" onclick="addService()">Ajouter le service</button>
+        </div>
+
+        <div class="view-title" style="font-size:1rem;">Services actuels</div>
+        <div id="services-list-dash" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
       </div>
 
       <!-- MY LINK -->
@@ -608,6 +642,7 @@
     document.getElementById('b-date').value = today;
     document.getElementById('my-link-url').textContent = window.location.href + '?business=' + (currentBusiness?.id || currentUser.id);
     loadReservations();
+    loadServices();
     startRealtime();
   }
 
@@ -729,6 +764,67 @@
   async function changeStatus(id, newStatus) {
     await sb.from('reservations').update({ status: newStatus }).eq('id', id);
     await loadReservations();
+  }
+
+  // ---- SERVICES ----
+  async function loadServices() {
+    if (!currentBusiness) return;
+    const { data } = await sb.from('services').select('*').eq('business_id', currentBusiness.id).order('created_at');
+    const services = data || [];
+    const wrap = document.getElementById('services-list-dash');
+    if (!wrap) return;
+
+    if (!services.length) {
+      wrap.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:1rem;">Aucun service pour le moment. Ajoutez votre premier service!</div>';
+      return;
+    }
+
+    wrap.innerHTML = services.map(s => `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;position:relative;">
+        <button onclick="deleteService('${s.id}')" style="position:absolute;top:0.8rem;right:0.8rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;" title="Supprimer">🗑️</button>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.4rem;">${s.name}</div>
+        <div style="color:var(--accent);font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">${s.price} MAD</div>
+        <div style="color:var(--muted);font-size:0.78rem;">⏱ ${s.duration} min${s.description ? ' · ' + s.description : ''}</div>
+      </div>
+    `).join('');
+  }
+
+  async function addService() {
+    const name = document.getElementById('svc-name').value.trim();
+    const duration = parseInt(document.getElementById('svc-duration').value);
+    const price = parseFloat(document.getElementById('svc-price').value);
+    const desc = document.getElementById('svc-desc').value.trim();
+
+    if (!name) return showAlert('service-alert', 'Le nom est obligatoire.', 'error');
+    if (!duration || duration < 5) return showAlert('service-alert', 'Durée invalide.', 'error');
+    if (isNaN(price) || price < 0) return showAlert('service-alert', 'Prix invalide.', 'error');
+
+    const btn = document.querySelector('#view-services .btn-add');
+    btn.disabled = true; btn.textContent = 'Ajout...';
+
+    const { error } = await sb.from('services').insert({
+      business_id: currentBusiness.id,
+      name, duration, price,
+      description: desc || null
+    });
+
+    if (error) {
+      showAlert('service-alert', 'Erreur: ' + error.message, 'error');
+    } else {
+      showAlert('service-alert', '✓ Service ajouté!', 'success');
+      document.getElementById('svc-name').value = '';
+      document.getElementById('svc-duration').value = '';
+      document.getElementById('svc-price').value = '';
+      document.getElementById('svc-desc').value = '';
+      await loadServices();
+    }
+    btn.disabled = false; btn.textContent = 'Ajouter le service';
+  }
+
+  async function deleteService(id) {
+    if (!confirm('Supprimer ce service?')) return;
+    await sb.from('services').delete().eq('id', id);
+    await loadServices();
   }
 
   // ---- NAVIGATION ----
