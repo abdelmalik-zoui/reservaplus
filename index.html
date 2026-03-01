@@ -567,9 +567,39 @@
 
       <!-- SERVICES -->
       <div id="view-services" class="view">
-        <div class="view-title">Mes services</div>
+        <div class="view-title">Mes services & Horaires</div>
+
+        <!-- HORAIRES -->
         <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
-          <div style="font-size:0.88rem;font-weight:600;margin-bottom:1rem;">➕ Ajouter un service</div>
+          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:0.3rem;">🕐 Horaires de travail</div>
+          <div style="color:var(--muted);font-size:0.8rem;margin-bottom:1.2rem;">Les clients verront uniquement les créneaux dans cet intervalle</div>
+          <div id="hours-alert"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Heure d'ouverture</label>
+              <input type="time" id="biz-opening" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+            </div>
+            <div class="form-group">
+              <label>Heure de fermeture</label>
+              <input type="time" id="biz-closing" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Durée d'un créneau (minutes)</label>
+            <select id="biz-slot-duration" style="width:100%;max-width:200px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="30" selected>30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+            </select>
+          </div>
+          <button class="btn-add" onclick="saveHours()">💾 Enregistrer les horaires</button>
+        </div>
+
+        <!-- SERVICES -->
+        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
+          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:1rem;">➕ Ajouter un service</div>
           <div id="service-alert"></div>
           <div class="form-row">
             <div class="form-group">
@@ -1088,9 +1118,48 @@
     renderTable('cal-day-table', dayRes);
   }
 
+  async function saveHours() {
+    const opening = document.getElementById('biz-opening').value;
+    const closing = document.getElementById('biz-closing').value;
+    const slotDuration = parseInt(document.getElementById('biz-slot-duration').value);
+
+    if (!opening || !closing) return showAlert('hours-alert', 'Veuillez remplir les deux horaires.', 'error');
+    if (opening >= closing) return showAlert('hours-alert', 'L\'heure de fermeture doit être après l\'ouverture.', 'error');
+
+    const btn = document.querySelector('#view-services .btn-add');
+    btn.disabled = true; btn.textContent = 'Enregistrement...';
+
+    const { error } = await sb.from('businesses').update({
+      opening_time: opening,
+      closing_time: closing,
+      slot_duration: slotDuration
+    }).eq('id', currentBusiness.id);
+
+    if (error) {
+      showAlert('hours-alert', 'Erreur: ' + error.message, 'error');
+    } else {
+      currentBusiness.opening_time = opening;
+      currentBusiness.closing_time = closing;
+      currentBusiness.slot_duration = slotDuration;
+      showAlert('hours-alert', '✓ Horaires enregistrés!', 'success');
+    }
+    btn.disabled = false; btn.textContent = '💾 Enregistrer les horaires';
+  }
+
   // ---- SERVICES ----
   async function loadServices() {
     if (!currentBusiness) return;
+
+    // Load hours
+    const { data: biz } = await sb.from('businesses').select('opening_time,closing_time,slot_duration').eq('id', currentBusiness.id).single();
+    if (biz) {
+      if (biz.opening_time) document.getElementById('biz-opening').value = biz.opening_time.slice(0,5);
+      if (biz.closing_time) document.getElementById('biz-closing').value = biz.closing_time.slice(0,5);
+      if (biz.slot_duration) document.getElementById('biz-slot-duration').value = biz.slot_duration;
+      currentBusiness.opening_time = biz.opening_time;
+      currentBusiness.closing_time = biz.closing_time;
+      currentBusiness.slot_duration = biz.slot_duration || 30;
+    }
     const { data } = await sb.from('services').select('*').eq('business_id', currentBusiness.id).order('created_at');
     const services = data || [];
     const wrap = document.getElementById('services-list-dash');
