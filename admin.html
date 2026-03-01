@@ -179,7 +179,7 @@
           </select>
         </div>
       </div>
-      <button class="btn-add" onclick="createClient()">Créer le compte</button>
+      <button class="btn-add" onclick="addNewClient()">Créer le compte</button>
     </div>
 
     <!-- CLIENTS LIST -->
@@ -324,7 +324,7 @@
   }
 
   // CREATE CLIENT
-  async function createClient() {
+  async function addNewClient() {
     const name = document.getElementById('new-name').value.trim();
     const email = document.getElementById('new-email').value.trim();
     const password = document.getElementById('new-password').value.trim();
