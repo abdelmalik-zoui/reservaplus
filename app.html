@@ -378,7 +378,7 @@
     <div style="color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:2rem;">Votre période d'essai gratuite de 14 jours est terminée. Contactez-nous pour continuer à utiliser ReservaPlus.</div>
     <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
       <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20mon%20abonnement%20ReservaPlus." target="_blank" style="background:#4ade80;color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;">💬 WhatsApp</a>
-      <a href="mailto:abdlmalkezouiten79@gmail.com?subject=Activation%20abonnement%20ReservaPlus" style="background:var(--accent);color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;">✉️ Email</a>
+      <a href="/cdn-cgi/l/email-protection#dabbb8beb6b7bbb6b1bfa0b5afb3aebfb4ede39abdb7bbb3b6f4b9b5b7e5a9afb8b0bfb9aee79bb9aeb3acbbaeb3b5b4ffe8eabbb8b5b4b4bfb7bfb4aeffe8ea88bfa9bfa8acbb8ab6afa9" style="background:var(--accent);color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;">✉️ Email</a>
     </div>
     <div style="margin-top:1.5rem;">
       <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:0.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Se déconnecter</button>
@@ -406,6 +406,7 @@
       <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
       <button class="nav-item" onclick="showView('services', this); loadServices()">⚙️ &nbsp;Mes services</button>
       <button class="nav-item" onclick="showView('my-link', this)">🔗 &nbsp;Mon lien</button>
+      <button class="nav-item" onclick="showView('change-pwd', this)">🔑 &nbsp;Changer mot de passe</button>
       <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border);margin-top:2rem;">
         <a href="https://wa.me/212632506969?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20avec%20ReservaPlus." target="_blank" style="display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.9rem;border-radius:8px;font-size:0.83rem;color:#4ade80;text-decoration:none;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);">
           💬 &nbsp;Support WhatsApp
@@ -650,6 +651,23 @@
         <div id="services-list-dash" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
       </div>
 
+      <!-- CHANGE PASSWORD -->
+      <div id="view-change-pwd" class="view">
+        <div class="view-title">🔑 Changer mot de passe</div>
+        <div class="booking-form-wrap" style="max-width:420px;">
+          <div id="pwd-alert"></div>
+          <div class="form-group" style="margin-bottom:0.8rem;">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="new-pwd" placeholder="Minimum 6 caractères" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label>Confirmer mot de passe</label>
+            <input type="password" id="confirm-pwd" placeholder="Répétez le mot de passe" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+          </div>
+          <button class="btn-add" onclick="changePassword()">Enregistrer</button>
+        </div>
+      </div>
+
       <!-- MY LINK -->
       <div id="view-my-link" class="view">
         <div class="view-title">Mon lien de réservation</div>
@@ -693,7 +711,7 @@
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // ---- SUPABASE INIT ----
   const { createClient } = supabase;
   const sb = createClient(
@@ -1354,16 +1372,22 @@
   }
 
   // ---- LINK ----
+  async function changePassword() {
+    const newPwd = document.getElementById('new-pwd').value;
+    const confirmPwd = document.getElementById('confirm-pwd').value;
+    if (newPwd.length < 6) return showAlert('pwd-alert', 'Minimum 6 caractères.', 'error');
+    if (newPwd !== confirmPwd) return showAlert('pwd-alert', 'Les mots de passe ne correspondent pas.', 'error');
+    const { error } = await sb.auth.updateUser({ password: newPwd });
+    if (error) return showAlert('pwd-alert', 'Erreur: ' + error.message, 'error');
+    showAlert('pwd-alert', '✓ Mot de passe changé avec succès!', 'success');
+    document.getElementById('new-pwd').value = '';
+    document.getElementById('confirm-pwd').value = '';
+  }
+
   function copyLink() {
     navigator.clipboard.writeText(document.getElementById('my-link-url').textContent);
     const btn = document.querySelector('.btn-copy');
     btn.textContent = '✓ Copié!';
     setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
   }
-  function shareWhatsApp() {
-    const link = document.getElementById('my-link-url').textContent;
-    window.open('https://wa.me/?text=Réservez votre rendez-vous ici: ' + encodeURIComponent(link));
-  }
-</script>
-</body>
-</html>
+  function shareWhatsApp
