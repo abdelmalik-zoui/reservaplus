@@ -182,14 +182,29 @@
           </select>
         </div>
         <div class="form-group">
+          <label>Date début abonnement</label>
+          <input type="date" id="new-start-date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="display:flex;align-items:center;gap:0.8rem;padding-top:1.5rem;">
+          <label style="margin:0;display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" id="new-trial-toggle" onchange="toggleTrialFields()" style="width:16px;height:16px;accent-color:var(--accent);">
+            <span>Free trial</span>
+          </label>
+        </div>
+        <div class="form-group" id="trial-days-field" style="display:none;">
           <label>Durée trial (jours)</label>
           <select id="new-trial">
+            <option value="3">3 jours</option>
             <option value="7">7 jours</option>
             <option value="14" selected>14 jours</option>
             <option value="30">30 jours</option>
-            <option value="60">60 jours</option>
-            <option value="365">1 an</option>
           </select>
+        </div>
+        <div class="form-group" id="trial-end-preview" style="display:none;">
+          <label>Date fin calculée</label>
+          <input type="text" id="new-end-preview" readonly style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;width:100%;">
         </div>
       </div>
       <button class="btn-add" onclick="addNewClient()">Créer le compte</button>
@@ -260,18 +275,19 @@
 <div class="modal" id="extend-modal">
   <div class="modal-card">
     <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title">⏱️ Prolonger le trial</div>
+    <div class="modal-title">⏱️ Renouveler abonnement</div>
     <input type="hidden" id="extend-id">
     <div class="form-group" style="margin-bottom:1rem;">
       <label>Client</label>
       <input type="text" id="extend-name" readonly style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;width:100%;">
     </div>
     <div class="form-group" style="margin-bottom:1rem;">
-      <label>Nouvelle date de fin</label>
-      <div style="display:flex;gap:0.5rem;align-items:center;">
-        <input type="date" id="extend-date" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-        <button onclick="addOneMonth()" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+1 mois</button>
-      </div>
+      <label>Date début abonnement</label>
+      <input type="date" id="extend-start" oninput="calcExtendEnd()" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Date fin (début + 1 mois)</label>
+      <input type="text" id="extend-date" readonly style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
     </div>
     <div class="form-group" style="margin-bottom:1.2rem;">
       <label>Plan</label>
@@ -438,18 +454,31 @@
     const password = document.getElementById('new-password').value.trim();
     const phone = document.getElementById('new-phone').value.trim();
     const plan = document.getElementById('new-plan').value;
-    const trialDays = parseInt(document.getElementById('new-trial').value);
+    const startDate = document.getElementById('new-start-date').value;
+    const isTrial = document.getElementById('new-trial-toggle').checked;
 
     if (!name || !email || !password) return showAddAlert('Nom, email et mot de passe obligatoires.', 'error');
+    if (!startDate) return showAddAlert('Veuillez entrer une date de début.', 'error');
+
+    // Calculate end date
+    const start = new Date(startDate);
+    let endDate;
+    if (isTrial) {
+      const days = parseInt(document.getElementById('new-trial').value || 14);
+      endDate = new Date(start);
+      endDate.setDate(endDate.getDate() + days);
+    } else {
+      endDate = new Date(start);
+      endDate.setMonth(endDate.getMonth() + 1);
+    }
+    const trialEndStr = endDate.toISOString().split('T')[0];
 
     const btn = document.querySelector('.btn-add');
     btn.disabled = true; btn.textContent = 'Création...';
 
     // Create auth user with service role
     const { data: authData, error: authError } = await sbAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true
+      email, password, email_confirm: true
     });
     if (authError) {
       showAddAlert('Erreur: ' + authError.message, 'error');
@@ -457,11 +486,6 @@
       return;
     }
 
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + trialDays);
-    const trialEndStr = trialEnd.toISOString().split('T')[0];
-
-    // Create business
     const { error: bizError } = await sb.from('businesses').insert({
       name, email, phone,
       user_id: authData.user?.id,
@@ -473,11 +497,14 @@
     if (bizError) {
       showAddAlert('Erreur business: ' + bizError.message, 'error');
     } else {
-      showAddAlert(`✓ Compte créé! Trial jusqu'au ${trialEndStr}`, 'success');
+      showAddAlert(`✓ Compte créé! Abonnement jusqu'au ${trialEndStr}`, 'success');
       document.getElementById('new-name').value = '';
       document.getElementById('new-email').value = '';
       document.getElementById('new-password').value = '';
       document.getElementById('new-phone').value = '';
+      document.getElementById('new-start-date').value = '';
+      document.getElementById('new-trial-toggle').checked = false;
+      toggleTrialFields();
       await loadClients();
     }
     btn.disabled = false; btn.textContent = 'Créer le compte';
@@ -532,11 +559,42 @@
     await loadClients();
   }
 
+  // TOGGLE TRIAL FIELDS
+  function toggleTrialFields() {
+    const checked = document.getElementById('new-trial-toggle').checked;
+    document.getElementById('trial-days-field').style.display = checked ? 'block' : 'none';
+    document.getElementById('trial-end-preview').style.display = checked ? 'block' : 'none';
+    calcNewClientEnd();
+  }
+
+  function calcNewClientEnd() {
+    const start = document.getElementById('new-start-date').value;
+    const isTrial = document.getElementById('new-trial-toggle').checked;
+    if (!start) return;
+    const d = new Date(start);
+    if (isTrial) {
+      const days = parseInt(document.getElementById('new-trial').value || 14);
+      d.setDate(d.getDate() + days);
+    } else {
+      d.setMonth(d.getMonth() + 1);
+    }
+    document.getElementById('new-end-preview').value = d.toISOString().split('T')[0];
+  }
+
+  function calcExtendEnd() {
+    const start = document.getElementById('extend-start').value;
+    if (!start) return;
+    const d = new Date(start);
+    d.setMonth(d.getMonth() + 1);
+    document.getElementById('extend-date').value = d.toISOString().split('T')[0];
+  }
+
   // EXTEND MODAL
   function openExtend(id, name, trialEnd, plan) {
     document.getElementById('extend-id').value = id;
     document.getElementById('extend-name').value = name;
-    document.getElementById('extend-date').value = trialEnd;
+    document.getElementById('extend-start').value = '';
+    document.getElementById('extend-date').value = '';
     document.getElementById('extend-plan').value = plan;
     document.getElementById('extend-modal').classList.add('open');
   }
@@ -547,9 +605,10 @@
 
   async function saveExtend() {
     const id = document.getElementById('extend-id').value;
-    const date = document.getElementById('extend-date').value;
+    const endDate = document.getElementById('extend-date').value;
     const plan = document.getElementById('extend-plan').value;
-    await sb.from('businesses').update({ trial_end: date, plan, is_active: true }).eq('id', id);
+    if (!endDate) return alert('Veuillez entrer une date de début!');
+    await sb.from('businesses').update({ trial_end: endDate, plan, is_active: true }).eq('id', id);
     closeModal();
     await loadClients();
   }
@@ -560,6 +619,11 @@
     current.setMonth(current.getMonth() + 1);
     dateInput.value = current.toISOString().split('T')[0];
   }
+
+  // Init
+  document.getElementById('new-start-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('new-start-date').addEventListener('input', calcNewClientEnd);
+  document.getElementById('new-trial').addEventListener('change', calcNewClientEnd);
 </script>
 </body>
 </html>
