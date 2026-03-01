@@ -234,6 +234,10 @@
     'https://uewtdxkpsraufzjsebnh.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
   );
+  const sbAdmin = createClient(
+    'https://uewtdxkpsraufzjsebnh.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo'
+  );
 
   // ADMIN PASSWORD
   const ADMIN_PASSWORD = 'reservaplus2026';
@@ -333,8 +337,12 @@
     const btn = document.querySelector('.btn-add');
     btn.disabled = true; btn.textContent = 'Création...';
 
-    // Create auth user
-    const { data: authData, error: authError } = await sb.auth.signUp({ email, password });
+    // Create auth user with service role
+    const { data: authData, error: authError } = await sbAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true
+    });
     if (authError) {
       showAddAlert('Erreur: ' + authError.message, 'error');
       btn.disabled = false; btn.textContent = 'Créer le compte';
