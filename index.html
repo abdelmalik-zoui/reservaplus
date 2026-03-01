@@ -239,6 +239,7 @@
   .badge-green { background: rgba(74,222,128,0.1); color: var(--green); }
   .badge-yellow { background: rgba(251,191,36,0.1); color: var(--yellow); }
   .badge-red { background: rgba(248,113,113,0.1); color: var(--red); }
+  .badge-done { background: rgba(139,92,246,0.1); color: #a78bfa; }
 
   /* BOOKING FORM */
   .booking-form-wrap {
@@ -474,8 +475,8 @@
         <!-- TABLEAU PAR JOUR -->
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
           <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:0.92rem;">Détail par jour</div>
-          <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;padding:0.6rem 1.2rem;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">
-            <span>DATE</span><span>TOTAL</span><span style="color:var(--green)">CONFIRMÉES</span><span style="color:var(--yellow)">EN ATTENTE</span><span style="color:var(--red)">ANNULÉES</span>
+          <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;padding:0.6rem 1.2rem;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">
+            <span>DATE</span><span>TOTAL</span><span style="color:var(--green)">CONFIRMÉES</span><span style="color:var(--yellow)">EN ATTENTE</span><span style="color:var(--red)">ANNULÉES</span><span style="color:#a78bfa">TERMINÉES</span>
           </div>
           <div id="stats-table-body"></div>
         </div>
@@ -810,16 +811,31 @@
     const reservations = data || [];
     allReservations = reservations;
 
-    // KPIs
-    document.getElementById('kpi-total').textContent = reservations.length;
-    document.getElementById('kpi-confirmed').textContent = reservations.filter(r => r.status === 'confirme').length;
-    document.getElementById('kpi-pending').textContent = reservations.filter(r => r.status === 'en_attente').length;
-    if (document.getElementById('kpi-annule'))
-      document.getElementById('kpi-annule').textContent = reservations.filter(r => r.status === 'annule').length;
+    // Auto-done: كل reservation وقتها فات بساعة تتبدل done
+    const now = new Date();
+    for (const r of reservations) {
+      if (r.status === 'confirme' || r.status === 'en_attente') {
+        const resDateTime = new Date(r.date + 'T' + (r.time || '00:00'));
+        resDateTime.setHours(resDateTime.getHours() + 1);
+        if (now > resDateTime) {
+          await sb.from('reservations').update({ status: 'done' }).eq('id', r.id);
+          r.status = 'done';
+        }
+      }
+    }
 
-    // Tables
-    renderTable('overview-table', reservations.slice(0, 5));
-    renderTable('all-reservations-table', reservations);
+    // KPIs — كيحسب كل شي حتى done
+    const active = reservations.filter(r => r.status !== 'done');
+    document.getElementById('kpi-total').textContent = active.length;
+    document.getElementById('kpi-confirmed').textContent = active.filter(r => r.status === 'confirme').length;
+    document.getElementById('kpi-pending').textContent = active.filter(r => r.status === 'en_attente').length;
+    if (document.getElementById('kpi-annule'))
+      document.getElementById('kpi-annule').textContent = active.filter(r => r.status === 'annule').length;
+
+    // Tables — ما تبانش done
+    const visible = reservations.filter(r => r.status !== 'done');
+    renderTable('overview-table', visible.slice(0, 5));
+    renderTable('all-reservations-table', visible);
   }
 
   function renderTable(id, reservations) {
@@ -830,14 +846,16 @@
       return;
     }
     const rows = reservations.map(r => {
-      const badgeClass = r.status === 'confirme' ? 'badge-green' : r.status === 'annule' ? 'badge-red' : 'badge-yellow';
-      const statusLabel = r.status === 'confirme' ? 'Confirmé' : r.status === 'annule' ? 'Annulé' : 'En attente';
-      const rJson = encodeURIComponent(JSON.stringify(r));
-      const actions = r.status !== 'confirme'
+      const badgeClass = r.status === 'confirme' ? 'badge-green' : r.status === 'annule' ? 'badge-red' : r.status === 'done' ? 'badge-done' : 'badge-yellow';
+      const statusLabel = r.status === 'confirme' ? 'Confirmé' : r.status === 'annule' ? 'Annulé' : r.status === 'done' ? '✓ Terminé' : 'En attente';
+      const actions = r.status !== 'confirme' && r.status !== 'done'
         ? `<button onclick="changeStatus('${r.id}','confirme')" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:4px;" title="Confirmer">✓</button>`
         : '';
-      const cancelBtn = r.status !== 'annule'
+      const cancelBtn = r.status !== 'annule' && r.status !== 'done'
         ? `<button onclick="changeStatus('${r.id}','annule')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Annuler">✗</button>`
+        : '';
+      const doneBtn = r.status !== 'done'
+        ? `<button onclick="changeStatus('${r.id}','done')" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Marquer terminé">✔</button>`
         : '';
       const editBtn = `<button onclick="openEditModal(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);color:var(--accent);border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Modifier">✏️</button>`;
       return `<div class="table-row">
@@ -845,7 +863,7 @@
         <span>${r.service_name || '—'}</span>
         <span>${r.date}</span>
         <span>${r.time?.slice(0,5) || '—'}</span>
-        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}${editBtn}</span>
+        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}${doneBtn}${editBtn}</span>
       </div>`;
     }).join('');
     wrap.innerHTML = header + rows;
@@ -922,6 +940,7 @@
     const confirmed = reservations.filter(r => r.status === 'confirme').length;
     const pending = reservations.filter(r => r.status === 'en_attente').length;
     const annule = reservations.filter(r => r.status === 'annule').length;
+    const done = reservations.filter(r => r.status === 'done').length;
 
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-confirmed').textContent = confirmed;
@@ -944,6 +963,7 @@
         confirmed: dayRes.filter(r => r.status === 'confirme').length,
         pending: dayRes.filter(r => r.status === 'en_attente').length,
         annule: dayRes.filter(r => r.status === 'annule').length,
+        done: dayRes.filter(r => r.status === 'done').length,
       });
     }
 
@@ -961,12 +981,13 @@
 
     // Table
     document.getElementById('stats-table-body').innerHTML = days.reverse().map(d => `
-      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;padding:0.7rem 1.2rem;font-size:0.82rem;border-bottom:1px solid rgba(30,30,46,0.5);align-items:center;" onmouseover="this.style.background='rgba(124,106,247,0.04)'" onmouseout="this.style.background='transparent'">
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;padding:0.7rem 1.2rem;font-size:0.82rem;border-bottom:1px solid rgba(30,30,46,0.5);align-items:center;" onmouseover="this.style.background='rgba(124,106,247,0.04)'" onmouseout="this.style.background='transparent'">
         <span style="font-weight:500;">${d.date}</span>
         <span>${d.total}</span>
         <span style="color:var(--green)">${d.confirmed}</span>
         <span style="color:var(--yellow)">${d.pending}</span>
         <span style="color:var(--red)">${d.annule}</span>
+        <span style="color:#a78bfa">${d.done}</span>
       </div>
     `).join('') || '<div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:0.85rem;">Aucune donnée pour cette période</div>';
   }
