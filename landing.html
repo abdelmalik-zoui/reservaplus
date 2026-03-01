@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReservaPlus — Gérez vos réservations facilement</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --accent2: #f7706a;
+    --text: #f0f0f5;
+    --muted: #7070a0;
+    --card: #13131c;
+    --green: #4ade80;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+  /* ===== NAV ===== */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 6%;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: rgba(10,10,15,0.9);
+    backdrop-filter: blur(16px);
+    z-index: 100;
+  }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: -0.03em; text-decoration: none; color: var(--text); }
+  .logo span { color: var(--accent); }
+  nav ul { display: flex; gap: 2rem; list-style: none; }
+  nav ul a { color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+  nav ul a:hover { color: var(--text); }
+  .nav-btns { display: flex; gap: 0.7rem; }
+  .btn-ghost { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.5rem 1.1rem; border-radius: 8px; cursor: pointer; font-size: 0.83rem; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--text); }
+  .btn-nav { background: var(--accent); border: none; color: white; padding: 0.52rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.83rem; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: all 0.2s; text-decoration: none; display: inline-block; }
+  .btn-nav:hover { background: #6a58e5; }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 7rem 6% 5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -150px; left: 30%;
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(124,106,247,0.1) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(247,112,106,0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-inner { position: relative; z-index: 1; max-width: 1100px; }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(124,106,247,0.1);
+    border: 1px solid rgba(124,106,247,0.25);
+    color: var(--accent);
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    font-size: 0.78rem; font-weight: 600;
+    margin-bottom: 2rem;
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 6vw, 5.2rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    max-width: 780px;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s 0.1s ease forwards; opacity: 0;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  h1 .line2 { color: var(--muted); }
+
+  .hero-sub {
+    color: var(--muted); font-size: 1.05rem; max-width: 540px;
+    line-height: 1.75; margin-bottom: 2.5rem;
+    animation: fadeUp 0.6s 0.2s ease forwards; opacity: 0;
+  }
+
+  .hero-btns {
+    display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 4rem;
+    animation: fadeUp 0.6s 0.3s ease forwards; opacity: 0;
+  }
+  .btn-hero {
+    background: var(--accent); color: white; border: none;
+    padding: 0.9rem 2.2rem; border-radius: 10px;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    transition: all 0.25s; font-family: 'DM Sans', sans-serif;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-hero:hover { background: #6a58e5; transform: translateY(-2px); box-shadow: 0 10px 35px rgba(124,106,247,0.3); }
+  .btn-hero-outline {
+    background: none; color: var(--text); border: 1px solid var(--border);
+    padding: 0.9rem 2.2rem; border-radius: 10px;
+    font-size: 1rem; cursor: pointer; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-hero-outline:hover { border-color: var(--accent); }
+
+  .hero-stats {
+    display: flex; gap: 3rem; flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.4s ease forwards; opacity: 0;
+  }
+  .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; }
+  .stat-label { color: var(--muted); font-size: 0.83rem; margin-top: 0.15rem; }
+
+  /* ===== DEMO ===== */
+  .demo-section { padding: 2rem 6% 6rem; }
+
+  .demo-browser {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .browser-bar {
+    background: var(--surface);
+    padding: 0.8rem 1.2rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .url-bar {
+    margin-left: 0.8rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.25rem 1rem; font-size: 0.73rem; color: var(--muted);
+    flex: 1; max-width: 280px;
+  }
+
+  .demo-tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .demo-tab {
+    padding: 0.75rem 1.5rem; font-size: 0.82rem; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent;
+    transition: all 0.2s; border: none; background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .demo-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .demo-content { display: none; padding: 1.5rem; }
+  .demo-content.active { display: block; }
+
+  /* Dashboard demo */
+  .dash-demo { display: grid; grid-template-columns: 180px 1fr; gap: 0; min-height: 380px; }
+  .demo-sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.2rem 0.8rem; }
+  .demo-nav-item { padding: 0.55rem 0.8rem; border-radius: 7px; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.2rem; cursor: pointer; }
+  .demo-nav-item.active { background: rgba(124,106,247,0.12); color: var(--accent); }
+  .demo-main { padding: 1.2rem; }
+  .demo-kpis { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.7rem; margin-bottom: 1.2rem; }
+  .demo-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 0.9rem; }
+  .demo-kpi-label { color: var(--muted); font-size: 0.7rem; margin-bottom: 0.3rem; }
+  .demo-kpi-val { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; }
+  .demo-kpi-sub { font-size: 0.68rem; color: var(--green); margin-top: 0.15rem; }
+
+  .demo-table { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+  .demo-table-head { display: grid; grid-template-columns: 2fr 1.5fr 1fr 90px; padding: 0.55rem 1rem; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+  .demo-table-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 90px; padding: 0.7rem 1rem; font-size: 0.78rem; border-bottom: 1px solid rgba(30,30,46,0.5); align-items: center; }
+  .demo-table-row:last-child { border-bottom: none; }
+  .badge { padding: 0.18rem 0.6rem; border-radius: 100px; font-size: 0.68rem; font-weight: 500; }
+  .badge-green { background: rgba(74,222,128,0.1); color: var(--green); }
+  .badge-yellow { background: rgba(251,191,36,0.1); color: #fbbf24; }
+
+  /* Booking demo */
+  .booking-demo { max-width: 420px; margin: 0 auto; }
+  .booking-demo h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .booking-demo p { color: var(--muted); font-size: 0.78rem; margin-bottom: 1.2rem; }
+  .demo-services { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.2rem; }
+  .demo-service { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem; font-size: 0.78rem; }
+  .demo-service.sel { border-color: var(--accent); background: rgba(124,106,247,0.08); }
+  .demo-service-name { font-weight: 500; }
+  .demo-service-meta { color: var(--muted); font-size: 0.7rem; }
+  .demo-slots { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.2rem; }
+  .demo-slot { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.75rem; font-size: 0.75rem; }
+  .demo-slot.sel { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* ===== FEATURES ===== */
+  .features { padding: 6rem 6%; }
+  .section-head { text-align: center; margin-bottom: 4rem; }
+  .section-label { display: inline-block; color: var(--accent); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.8rem; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: clamp(1.7rem, 3.5vw, 2.6rem); font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.8rem; }
+  .section-sub { color: var(--muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.2rem; max-width: 1100px; margin: 0 auto; }
+  .feat-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem;
+    transition: all 0.25s; position: relative; overflow: hidden;
+  }
+  .feat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), transparent); opacity: 0; transition: opacity 0.25s; }
+  .feat-card:hover { border-color: rgba(124,106,247,0.3); transform: translateY(-3px); }
+  .feat-card:hover::before { opacity: 1; }
+  .feat-icon { width: 42px; height: 42px; background: rgba(124,106,247,0.1); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 1.1rem; }
+  .feat-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .feat-desc { color: var(--muted); font-size: 0.83rem; line-height: 1.6; }
+
+  /* ===== HOW IT WORKS ===== */
+  .how { padding: 6rem 6%; background: linear-gradient(180deg, transparent, rgba(124,106,247,0.03), transparent); }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; max-width: 900px; margin: 0 auto; position: relative; }
+  .steps::before { content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, var(--border), var(--border), transparent); }
+  .step { text-align: center; position: relative; }
+  .step-num { width: 56px; height: 56px; background: var(--card); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--accent); margin: 0 auto 1.2rem; position: relative; z-index: 1; }
+  .step-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .step-desc { color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+
+  /* ===== TESTIMONIALS ===== */
+  .testimonials { padding: 6rem 6%; }
+  .testi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; max-width: 1100px; margin: 0 auto; }
+  .testi-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem; }
+  .testi-stars { color: #fbbf24; font-size: 0.85rem; margin-bottom: 1rem; letter-spacing: 0.1em; }
+  .testi-text { color: var(--muted); font-size: 0.87rem; line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+  .testi-author { display: flex; align-items: center; gap: 0.8rem; }
+  .testi-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; color: white; flex-shrink: 0; }
+  .testi-name { font-weight: 600; font-size: 0.85rem; }
+  .testi-role { color: var(--muted); font-size: 0.75rem; }
+
+  /* ===== PRICING ===== */
+  .pricing { padding: 6rem 6%; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.2rem; max-width: 900px; margin: 0 auto; }
+  .plan { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 2rem; position: relative; transition: all 0.25s; }
+  .plan:hover { transform: translateY(-4px); }
+  .plan.featured { border-color: var(--accent); background: rgba(124,106,247,0.05); }
+  .plan-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 0.2rem 0.9rem; border-radius: 100px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; }
+  .plan-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .plan-price { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; margin-bottom: 0.25rem; }
+  .plan-price span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+  .plan-desc { color: var(--muted); font-size: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .plan-features { list-style: none; margin-bottom: 1.5rem; }
+  .plan-features li { font-size: 0.82rem; padding: 0.38rem 0; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .plan-features li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+  .btn-plan { width: 100%; padding: 0.72rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .btn-plan-out { background: none; border: 1px solid var(--border); color: var(--text); }
+  .btn-plan-out:hover { border-color: var(--accent); }
+  .btn-plan-fill { background: var(--accent); border: none; color: white; }
+  .btn-plan-fill:hover { background: #6a58e5; }
+
+  /* ===== FAQ ===== */
+  .faq { padding: 6rem 6%; }
+  .faq-list { max-width: 700px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-q {
+    width: 100%; text-align: left; background: none; border: none;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 500;
+    padding: 1.3rem 0; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: color 0.2s;
+  }
+  .faq-q:hover { color: var(--accent); }
+  .faq-icon { font-size: 1.2rem; color: var(--accent); transition: transform 0.3s; flex-shrink: 0; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-a { color: var(--muted); font-size: 0.87rem; line-height: 1.75; max-height: 0; overflow: hidden; transition: max-height 0.35s ease, padding 0.35s ease; }
+  .faq-item.open .faq-a { max-height: 200px; padding-bottom: 1.3rem; }
+
+  /* ===== CTA ===== */
+  .cta {
+    margin: 0 6% 6rem;
+    background: linear-gradient(135deg, rgba(124,106,247,0.15), rgba(247,112,106,0.08));
+    border: 1px solid rgba(124,106,247,0.2);
+    border-radius: 20px;
+    padding: 5rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta::before {
+    content: '';
+    position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(124,106,247,0.1) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .cta h2 { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 1rem; position: relative; }
+  .cta p { color: var(--muted); font-size: 1rem; margin-bottom: 2.5rem; position: relative; }
+  .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 6%;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;
+  }
+  .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+  .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-copy { color: var(--muted); font-size: 0.78rem; }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    nav ul { display: none; }
+    .dash-demo { grid-template-columns: 1fr; }
+    .demo-sidebar { display: none; }
+    .steps::before { display: none; }
+    .cta { padding: 3rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">Reserva<span>Plus</span></a>
+  <ul>
+    <li><a href="#demo">Démo</a></li>
+    <li><a href="#features">Fonctionnalités</a></li>
+    <li><a href="#pricing">Tarifs</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="nav-btns">
+    <button class="btn-ghost" onclick="location.href='index.html'">Se connecter</button>
+    <a href="index.html" class="btn-nav">Commencer gratuitement</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">✦ &nbsp;Nouveau — Rappels WhatsApp automatiques</div>
+    <h1>Fini les rendez-vous <em>ratés</em><br><span class="line2">pour votre business</span></h1>
+    <p class="hero-sub">ReservaPlus permet à chaque entreprise de gérer ses réservations, ses clients et ses rappels — en quelques clics. Sans compétence technique.</p>
+    <div class="hero-btns">
+      <a href="index.html" class="btn-hero">Commencer gratuitement →</a>
+      <button class="btn-hero-outline" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Voir la démo</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">+2 400</div>
+        <div class="stat-label">Entreprises actives</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">98%</div>
+        <div class="stat-label">Satisfaction client</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0 MAD</div>
+        <div class="stat-label">Pour commencer</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">30 sec</div>
+        <div class="stat-label">Pour réserver</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo" class="demo-section">
+  <div class="demo-browser">
+    <div class="browser-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <div class="url-bar" id="url-bar">app.reservaplus.ma/dashboard</div>
+    </div>
+    <div class="demo-tabs">
+      <button class="demo-tab active" onclick="switchDemo('dashboard', this, 'app.reservaplus.ma/dashboard')">📊 Dashboard</button>
+      <button class="demo-tab" onclick="switchDemo('booking', this, 'reservaplus.ma/booking?id=salon-ahmed')">📅 Page de réservation</button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="demo-dashboard" class="demo-content active">
+      <div class="dash-demo">
+        <div class="demo-sidebar">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;margin-bottom:1.5rem;padding-left:0.5rem;">Reserva<span style="color:var(--accent)">Plus</span></div>
+          <div class="demo-nav-item active">📊 &nbsp;Tableau de bord</div>
+          <div class="demo-nav-item">📅 &nbsp;Calendrier</div>
+          <div class="demo-nav-item">👥 &nbsp;Clients</div>
+          <div class="demo-nav-item">⚙️ &nbsp;Services</div>
+          <div class="demo-nav-item">📈 &nbsp;Stats</div>
+        </div>
+        <div class="demo-main">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;">Bonjour, Ahmed 👋</div>
+              <div style="color:var(--muted);font-size:0.75rem;">Dimanche 1 Mars 2026</div>
+            </div>
+            <button style="background:var(--accent);border:none;color:white;padding:0.4rem 0.9rem;border-radius:7px;font-size:0.75rem;cursor:pointer;">+ Nouveau RDV</button>
+          </div>
+          <div class="demo-kpis">
+            <div class="demo-kpi">
+              <div class="demo-kpi-label">RDV aujourd'hui</div>
+              <div class="demo-kpi-val">12</div>
+              <div class="demo-kpi-sub">↑ +3 vs hier</div>
+            </div>
+            <div class="demo-kpi">
+              <div class="demo-kpi-label">Clients ce mois</div>
+              <div class="demo-kpi-val">148</div>
+              <div class="demo-kpi-sub">↑ +12%</div>
+            </div>
+            <div class="demo-kpi">
+              <div class="demo-kpi-label">Revenus (MAD)</div>
+              <div class="demo-kpi-val">3 840</div>
+              <div class="demo-kpi-sub">↑ +8%</div>
+            </div>
+          </div>
+          <div class="demo-table">
+            <div class="demo-table-head"><span>CLIENT</span><span>SERVICE</span><span>HEURE</span><span>STATUT</span></div>
+            <div class="demo-table-row"><span>Youssef Alami</span><span>Coupe + Barbe</span><span>09:00</span><span><span class="badge badge-green">Confirmé</span></span></div>
+            <div class="demo-table-row"><span>Sara Benali</span><span>Coloration</span><span>10:30</span><span><span class="badge badge-yellow">En attente</span></span></div>
+            <div class="demo-table-row"><span>Karim Tazi</span><span>Soin visage</span><span>11:00</span><span><span class="badge badge-green">Confirmé</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking -->
+    <div id="demo-booking" class="demo-content">
+      <div class="booking-demo">
+        <h3>Salon Ahmed — Réserver</h3>
+        <p>Choisissez votre service et votre créneau</p>
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;">Service</div>
+        <div class="demo-services">
+          <div class="demo-service sel"><div class="demo-service-name">Coupe homme</div><div class="demo-service-meta">30 min · 50 MAD</div></div>
+          <div class="demo-service"><div class="demo-service-name">Coupe + Barbe</div><div class="demo-service-meta">45 min · 80 MAD</div></div>
+          <div class="demo-service"><div class="demo-service-name">Barbe seule</div><div class="demo-service-meta">20 min · 30 MAD</div></div>
+          <div class="demo-service"><div class="demo-service-name">Soin visage</div><div class="demo-service-meta">60 min · 120 MAD</div></div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.5rem;">Créneaux disponibles</div>
+        <div class="demo-slots">
+          <div class="demo-slot sel">09:00</div>
+          <div class="demo-slot">09:30</div>
+          <div class="demo-slot">10:00</div>
+          <div class="demo-slot">11:30</div>
+          <div class="demo-slot">14:00</div>
+          <div class="demo-slot">15:30</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.7rem 0.9rem;font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem;">Votre nom...</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.7rem 0.9rem;font-size:0.78rem;color:var(--muted);margin-bottom:0.9rem;">+212 6XX XXX XXX</div>
+        <div style="background:var(--accent);border-radius:8px;padding:0.7rem;text-align:center;font-size:0.85rem;font-weight:600;color:white;">Confirmer la réservation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="features">
+  <div class="section-head">
+    <div class="section-label">Fonctionnalités</div>
+    <div class="section-title">Tout ce dont vous avez besoin</div>
+    <div class="section-sub">Un seul outil pour gérer votre agenda, vos clients et vos rappels automatiques.</div>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card"><div class="feat-icon">📅</div><div class="feat-title">Calendrier intelligent</div><div class="feat-desc">Visualisez tous vos rendez-vous en temps réel. Vue journalière, hebdomadaire ou mensuelle.</div></div>
+    <div class="feat-card"><div class="feat-icon">🔗</div><div class="feat-title">Lien de réservation</div><div class="feat-desc">Un lien unique à partager. Vos clients réservent en 30 secondes, sans appel téléphonique.</div></div>
+    <div class="feat-card"><div class="feat-icon">🔔</div><div class="feat-title">Rappels automatiques</div><div class="feat-desc">SMS et email envoyés automatiquement à vos clients avant chaque rendez-vous.</div></div>
+    <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Statistiques détaillées</div><div class="feat-desc">Suivez vos revenus, clients fidèles et heures de pointe pour mieux organiser votre activité.</div></div>
+    <div class="feat-card"><div class="feat-icon">💬</div><div class="feat-title">WhatsApp intégré</div><div class="feat-desc">Confirmations et rappels directement via WhatsApp. Simple et efficace.</div></div>
+    <div class="feat-card"><div class="feat-icon">⚙️</div><div class="feat-title">100% personnalisable</div><div class="feat-desc">Définissez vos services, horaires et durées selon votre activité et secteur.</div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="section-head">
+    <div class="section-label">Comment ça marche</div>
+    <div class="section-title">Prêt en 3 minutes</div>
+    <div class="section-sub">Aucune compétence technique requise.</div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Créez votre compte</div>
+      <div class="step-desc">Inscrivez-vous gratuitement et configurez votre établissement en quelques minutes.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Partagez votre lien</div>
+      <div class="step-desc">Envoyez votre lien de réservation à vos clients par WhatsApp, Instagram ou SMS.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">Gérez vos RDV</div>
+      <div class="step-desc">Recevez les réservations et gérez tout depuis votre dashboard en temps réel.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" class="testimonials">
+  <div class="section-head">
+    <div class="section-label">Témoignages</div>
+    <div class="section-title">Ils nous font confiance</div>
+    <div class="section-sub">Plus de 2 400 entreprises marocaines utilisent ReservaPlus.</div>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Depuis que j'utilise ReservaPlus, je n'ai plus de no-shows. Les rappels automatiques ont changé mon business complètement."</div>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#7c6af7,#6a58e5)">YA</div>
+        <div><div class="testi-name">Youssef Alami</div><div class="testi-role">Coiffeur — Casablanca</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Mes patients réservent maintenant depuis leur téléphone. Le lien de réservation est simple et professionnel."</div>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#f7706a,#e85d57)">SB</div>
+        <div><div class="testi-name">Dr. Sara Benali</div><div class="testi-role">Dentiste — Rabat</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"J'ai économisé 2 heures par jour sur la gestion des appels. ReservaPlus gère tout automatiquement."</div>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#4ade80,#22c55e)">KT</div>
+        <div><div class="testi-name">Karim Tazi</div><div class="testi-role">Garage auto — Marrakech</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="pricing">
+  <div class="section-head">
+    <div class="section-label">Tarifs</div>
+    <div class="section-title">Simple et transparent</div>
+    <div class="section-sub">Commencez gratuitement. Upgradez quand vous grandissez.</div>
+  </div>
+  <div class="pricing-grid">
+    <div class="plan">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">99 <span>MAD/mois</span></div>
+      <div class="plan-desc">Pour débuter et tester la plateforme</div>
+      <ul class="plan-features">
+        <li>Jusqu'à 50 réservations/mois</li>
+        <li>1 service</li>
+        <li>Email de confirmation</li>
+        <li>Page de réservation</li>
+        <li>Dashboard basique</li>
+      </ul>
+      <button class="btn-plan btn-plan-out" onclick="location.href='index.html'">Commencer</button>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">⭐ Le plus populaire</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">249 <span>MAD/mois</span></div>
+      <div class="plan-desc">Pour les entreprises actives</div>
+      <ul class="plan-features">
+        <li>Jusqu'à 500 réservations/mois</li>
+        <li>Services illimités</li>
+        <li>SMS + Email automatiques</li>
+        <li>Statistiques avancées</li>
+        <li>WhatsApp intégré</li>
+        <li>Support prioritaire</li>
+      </ul>
+      <button class="btn-plan btn-plan-fill" onclick="location.href='index.html'">Commencer</button>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Business</div>
+      <div class="plan-price">499 <span>MAD/mois</span></div>
+      <div class="plan-desc">Pour les grandes structures</div>
+      <ul class="plan-features">
+        <li>Réservations illimitées</li>
+        <li>Multi-staff & multi-site</li>
+        <li>API & intégrations</li>
+        <li>Support dédié 24/7</li>
+        <li>Onboarding personnalisé</li>
+      </ul>
+      <button class="btn-plan btn-plan-out" onclick="location.href='index.html'">Contacter</button>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="faq">
+  <div class="section-head">
+    <div class="section-label">FAQ</div>
+    <div class="section-title">Questions fréquentes</div>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Est-ce vraiment gratuit pour commencer? <span class="faq-icon">+</span></button>
+      <div class="faq-a">Oui, vous pouvez créer votre compte et commencer à recevoir des réservations gratuitement. Le plan Starter à 99 MAD/mois vous donne accès à toutes les fonctionnalités de base.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Mes clients ont besoin d'un compte pour réserver? <span class="faq-icon">+</span></button>
+      <div class="faq-a">Non! Vos clients accèdent à votre page de réservation via un lien unique et réservent en entrant juste leur nom et téléphone. Aucune inscription nécessaire de leur côté.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Quels types d'entreprises peuvent utiliser ReservaPlus? <span class="faq-icon">+</span></button>
+      <div class="faq-a">ReservaPlus est adapté à tout type d'entreprise qui prend des rendez-vous: coiffeurs, médecins, dentistes, garages, coachs, agences, centres de beauté, et bien plus.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Comment fonctionne le lien de réservation? <span class="faq-icon">+</span></button>
+      <div class="faq-a">Chaque établissement reçoit un lien unique de type reservaplus.vercel.app/booking.html?id=VOTRE_ID. Partagez-le sur WhatsApp, Instagram, ou votre site web et vos clients pourront réserver directement.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Puis-je annuler à tout moment? <span class="faq-icon">+</span></button>
+      <div class="faq-a">Oui, vous pouvez annuler votre abonnement à tout moment sans frais cachés. Vos données restent disponibles pendant 30 jours après l'annulation.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Les données de mes clients sont-elles sécurisées? <span class="faq-icon">+</span></button>
+      <div class="faq-a">Absolument. Toutes les données sont chiffrées et stockées de manière sécurisée. Nous ne partageons jamais vos données avec des tiers.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta">
+  <h2>Prêt à simplifier vos<br>réservations?</h2>
+  <p>Rejoignez +2 400 entreprises qui font confiance à ReservaPlus. Commencez gratuitement dès aujourd'hui.</p>
+  <div class="cta-btns">
+    <a href="index.html" class="btn-hero">Créer mon compte gratuit →</a>
+    <button class="btn-hero-outline" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Voir la démo</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="logo" style="font-size:1.1rem;">Reserva<span>Plus</span></a>
+  <div class="footer-links">
+    <a href="#features">Fonctionnalités</a>
+    <a href="#pricing">Tarifs</a>
+    <a href="#faq">FAQ</a>
+    <a href="index.html">Se connecter</a>
+  </div>
+  <div class="footer-copy">© 2026 ReservaPlus · Fait au Maroc 🇲🇦</div>
+</footer>
+
+<script>
+  function switchDemo(id, btn, url) {
+    document.querySelectorAll('.demo-content').forEach(d => d.classList.remove('active'));
+    document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('demo-' + id).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('url-bar').textContent = url;
+  }
+
+  function toggleFaq(btn) {
+    const item = btn.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+</body>
+</html>
