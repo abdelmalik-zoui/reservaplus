@@ -112,7 +112,10 @@
       <span class="admin-logo">Reserva<span>Plus</span></span>
       <span class="admin-badge">ADMIN</span>
     </div>
-    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button class="btn-logout" onclick="openChangePwd()" style="color:var(--accent);border-color:var(--accent);">🔑 Changer mot de passe</button>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
   </nav>
 
   <div class="admin-content">
@@ -135,6 +138,16 @@
         <div class="kpi-label">Bloqués</div>
         <div class="kpi-val" id="kpi-blocked" style="color:var(--yellow)">—</div>
       </div>
+      <div class="kpi" style="border-color:rgba(248,113,113,0.3);">
+        <div class="kpi-label">⚠️ Expire bientôt</div>
+        <div class="kpi-val" id="kpi-expiring" style="color:var(--red)">—</div>
+      </div>
+    </div>
+
+    <!-- ALERT 2 JOURS -->
+    <div id="expiring-alert" style="display:none;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.5rem;">
+      <div style="font-weight:600;color:var(--red);margin-bottom:0.5rem;">⚠️ Clients dont l'abonnement expire dans 2 jours:</div>
+      <div id="expiring-list" style="font-size:0.85rem;color:var(--text);"></div>
     </div>
 
     <!-- ADD CLIENT -->
@@ -202,6 +215,28 @@
   </div>
 </div>
 
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal" id="changepwd-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="document.getElementById('changepwd-modal').classList.remove('open')">✕</button>
+    <div class="modal-title">🔑 Changer mot de passe admin</div>
+    <div id="changepwd-alert" style="margin-bottom:0.8rem;"></div>
+    <div class="form-group" style="margin-bottom:0.8rem;">
+      <label>Mot de passe actuel</label>
+      <input type="password" id="pwd-current" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div class="form-group" style="margin-bottom:0.8rem;">
+      <label>Nouveau mot de passe</label>
+      <input type="password" id="pwd-new" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div class="form-group" style="margin-bottom:1.2rem;">
+      <label>Confirmer nouveau mot de passe</label>
+      <input type="password" id="pwd-confirm" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <button class="btn-add" onclick="saveNewPwd()" style="width:100%;">Enregistrer</button>
+  </div>
+</div>
+
 <!-- EXTEND MODAL -->
 <div class="modal" id="extend-modal">
   <div class="modal-card">
@@ -214,7 +249,10 @@
     </div>
     <div class="form-group" style="margin-bottom:1rem;">
       <label>Nouvelle date de fin</label>
-      <input type="date" id="extend-date" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input type="date" id="extend-date" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+        <button onclick="addOneMonth()" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+1 mois</button>
+      </div>
     </div>
     <div class="form-group" style="margin-bottom:1.2rem;">
       <label>Plan</label>
@@ -239,8 +277,8 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo'
   );
 
-  // ADMIN PASSWORD
-  const ADMIN_PASSWORD = 'reservaplus2026';
+  // ADMIN PASSWORD — مخزن فـ localStorage
+  let ADMIN_PASSWORD = localStorage.getItem('admin_pwd') || 'reservaplus2026';
   let allClients = [];
 
   function checkPassword() {
@@ -260,22 +298,71 @@
     document.getElementById('admin-password').value = '';
   }
 
+  function openChangePwd() {
+    document.getElementById('changepwd-modal').classList.add('open');
+    document.getElementById('pwd-current').value = '';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+  }
+
+  function saveNewPwd() {
+    const current = document.getElementById('pwd-current').value;
+    const newPwd = document.getElementById('pwd-new').value;
+    const confirm = document.getElementById('pwd-confirm').value;
+    const alertEl = document.getElementById('changepwd-alert');
+
+    if (current !== ADMIN_PASSWORD) {
+      alertEl.innerHTML = '<div class="alert error">Mot de passe actuel incorrect</div>';
+      return;
+    }
+    if (newPwd.length < 6) {
+      alertEl.innerHTML = '<div class="alert error">Minimum 6 caractères</div>';
+      return;
+    }
+    if (newPwd !== confirm) {
+      alertEl.innerHTML = '<div class="alert error">Les mots de passe ne correspondent pas</div>';
+      return;
+    }
+    ADMIN_PASSWORD = newPwd;
+    localStorage.setItem('admin_pwd', newPwd);
+    alertEl.innerHTML = '<div class="alert success">✓ Mot de passe changé!</div>';
+    setTimeout(() => document.getElementById('changepwd-modal').classList.remove('open'), 1500);
+  }
+
   // LOAD CLIENTS
   async function loadClients() {
     const { data } = await sb.from('businesses').select('*').order('created_at', { ascending: false });
     allClients = data || [];
 
     const today = new Date(); today.setHours(0,0,0,0);
+    const in2days = new Date(today); in2days.setDate(in2days.getDate() + 2);
+
     const total = allClients.length;
     const active = allClients.filter(c => c.is_active && new Date(c.trial_end) >= today).length;
     const expired = allClients.filter(c => new Date(c.trial_end) < today).length;
     const blocked = allClients.filter(c => !c.is_active).length;
+    const expiringSoon = allClients.filter(c => {
+      const te = new Date(c.trial_end);
+      return c.is_active && te >= today && te <= in2days;
+    });
 
     document.getElementById('kpi-total').textContent = total;
     document.getElementById('kpi-active').textContent = active;
     document.getElementById('kpi-expired').textContent = expired;
     document.getElementById('kpi-blocked').textContent = blocked;
+    document.getElementById('kpi-expiring').textContent = expiringSoon.length;
     document.getElementById('clients-count').textContent = total;
+
+    // Alert 2 jours
+    if (expiringSoon.length > 0) {
+      document.getElementById('expiring-alert').style.display = 'block';
+      document.getElementById('expiring-list').innerHTML = expiringSoon.map(c =>
+        `<div style="margin-bottom:0.3rem;">• <strong>${c.name}</strong> (${c.email}) — expire le <strong>${c.trial_end}</strong>
+        <button class="action-btn green" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'starter'}')" style="margin-left:8px;">⏱️ Renouveler</button></div>`
+      ).join('');
+    } else {
+      document.getElementById('expiring-alert').style.display = 'none';
+    }
 
     renderClients(allClients);
   }
@@ -310,6 +397,7 @@
             ? `<button class="action-btn red" onclick="toggleBlock('${c.id}',false)" title="Bloquer">🔒</button>`
             : `<button class="action-btn green" onclick="toggleBlock('${c.id}',true)" title="Débloquer">🔓</button>`
           }
+          <button class="action-btn red" onclick="deleteClient('${c.id}','${c.name}')" title="Supprimer">🗑️</button>
         </span>
       </div>`;
     }).join('');
@@ -381,6 +469,18 @@
     setTimeout(() => el.innerHTML = '', 5000);
   }
 
+  // DELETE CLIENT
+  async function deleteClient(id, name) {
+    if (!confirm(`Supprimer le compte de "${name}"?\nToutes ses données seront perdues.`)) return;
+    // Delete reservations, services, then business
+    await sb.from('reservations').delete().eq('business_id', id);
+    await sb.from('services').delete().eq('business_id', id);
+    const { data: biz } = await sb.from('businesses').select('user_id').eq('id', id).single();
+    await sb.from('businesses').delete().eq('id', id);
+    if (biz?.user_id) await sbAdmin.auth.admin.deleteUser(biz.user_id);
+    await loadClients();
+  }
+
   // TOGGLE BLOCK
   async function toggleBlock(id, active) {
     await sb.from('businesses').update({ is_active: active }).eq('id', id);
@@ -407,6 +507,13 @@
     await sb.from('businesses').update({ trial_end: date, plan, is_active: true }).eq('id', id);
     closeModal();
     await loadClients();
+  }
+
+  function addOneMonth() {
+    const dateInput = document.getElementById('extend-date');
+    const current = dateInput.value ? new Date(dateInput.value) : new Date();
+    current.setMonth(current.getMonth() + 1);
+    dateInput.value = current.toISOString().split('T')[0];
   }
 </script>
 </body>
