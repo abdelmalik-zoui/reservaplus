@@ -811,9 +811,14 @@
       return;
     }
 
+    const btn = document.querySelector('#login-form .btn-submit');
+
     currentUser = data.user;
     await loadBusiness();
-    if (!currentBusiness) return;
+    if (!currentBusiness) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter'; }
+      return;
+    }
     showDashboard();
   }
 
@@ -828,14 +833,15 @@
   async function loadBusiness() {
     console.log('loadBusiness called, user:', currentUser?.email, currentUser?.id);
     // Try by user_id first
-    let { data, error } = await sb.from('businesses').select('*').eq('user_id', currentUser.id).single();
-    console.log('by user_id result:', JSON.stringify(data), JSON.stringify(error));
+    const { data: d1 } = await sb.from('businesses').select('*').eq('user_id', currentUser.id).maybeSingle();
+    let data = d1;
+    console.log('by user_id result:', JSON.stringify(data));
     if (!data) {
-      const res = await sb.from('businesses').select('*').eq('email', currentUser.email).single();
-      console.log('by email result:', JSON.stringify(res.data), JSON.stringify(res.error));
-      if (res.data) {
+      const { data: d2 } = await sb.from('businesses').select('*').eq('email', currentUser.email).maybeSingle();
+      console.log('by email result:', JSON.stringify(d2));
+      if (d2) {
         await sb.from('businesses').update({ user_id: currentUser.id }).eq('email', currentUser.email);
-        data = res.data;
+        data = d2;
       }
     }
     console.log('final data:', JSON.stringify(data));
