@@ -291,7 +291,17 @@
   <div id="success-screen" class="card success-screen">
     <div class="success-icon">✓</div>
     <div class="success-title">Réservation confirmée!</div>
-    <div class="success-sub" id="success-details">Votre rendez-vous a été enregistré. Vous serez contacté pour confirmation.</div>
+    <div class="success-sub" id="success-details">Votre rendez-vous a été enregistré.</div>
+    <button onclick="cancelMyReservation()" style="margin-top:1.5rem;background:none;border:1px solid rgba(248,113,113,0.3);color:#f87171;padding:0.6rem 1.5rem;border-radius:8px;font-size:0.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.background='rgba(248,113,113,0.1)'" onmouseout="this.style.background='none'">
+      Annuler ma réservation
+    </button>
+  </div>
+
+  <!-- CANCELLED -->
+  <div id="cancelled-screen" class="card success-screen" style="display:none">
+    <div class="success-icon" style="border-color:#f87171;background:rgba(248,113,113,0.1);">✗</div>
+    <div class="success-title">Réservation annulée</div>
+    <div class="success-sub">Votre réservation a été annulée avec succès.</div>
   </div>
 
   <footer>Propulsé par <span>ReservaPlus</span></footer>
@@ -307,8 +317,9 @@
   let businessId = null;
   let selectedService = 'Coupe homme';
   let selectedTime = null;
+  let lastReservationId = null;
 
-  const slots = ['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','18:00','19:00','20:00'];
+  const slots = ['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
 
   async function init() {
     const params = new URLSearchParams(window.location.search);
@@ -403,7 +414,7 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Confirmation...';
 
-    const { error } = await sb.from('reservations').insert({
+    const { data: newRes, error } = await sb.from('reservations').insert({
       business_id: businessId,
       client_name: name,
       client_phone: phone,
@@ -411,7 +422,7 @@
       date: date,
       time: selectedTime,
       status: 'en_attente'
-    });
+    }).select().single();
 
     if (error) {
       showAlert('Erreur: ' + error.message);
@@ -419,6 +430,8 @@
       btn.textContent = 'Confirmer la réservation';
       return;
     }
+
+    lastReservationId = newRes.id;
 
     // Show success
     document.getElementById('booking-main').style.display = 'none';
@@ -430,6 +443,14 @@
   function showAlert(msg) {
     const el = document.getElementById('alert-box');
     el.innerHTML = `<div class="alert error">${msg}</div>`;
+  }
+
+  async function cancelMyReservation() {
+    if (!lastReservationId) return;
+    await sb.from('reservations').delete().eq('id', lastReservationId);
+    document.getElementById('success-screen').style.display = 'none';
+    document.getElementById('cancelled-screen').style.display = 'block';
+    lastReservationId = null;
   }
 
   init();
