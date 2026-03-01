@@ -719,6 +719,13 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
   );
 
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = `<div style="padding:0.6rem 1rem;border-radius:8px;font-size:0.83rem;margin-bottom:0.8rem;background:${type==='success'?'rgba(74,222,128,0.1)':'rgba(248,113,113,0.1)'};border:1px solid ${type==='success'?'rgba(74,222,128,0.3)':'rgba(248,113,113,0.3)'};color:${type==='success'?'#4ade80':'#f87171'}">${msg}</div>`;
+    setTimeout(() => el.innerHTML = '', 4000);
+  }
+
   let currentUser = null;
   let currentBusiness = null;
 
