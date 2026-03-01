@@ -382,9 +382,10 @@
   <div class="dash-content">
     <div class="sidebar">
       <button class="nav-item active" onclick="showView('overview', this)">📊 &nbsp;Vue générale</button>
-      <button class="nav-item" onclick="showView('reservations', this)">📅 &nbsp;Réservations</button>
+      <button class="nav-item" onclick="showView('calendrier', this); renderCalendar()">📅 &nbsp;Calendrier</button>
+      <button class="nav-item" onclick="showView('reservations', this)">📋 &nbsp;Réservations</button>
       <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
-      <button class="nav-item" onclick="showView('services', this)">⚙️ &nbsp;Mes services</button>
+      <button class="nav-item" onclick="showView('services', this); loadServices()">⚙️ &nbsp;Mes services</button>
       <button class="nav-item" onclick="showView('my-link', this)">🔗 &nbsp;Mon lien</button>
     </div>
 
@@ -392,22 +393,30 @@
 
       <!-- OVERVIEW -->
       <div id="view-overview" class="view active">
-        <div class="view-title">Tableau de bord</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+          <div class="view-title" style="margin-bottom:0;">Tableau de bord</div>
+          <div style="color:var(--muted);font-size:0.82rem;" id="dash-date"></div>
+        </div>
         <div class="kpi-grid">
           <div class="kpi">
-            <div class="kpi-label">Total réservations</div>
+            <div class="kpi-label">Total</div>
             <div class="kpi-val" id="kpi-total">—</div>
-            <div class="kpi-sub">Toutes les réservations</div>
+            <div class="kpi-sub">Toutes réservations</div>
           </div>
           <div class="kpi">
             <div class="kpi-label">Confirmées</div>
-            <div class="kpi-val" id="kpi-confirmed">—</div>
+            <div class="kpi-val" id="kpi-confirmed" style="color:var(--green)">—</div>
             <div class="kpi-sub" style="color:var(--green);">✓ Confirmées</div>
           </div>
           <div class="kpi">
             <div class="kpi-label">En attente</div>
-            <div class="kpi-val" id="kpi-pending">—</div>
+            <div class="kpi-val" id="kpi-pending" style="color:var(--yellow)">—</div>
             <div class="kpi-sub" style="color:var(--yellow);">⏳ En attente</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Annulées</div>
+            <div class="kpi-val" id="kpi-annule" style="color:var(--red)">—</div>
+            <div class="kpi-sub" style="color:var(--red);">✗ Annulées</div>
           </div>
         </div>
         <div class="view-title" style="font-size:1rem;">Dernières réservations</div>
@@ -416,6 +425,37 @@
             <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
           </div>
           <div class="table-empty">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- CALENDRIER -->
+      <div id="view-calendrier" class="view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+          <div class="view-title" style="margin-bottom:0;">Calendrier</div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <button onclick="changeMonth(-1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:7px;cursor:pointer;font-size:1rem;">‹</button>
+            <span id="cal-month-label" style="font-family:'Syne',sans-serif;font-weight:700;min-width:140px;text-align:center;"></span>
+            <button onclick="changeMonth(1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:7px;cursor:pointer;font-size:1rem;">›</button>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);">
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Lun</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Mar</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Mer</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Jeu</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Ven</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Sam</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Dim</div>
+          </div>
+          <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+        </div>
+        <!-- RDV du jour sélectionné -->
+        <div id="cal-day-reservations" style="margin-top:1.5rem;display:none;">
+          <div class="view-title" style="font-size:1rem;" id="cal-day-title"></div>
+          <div class="table-wrap" id="cal-day-table">
+            <div class="table-head"><span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span></div>
+          </div>
         </div>
       </div>
 
@@ -519,6 +559,31 @@
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:460px;position:relative;">
+    <button onclick="closeEditModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:1.5rem;">✏️ Modifier la réservation</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-group"><label>Nom du client</label><input type="text" id="edit-name" placeholder="Nom du client"></div>
+    <div class="form-group"><label>Téléphone</label><input type="tel" id="edit-phone" placeholder="+212..."></div>
+    <div class="form-group"><label>Service</label><input type="text" id="edit-service" placeholder="Service"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Date</label><input type="date" id="edit-date"></div>
+      <div class="form-group"><label>Heure</label><input type="time" id="edit-time"></div>
+    </div>
+    <div class="form-group">
+      <label>Statut</label>
+      <select id="edit-status" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+        <option value="en_attente">En attente</option>
+        <option value="confirme">Confirmé</option>
+        <option value="annule">Annulé</option>
+      </select>
+    </div>
+    <button class="btn-add" onclick="saveEdit()" style="width:100%;margin-top:0.5rem;">Enregistrer</button>
   </div>
 </div>
 
@@ -640,7 +705,10 @@
     document.getElementById('user-email-display').textContent = currentUser.email;
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('b-date').value = today;
-    document.getElementById('my-link-url').textContent = window.location.href + '?business=' + (currentBusiness?.id || currentUser.id);
+    if (document.getElementById('dash-date')) {
+      document.getElementById('dash-date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    }
+    document.getElementById('my-link-url').textContent = window.location.origin + window.location.pathname.replace('index.html','') + 'booking.html?id=' + (currentBusiness?.id || currentUser.id);
     loadReservations();
     loadServices();
     startRealtime();
@@ -687,11 +755,14 @@
     if (!currentBusiness) return;
     const { data } = await sb.from('reservations').select('*').eq('business_id', currentBusiness.id).order('date', { ascending: false });
     const reservations = data || [];
+    allReservations = reservations;
 
     // KPIs
     document.getElementById('kpi-total').textContent = reservations.length;
     document.getElementById('kpi-confirmed').textContent = reservations.filter(r => r.status === 'confirme').length;
     document.getElementById('kpi-pending').textContent = reservations.filter(r => r.status === 'en_attente').length;
+    if (document.getElementById('kpi-annule'))
+      document.getElementById('kpi-annule').textContent = reservations.filter(r => r.status === 'annule').length;
 
     // Tables
     renderTable('overview-table', reservations.slice(0, 5));
@@ -708,18 +779,20 @@
     const rows = reservations.map(r => {
       const badgeClass = r.status === 'confirme' ? 'badge-green' : r.status === 'annule' ? 'badge-red' : 'badge-yellow';
       const statusLabel = r.status === 'confirme' ? 'Confirmé' : r.status === 'annule' ? 'Annulé' : 'En attente';
+      const rJson = encodeURIComponent(JSON.stringify(r));
       const actions = r.status !== 'confirme'
         ? `<button onclick="changeStatus('${r.id}','confirme')" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:4px;" title="Confirmer">✓</button>`
         : '';
       const cancelBtn = r.status !== 'annule'
         ? `<button onclick="changeStatus('${r.id}','annule')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Annuler">✗</button>`
         : '';
+      const editBtn = `<button onclick="openEditModal(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);color:var(--accent);border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Modifier">✏️</button>`;
       return `<div class="table-row">
         <span>${r.client_name}<br><span style="color:var(--muted);font-size:0.72rem;">${r.client_phone || ''}</span></span>
         <span>${r.service_name || '—'}</span>
         <span>${r.date}</span>
         <span>${r.time?.slice(0,5) || '—'}</span>
-        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}</span>
+        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}${editBtn}</span>
       </div>`;
     }).join('');
     wrap.innerHTML = header + rows;
@@ -764,6 +837,93 @@
   async function changeStatus(id, newStatus) {
     await sb.from('reservations').update({ status: newStatus }).eq('id', id);
     await loadReservations();
+  }
+
+  // ---- EDIT MODAL ----
+  function openEditModal(r) {
+    document.getElementById('edit-id').value = r.id;
+    document.getElementById('edit-name').value = r.client_name || '';
+    document.getElementById('edit-phone').value = r.client_phone || '';
+    document.getElementById('edit-service').value = r.service_name || '';
+    document.getElementById('edit-date').value = r.date || '';
+    document.getElementById('edit-time').value = r.time?.slice(0,5) || '';
+    document.getElementById('edit-status').value = r.status || 'en_attente';
+    document.getElementById('edit-modal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+  }
+
+  async function saveEdit() {
+    const id = document.getElementById('edit-id').value;
+    const updates = {
+      client_name: document.getElementById('edit-name').value.trim(),
+      client_phone: document.getElementById('edit-phone').value.trim(),
+      service_name: document.getElementById('edit-service').value.trim(),
+      date: document.getElementById('edit-date').value,
+      time: document.getElementById('edit-time').value,
+      status: document.getElementById('edit-status').value
+    };
+    await sb.from('reservations').update(updates).eq('id', id);
+    closeEditModal();
+    await loadReservations();
+    renderCalendar();
+  }
+
+  // ---- CALENDAR ----
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let allReservations = [];
+
+  function changeMonth(dir) {
+    calMonth += dir;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
+
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+    const grid = document.getElementById('cal-grid');
+    let html = '';
+
+    for (let i = 0; i < offset; i++) {
+      html += '<div style="padding:0.6rem;min-height:60px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);opacity:0.3;"></div>';
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayRes = allReservations.filter(r => r.date === dateStr);
+      const isToday = dateStr === today;
+      const confirmed = dayRes.filter(r => r.status === 'confirme').length;
+      const pending = dayRes.filter(r => r.status === 'en_attente').length;
+
+      html += `
+        <div onclick="showDayReservations('${dateStr}')" style="padding:0.5rem;min-height:60px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;${isToday ? 'background:rgba(124,106,247,0.08);' : ''}" onmouseover="this.style.background='rgba(124,106,247,0.06)'" onmouseout="this.style.background='${isToday ? 'rgba(124,106,247,0.08)' : 'transparent'}'">
+          <div style="font-size:0.78rem;font-weight:${isToday ? '700' : '400'};color:${isToday ? 'var(--accent)' : 'var(--text)'};margin-bottom:0.3rem;">${d}</div>
+          ${confirmed > 0 ? `<div style="background:rgba(74,222,128,0.15);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.65rem;color:var(--green);margin-bottom:2px;">✓ ${confirmed}</div>` : ''}
+          ${pending > 0 ? `<div style="background:rgba(251,191,36,0.15);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.65rem;color:#fbbf24;">⏳ ${pending}</div>` : ''}
+        </div>`;
+    }
+
+    grid.innerHTML = html;
+  }
+
+  function showDayReservations(dateStr) {
+    const dayRes = allReservations.filter(r => r.date === dateStr);
+    const wrap = document.getElementById('cal-day-reservations');
+    document.getElementById('cal-day-title').textContent = 'Réservations du ' + dateStr;
+    wrap.style.display = 'block';
+    renderTable('cal-day-table', dayRes);
   }
 
   // ---- SERVICES ----
