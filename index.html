@@ -811,35 +811,32 @@
     const reservations = data || [];
     allReservations = reservations;
 
-    // Auto-done: كل reservation وقتها فات بساعة تتبدل done
+    // Auto-done: بعد 2 ساعة من وقت الحجز
     const now = new Date();
     const idsToMarkDone = [];
     for (const r of reservations) {
       if (r.status === 'confirme' || r.status === 'en_attente') {
         const resDateTime = new Date(r.date + 'T' + (r.time || '00:00') + ':00');
-        // نزيدو ساعة للـ duration + offset
-        const doneAt = new Date(resDateTime.getTime() + 60 * 60 * 1000);
+        const doneAt = new Date(resDateTime.getTime() + 2 * 60 * 60 * 1000);
         if (now > doneAt) {
           idsToMarkDone.push(r.id);
           r.status = 'done';
         }
       }
     }
-    // نحدثوهم كلهم مرة وحدة
     if (idsToMarkDone.length > 0) {
       await sb.from('reservations').update({ status: 'done' }).in('id', idsToMarkDone);
     }
 
-    // KPIs — كيحسب كل شي حتى done
-    const active = reservations.filter(r => r.status !== 'done');
-    document.getElementById('kpi-total').textContent = active.length;
-    document.getElementById('kpi-confirmed').textContent = active.filter(r => r.status === 'confirme').length;
-    document.getElementById('kpi-pending').textContent = active.filter(r => r.status === 'en_attente').length;
+    // KPIs — كيحسب كل شي حتى done و annule
+    document.getElementById('kpi-total').textContent = reservations.filter(r => r.status !== 'done').length;
+    document.getElementById('kpi-confirmed').textContent = reservations.filter(r => r.status === 'confirme').length;
+    document.getElementById('kpi-pending').textContent = reservations.filter(r => r.status === 'en_attente').length;
     if (document.getElementById('kpi-annule'))
-      document.getElementById('kpi-annule').textContent = active.filter(r => r.status === 'annule').length;
+      document.getElementById('kpi-annule').textContent = reservations.filter(r => r.status === 'annule').length;
 
-    // Tables — ما تبانش done
-    const visible = reservations.filter(r => r.status !== 'done');
+    // Tables — ما تبانش done و annule
+    const visible = reservations.filter(r => r.status !== 'done' && r.status !== 'annule');
     renderTable('overview-table', visible.slice(0, 5));
     renderTable('all-reservations-table', visible);
   }
