@@ -826,11 +826,14 @@
 
   // ---- BUSINESS ----
   async function loadBusiness() {
+    console.log('loadBusiness called, user:', currentUser?.email, currentUser?.id);
     // Try by user_id first
-    let { data } = await sb.from('businesses').select('*').eq('user_id', currentUser.id).single();
+    let { data, error } = await sb.from('businesses').select('*').eq('user_id', currentUser.id).single();
+    console.log('by user_id:', data, error);
     if (!data) {
       // Fallback: try by email and update user_id
       const res = await sb.from('businesses').select('*').eq('email', currentUser.email).single();
+      console.log('by email:', res.data, res.error);
       if (res.data) {
         await sb.from('businesses').update({ user_id: currentUser.id }).eq('email', currentUser.email);
         data = res.data;
