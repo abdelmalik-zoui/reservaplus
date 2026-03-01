@@ -375,6 +375,7 @@
   <nav class="dash-nav">
     <div class="dash-logo">Reserva<span>Plus</span></div>
     <div class="dash-user">
+      <span id="plan-badge" style="font-size:0.72rem;font-weight:600;border:1px solid;padding:0.2rem 0.7rem;border-radius:100px;margin-right:0.5rem;">Starter</span>
       <span class="user-email" id="user-email-display"></span>
       <button class="btn-logout" onclick="logout()">Déconnexion</button>
     </div>
@@ -383,8 +384,8 @@
   <div class="dash-content">
     <div class="sidebar">
       <button class="nav-item active" onclick="showView('overview', this)">📊 &nbsp;Vue générale</button>
-      <button class="nav-item" onclick="showView('stats', this); loadStats()">📈 &nbsp;Statistiques</button>
-      <button class="nav-item" onclick="showView('calendrier', this); renderCalendar()">📅 &nbsp;Calendrier</button>
+      <button class="nav-item" onclick="if(checkAccess('hasStats')){showView('stats', this); loadStats()}">📈 &nbsp;Statistiques</button>
+      <button class="nav-item" onclick="if(checkAccess('hasCalendar')){showView('calendrier', this); renderCalendar()}">📅 &nbsp;Calendrier</button>
       <button class="nav-item" onclick="showView('reservations', this)">📋 &nbsp;Réservations</button>
       <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
       <button class="nav-item" onclick="showView('services', this); loadServices()">⚙️ &nbsp;Mes services</button>
@@ -787,11 +788,92 @@
     currentBusiness = data;
   }
 
+  // ---- PLANS CONFIG ----
+  const PLANS = {
+    starter: {
+      name: 'Starter',
+      price: 99,
+      maxServices: 2,
+      maxReservations: 50,
+      hasStats: false,
+      hasCalendar: false,
+      hasSupport: false,
+      color: '#7070a0'
+    },
+    pro: {
+      name: 'Pro',
+      price: 249,
+      maxServices: 10,
+      maxReservations: 500,
+      hasStats: true,
+      hasCalendar: true,
+      hasSupport: true,
+      color: '#7c6af7'
+    },
+    business: {
+      name: 'Business',
+      price: 499,
+      maxServices: Infinity,
+      maxReservations: Infinity,
+      hasStats: true,
+      hasCalendar: true,
+      hasSupport: true,
+      color: '#f7706a'
+    }
+  };
+
+  function getPlan() {
+    return PLANS[currentBusiness?.plan || 'starter'];
+  }
+
+  function checkAccess(feature) {
+    const plan = getPlan();
+    if (!plan[feature]) {
+      showUpgradeModal(feature);
+      return false;
+    }
+    return true;
+  }
+
+  function showUpgradeModal(feature) {
+    const plan = getPlan();
+    const needed = feature === 'hasStats' || feature === 'hasCalendar' ? 'Pro (249 MAD)' : 'Pro (249 MAD)';
+    const msg = `Cette fonctionnalité n'est pas disponible dans votre plan ${plan.name}.\n\nUpgradez vers ${needed} pour y accéder.`;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;';
+    modal.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:380px;width:100%;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:1rem;">🔒</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0.8rem;">Fonctionnalité Premium</div>
+        <div style="color:var(--muted);font-size:0.85rem;line-height:1.6;margin-bottom:1.5rem;">Cette fonctionnalité n'est pas disponible dans le plan <strong style="color:var(--text)">${plan.name}</strong>. Upgradez pour y accéder.</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.5rem;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.3rem;">Plan Pro — 249 MAD/mois</div>
+          <div style="color:var(--muted);font-size:0.8rem;">Statistiques · Calendrier · Support · 10 services</div>
+        </div>
+        <div style="display:flex;gap:0.8rem;">
+          <button onclick="this.closest('div[style*=fixed]').remove()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);padding:0.7rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;">Fermer</button>
+          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20upgrader%20mon%20plan%20ReservaPlus." target="_blank" style="flex:1;background:var(--accent);color:white;padding:0.7rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:0.88rem;">💬 Upgrader</a>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
+
   // ---- SHOW DASHBOARD ----
   function showDashboard() {
     document.getElementById('auth-page').classList.remove('active');
     document.getElementById('dashboard-page').classList.add('active');
+    const plan = getPlan();
     document.getElementById('user-email-display').textContent = currentUser.email;
+    // Plan badge
+    const planBadge = document.getElementById('plan-badge');
+    if (planBadge) {
+      planBadge.textContent = plan.name;
+      planBadge.style.color = plan.color;
+      planBadge.style.borderColor = plan.color;
+    }
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('b-date').value = today;
     if (document.getElementById('dash-date')) {
@@ -1194,6 +1276,13 @@
     if (!name) return showAlert('service-alert', 'Le nom est obligatoire.', 'error');
     if (!duration || duration < 5) return showAlert('service-alert', 'Durée invalide.', 'error');
     if (isNaN(price) || price < 0) return showAlert('service-alert', 'Prix invalide.', 'error');
+
+    // Check plan limit
+    const plan = getPlan();
+    const { count } = await sb.from('services').select('*', { count: 'exact', head: true }).eq('business_id', currentBusiness.id);
+    if (count >= plan.maxServices) {
+      return showUpgradeModal('maxServices');
+    }
 
     const btn = document.querySelector('#view-services .btn-add');
     btn.disabled = true; btn.textContent = 'Ajout...';
