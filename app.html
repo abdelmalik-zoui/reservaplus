@@ -1390,4 +1390,10 @@
     btn.textContent = '✓ Copié!';
     setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
   }
-  function shareWhatsApp
+  function shareWhatsApp() {
+    const link = document.getElementById("my-link-url").textContent;
+    window.open("https://wa.me/?text=" + encodeURIComponent("Réservez votre rendez-vous ici: " + link));
+  }
+</script>
+</body>
+</html>
