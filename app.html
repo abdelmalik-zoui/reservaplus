@@ -744,6 +744,19 @@
     }
   }
 
+  // Auto restore session on page load
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      if (!currentBusiness) {
+        await loadBusiness();
+        showDashboard();
+      }
+    }
+  });
+
+  checkSession();
+
   // ---- AUTH FUNCTIONS ----
   function switchTab(tab) {
     document.querySelectorAll('.auth-tab').forEach((t, i) => {
