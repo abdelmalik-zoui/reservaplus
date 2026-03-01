@@ -577,7 +577,25 @@
 
   // ---- BUSINESS ----
   async function loadBusiness() {
-    const { data } = await sb.from('businesses').select('*').eq('email', currentUser.email).single();
+    // Try by user_id first
+    let { data } = await sb.from('businesses').select('*').eq('user_id', currentUser.id).single();
+    if (!data) {
+      // Fallback: try by email and update user_id
+      const res = await sb.from('businesses').select('*').eq('email', currentUser.email).single();
+      if (res.data) {
+        await sb.from('businesses').update({ user_id: currentUser.id }).eq('email', currentUser.email);
+        data = res.data;
+      }
+    }
+    if (!data) {
+      // Create business if not exists
+      const { data: newBiz } = await sb.from('businesses').insert({
+        name: currentUser.email,
+        email: currentUser.email,
+        user_id: currentUser.id
+      }).select().single();
+      data = newBiz;
+    }
     currentBusiness = data;
   }
 
