@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Réservation — ReservaPlus</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c6af7;
+    --text: #f0f0f5;
+    --muted: #7070a0;
+    --card: #13131c;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,106,247,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .booking-wrap {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--muted);
+  }
+  .logo span { color: var(--accent); }
+
+  .business-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .business-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .business-sub { color: var(--muted); font-size: 0.88rem; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .step-label {
+    font-size: 0.72rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  /* SERVICES */
+  .services-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+  }
+  .service-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .service-item:hover { border-color: rgba(124,106,247,0.4); }
+  .service-item.selected { border-color: var(--accent); background: rgba(124,106,247,0.08); }
+  .service-name { font-weight: 500; font-size: 0.87rem; margin-bottom: 0.3rem; }
+  .service-meta { color: var(--muted); font-size: 0.75rem; }
+
+  /* DATE */
+  .date-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.75rem 1rem;
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s;
+  }
+  .date-input:focus { outline: none; border-color: var(--accent); }
+
+  /* TIME SLOTS */
+  .slots-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .slot {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .slot:hover { border-color: var(--accent); }
+  .slot.selected { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .form-group input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.72rem 1rem;
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { outline: none; border-color: var(--accent); }
+
+  .btn-book {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.9rem;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 0.5rem;
+  }
+  .btn-book:hover { background: #6a58e5; transform: translateY(-1px); }
+  .btn-book:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* SUCCESS */
+  .success-screen {
+    text-align: center;
+    padding: 2rem;
+    display: none;
+  }
+  .success-icon {
+    width: 70px; height: 70px;
+    background: rgba(74,222,128,0.1);
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1.5rem;
+  }
+  .success-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .success-sub { color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+
+  /* ALERT */
+  .alert {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  .alert.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--red); display: block; }
+
+  /* LOADING */
+  .loading { text-align: center; padding: 3rem; color: var(--muted); }
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .not-found { text-align: center; padding: 3rem; color: var(--muted); }
+  .not-found h2 { font-family: 'Syne', sans-serif; color: var(--text); margin-bottom: 0.5rem; }
+
+  footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  footer span { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="booking-wrap">
+  <div class="logo">Reserva<span>Plus</span></div>
+
+  <!-- LOADING -->
+  <div id="loading" class="loading">Chargement...</div>
+
+  <!-- NOT FOUND -->
+  <div id="not-found" class="not-found" style="display:none">
+    <h2>Page introuvable</h2>
+    <p>Ce lien de réservation n'est pas valide.</p>
+  </div>
+
+  <!-- BOOKING FORM -->
+  <div id="booking-main" style="display:none">
+    <div class="business-header">
+      <div class="business-name" id="biz-name">—</div>
+      <div class="business-sub">Réservez votre rendez-vous en ligne</div>
+    </div>
+
+    <div id="alert-box"></div>
+
+    <!-- STEP 1: SERVICE -->
+    <div class="card" id="step-service">
+      <div class="step-label">① Choisissez un service</div>
+      <div class="services-grid" id="services-list">
+        <!-- default services si aucun dans DB -->
+        <div class="service-item selected" onclick="selectService(this, 'Coupe homme', 30, 50)">
+          <div class="service-name">Coupe homme</div>
+          <div class="service-meta">30 min · 50 MAD</div>
+        </div>
+        <div class="service-item" onclick="selectService(this, 'Coupe + Barbe', 45, 80)">
+          <div class="service-name">Coupe + Barbe</div>
+          <div class="service-meta">45 min · 80 MAD</div>
+        </div>
+        <div class="service-item" onclick="selectService(this, 'Barbe seule', 20, 30)">
+          <div class="service-name">Barbe seule</div>
+          <div class="service-meta">20 min · 30 MAD</div>
+        </div>
+        <div class="service-item" onclick="selectService(this, 'Soin visage', 60, 120)">
+          <div class="service-name">Soin visage</div>
+          <div class="service-meta">60 min · 120 MAD</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: DATE & TIME -->
+    <div class="card">
+      <div class="step-label">② Choisissez une date</div>
+      <input type="date" class="date-input" id="booking-date" onchange="updateSlots()">
+      <div style="margin-top:1.2rem;">
+        <div class="step-label">③ Choisissez un créneau</div>
+        <div class="slots-grid" id="slots-grid"></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: INFO CLIENT -->
+    <div class="card">
+      <div class="step-label">④ Vos informations</div>
+      <div class="form-group">
+        <label>Nom complet</label>
+        <input type="text" id="client-name" placeholder="Ex: Youssef Alami">
+      </div>
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input type="tel" id="client-phone" placeholder="+212 6XX XXX XXX">
+      </div>
+      <button class="btn-book" id="btn-book" onclick="confirmBooking()">Confirmer la réservation</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="success-screen" class="card success-screen">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Réservation confirmée!</div>
+    <div class="success-sub" id="success-details">Votre rendez-vous a été enregistré. Vous serez contacté pour confirmation.</div>
+  </div>
+
+  <footer>Propulsé par <span>ReservaPlus</span></footer>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(
+    'https://lnpssiouhfkaqapmxqxe.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxucHNzaW91aGZrYXFhcG14cXhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMTk2NDIsImV4cCI6MjA4Nzg5NTY0Mn0.Q25A7bEJ4XaRxwMtIsOrJ0MREDsOnChzajpreoiya-M'
+  );
+
+  let businessId = null;
+  let selectedService = 'Coupe homme';
+  let selectedTime = null;
+
+  const slots = ['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
+
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    businessId = params.get('id') || params.get('business');
+
+    if (!businessId) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('not-found').style.display = 'block';
+      return;
+    }
+
+    // Load business info
+    const { data: biz } = await sb.from('businesses').select('*').eq('id', businessId).single();
+
+    document.getElementById('loading').style.display = 'none';
+
+    if (!biz) {
+      document.getElementById('not-found').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('biz-name').textContent = biz.name;
+    document.title = biz.name + ' — Réservation';
+
+    // Load services if exist
+    const { data: services } = await sb.from('services').select('*').eq('business_id', businessId);
+    if (services && services.length > 0) {
+      const grid = document.getElementById('services-list');
+      grid.innerHTML = services.map((s, i) => `
+        <div class="service-item ${i === 0 ? 'selected' : ''}" onclick="selectService(this, '${s.name}', ${s.duration}, ${s.price})">
+          <div class="service-name">${s.name}</div>
+          <div class="service-meta">${s.duration} min · ${s.price} MAD</div>
+        </div>
+      `).join('');
+      selectedService = services[0].name;
+    }
+
+    // Set default date = today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('booking-date').value = today;
+    document.getElementById('booking-date').min = today;
+    updateSlots();
+
+    document.getElementById('booking-main').style.display = 'block';
+  }
+
+  function selectService(el, name) {
+    document.querySelectorAll('.service-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedService = name;
+  }
+
+  function updateSlots() {
+    selectedTime = null;
+    const grid = document.getElementById('slots-grid');
+    grid.innerHTML = slots.map(s => `
+      <div class="slot" onclick="selectSlot(this, '${s}')">${s}</div>
+    `).join('');
+  }
+
+  function selectSlot(el, time) {
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTime = time;
+  }
+
+  async function confirmBooking() {
+    const name = document.getElementById('client-name').value.trim();
+    const phone = document.getElementById('client-phone').value.trim();
+    const date = document.getElementById('booking-date').value;
+
+    if (!name) return showAlert('Veuillez entrer votre nom.');
+    if (!selectedTime) return showAlert('Veuillez choisir un créneau.');
+    if (!date) return showAlert('Veuillez choisir une date.');
+
+    const btn = document.getElementById('btn-book');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Confirmation...';
+
+    const { error } = await sb.from('reservations').insert({
+      business_id: businessId,
+      client_name: name,
+      client_phone: phone,
+      service_name: selectedService,
+      date: date,
+      time: selectedTime,
+      status: 'en_attente'
+    });
+
+    if (error) {
+      showAlert('Erreur: ' + error.message);
+      btn.disabled = false;
+      btn.textContent = 'Confirmer la réservation';
+      return;
+    }
+
+    // Show success
+    document.getElementById('booking-main').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+    document.getElementById('success-details').textContent =
+      `Merci ${name}! Votre rendez-vous pour "${selectedService}" le ${date} à ${selectedTime} a été enregistré.`;
+  }
+
+  function showAlert(msg) {
+    const el = document.getElementById('alert-box');
+    el.innerHTML = `<div class="alert error">${msg}</div>`;
+  }
+
+  init();
+</script>
+</body>
+</html>
