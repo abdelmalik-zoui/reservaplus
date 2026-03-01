@@ -600,11 +600,11 @@
           <div class="form-row">
             <div class="form-group">
               <label>Heure d'ouverture</label>
-              <input type="time" id="biz-opening" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+              <input type="text" id="biz-opening" placeholder="Ex: 09:00" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
             </div>
             <div class="form-group">
               <label>Heure de fermeture</label>
-              <input type="time" id="biz-closing" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+              <input type="text" id="biz-closing" placeholder="Ex: 20:00" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
             </div>
           </div>
           <div class="form-group">
@@ -1095,6 +1095,7 @@
     if (!currentBusiness) return;
 
     const endDate = new Date();
+    endDate.setDate(endDate.getDate() + statsPeriod); // future too
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - statsPeriod + 1);
     const startStr = startDate.toISOString().split('T')[0];
@@ -1120,22 +1121,24 @@
     document.getElementById('stat-confirmed-pct').textContent = total > 0 ? Math.round(confirmed/total*100) + '% du total' : '0%';
     document.getElementById('stat-annule-pct').textContent = total > 0 ? Math.round(annule/total*100) + '% du total' : '0%';
 
-    // Build day-by-day data
+    // Build day-by-day data (past + future)
     const days = [];
-    for (let i = statsPeriod - 1; i >= 0; i--) {
+    for (let i = statsPeriod - 1; i >= -statsPeriod; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
       const dayRes = reservations.filter(r => r.date === dateStr);
-      days.push({
-        date: dateStr,
-        label: d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}),
-        total: dayRes.length,
-        confirmed: dayRes.filter(r => r.status === 'confirme').length,
-        pending: dayRes.filter(r => r.status === 'en_attente').length,
-        annule: dayRes.filter(r => r.status === 'annule').length,
-        done: dayRes.filter(r => r.status === 'done').length,
-      });
+      if (dayRes.length > 0 || i >= 0) {
+        days.push({
+          date: dateStr,
+          label: d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}),
+          total: dayRes.length,
+          confirmed: dayRes.filter(r => r.status === 'confirme').length,
+          pending: dayRes.filter(r => r.status === 'en_attente').length,
+          annule: dayRes.filter(r => r.status === 'annule').length,
+          done: dayRes.filter(r => r.status === 'done').length,
+        });
+      }
     }
 
     // Bar chart
