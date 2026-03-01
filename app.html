@@ -486,6 +486,11 @@
             <div class="kpi-val" id="stat-annule" style="color:var(--red)">—</div>
             <div class="kpi-sub" id="stat-annule-pct" style="color:var(--red);">—</div>
           </div>
+          <div class="kpi">
+            <div class="kpi-label">Terminées</div>
+            <div class="kpi-val" id="stat-done" style="color:#a78bfa">—</div>
+            <div class="kpi-sub" id="stat-done-pct" style="color:#a78bfa;">—</div>
+          </div>
         </div>
 
         <!-- GRAPHIQUE PAR JOUR -->
@@ -1125,8 +1130,10 @@
     document.getElementById('stat-confirmed').textContent = confirmed;
     document.getElementById('stat-pending').textContent = pending;
     document.getElementById('stat-annule').textContent = annule;
+    document.getElementById('stat-done').textContent = done;
     document.getElementById('stat-confirmed-pct').textContent = total > 0 ? Math.round(confirmed/total*100) + '% du total' : '0%';
     document.getElementById('stat-annule-pct').textContent = total > 0 ? Math.round(annule/total*100) + '% du total' : '0%';
+    document.getElementById('stat-done-pct').textContent = total > 0 ? Math.round(done/total*100) + '% du total' : '0%';
 
     // Build day-by-day data (past + future)
     const days = [];
