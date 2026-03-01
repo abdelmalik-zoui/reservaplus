@@ -1362,4 +1362,8 @@
   }
   function shareWhatsApp() {
     const link = document.getElementById('my-link-url').textContent;
-    window.open('https://wa.me/?text=Réservez votre rendez-vous ici: ' + encode
+    window.open('https://wa.me/?text=Réservez votre rendez-vous ici: ' + encodeURIComponent(link));
+  }
+</script>
+</body>
+</html>
