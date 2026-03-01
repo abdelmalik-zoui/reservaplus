@@ -242,23 +242,7 @@
     <div class="card" id="step-service">
       <div class="step-label">① Choisissez un service</div>
       <div class="services-grid" id="services-list">
-        <!-- default services si aucun dans DB -->
-        <div class="service-item selected" onclick="selectService(this, 'Coupe homme', 30, 50)">
-          <div class="service-name">Coupe homme</div>
-          <div class="service-meta">30 min · 50 MAD</div>
-        </div>
-        <div class="service-item" onclick="selectService(this, 'Coupe + Barbe', 45, 80)">
-          <div class="service-name">Coupe + Barbe</div>
-          <div class="service-meta">45 min · 80 MAD</div>
-        </div>
-        <div class="service-item" onclick="selectService(this, 'Barbe seule', 20, 30)">
-          <div class="service-name">Barbe seule</div>
-          <div class="service-meta">20 min · 30 MAD</div>
-        </div>
-        <div class="service-item" onclick="selectService(this, 'Soin visage', 60, 120)">
-          <div class="service-name">Soin visage</div>
-          <div class="service-meta">60 min · 120 MAD</div>
-        </div>
+        <div style="color:var(--muted);font-size:0.85rem;grid-column:span 2;padding:0.5rem;">Chargement des services...</div>
       </div>
     </div>
 
@@ -368,10 +352,10 @@
     if (biz.closing_time) bizClosingTime = biz.closing_time.slice(0,5);
     if (biz.slot_duration) bizSlotDuration = biz.slot_duration;
 
-    // Load services if exist
+    // Load services
     const { data: services } = await sb.from('services').select('*').eq('business_id', businessId);
+    const grid = document.getElementById('services-list');
     if (services && services.length > 0) {
-      const grid = document.getElementById('services-list');
       grid.innerHTML = services.map((s, i) => `
         <div class="service-item ${i === 0 ? 'selected' : ''}" onclick="selectService(this, '${s.name}', ${s.duration}, ${s.price})">
           <div class="service-name">${s.name}</div>
@@ -379,6 +363,8 @@
         </div>
       `).join('');
       selectedService = services[0].name;
+    } else {
+      grid.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;grid-column:span 2;padding:0.5rem;">Aucun service disponible pour le moment.</div>';
     }
 
     // Set default date = today
