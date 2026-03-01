@@ -370,7 +370,23 @@
   </div>
 </div>
 
-<!-- ===== DASHBOARD PAGE ===== -->
+<!-- BLOCKED PAGE -->
+<div id="blocked-page" class="page" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;">
+  <div style="text-align:center;max-width:440px;">
+    <div style="font-size:3.5rem;margin-bottom:1.5rem;">🔒</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;letter-spacing:-0.03em;margin-bottom:0.8rem;">Période d'essai terminée</div>
+    <div style="color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:2rem;">Votre période d'essai gratuite de 14 jours est terminée. Contactez-nous pour continuer à utiliser ReservaPlus.</div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20mon%20abonnement%20ReservaPlus." target="_blank" style="background:#4ade80;color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;">💬 WhatsApp</a>
+      <a href="mailto:contact@reservaplus.ma?subject=Activation%20abonnement" style="background:var(--accent);color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;">✉️ Email</a>
+    </div>
+    <div style="margin-top:1.5rem;">
+      <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:0.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Se déconnecter</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD PAGE -->
 <div id="dashboard-page" class="page">
   <nav class="dash-nav">
     <div class="dash-logo">Reserva<span>Plus</span></div>
@@ -786,6 +802,16 @@
       data = newBiz;
     }
     currentBusiness = data;
+
+    // Check trial
+    const trialEnd = new Date(data.trial_end);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    if (trialEnd < today && data.is_active !== false) {
+      await sb.from('businesses').update({ is_active: false }).eq('id', data.id);
+      data.is_active = false;
+    }
+    currentBusiness = data;
   }
 
   // ---- PLANS CONFIG ----
@@ -863,6 +889,13 @@
 
   // ---- SHOW DASHBOARD ----
   function showDashboard() {
+    // Check if blocked
+    if (currentBusiness?.is_active === false) {
+      document.getElementById('auth-page').classList.remove('active');
+      document.getElementById('blocked-page').style.display = 'flex';
+      return;
+    }
+    document.getElementById('blocked-page').style.display = 'none';
     document.getElementById('auth-page').classList.remove('active');
     document.getElementById('dashboard-page').classList.add('active');
     const plan = getPlan();
