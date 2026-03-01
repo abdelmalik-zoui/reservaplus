@@ -389,9 +389,15 @@
 
     grid.innerHTML = slots.map(s => {
       const occupied = occupiedTimes.includes(s);
-      return occupied
-        ? `<div class="slot occupied" title="Créneau occupé">${s}</div>`
-        : `<div class="slot" onclick="selectSlot(this, '${s}')">${s}</div>`;
+      // نشوفو إلا الوقت فات
+      const [h, m] = s.split(':').map(Number);
+      const slotDateTime = new Date(date + 'T' + s + ':00');
+      const isPast = slotDateTime < new Date();
+      
+      if (occupied || isPast) {
+        return `<div class="slot occupied" title="${isPast ? 'Créneau passé' : 'Créneau occupé'}">${s}</div>`;
+      }
+      return `<div class="slot" onclick="selectSlot(this, '${s}')">${s}</div>`;
     }).join('');
   }
 
