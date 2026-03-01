@@ -215,6 +215,25 @@
   </div>
 </div>
 
+<!-- RESET PASSWORD MODAL -->
+<div class="modal" id="resetpwd-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="document.getElementById('resetpwd-modal').classList.remove('open')">✕</button>
+    <div class="modal-title">🔄 Réinitialiser mot de passe</div>
+    <input type="hidden" id="resetpwd-id">
+    <div class="form-group" style="margin-bottom:0.8rem;">
+      <label>Client</label>
+      <input type="text" id="resetpwd-name" readonly style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div id="resetpwd-alert" style="margin-bottom:0.5rem;"></div>
+    <div class="form-group" style="margin-bottom:1.2rem;">
+      <label>Nouveau mot de passe</label>
+      <input type="text" id="resetpwd-new" placeholder="Minimum 6 caractères" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <button class="btn-add" onclick="saveResetPwd()" style="width:100%;">Enregistrer</button>
+  </div>
+</div>
+
 <!-- CHANGE PASSWORD MODAL -->
 <div class="modal" id="changepwd-modal">
   <div class="modal-card">
@@ -392,6 +411,7 @@
         <span><span class="badge" style="background:rgba(124,106,247,0.1);color:${planColor}">${(c.plan || 'starter').toUpperCase()}</span></span>
         <span>${statusBadge}</span>
         <span>
+          <button class="action-btn" onclick="openResetPwd('${c.user_id}','${c.name}')" title="Reset mot de passe">🔄</button>
           <button class="action-btn green" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'starter'}')" title="Prolonger">⏱️</button>
           ${c.is_active
             ? `<button class="action-btn red" onclick="toggleBlock('${c.id}',false)" title="Bloquer">🔒</button>`
@@ -467,6 +487,31 @@
     const el = document.getElementById('add-alert');
     el.innerHTML = `<div class="alert ${type}">${msg}</div>`;
     setTimeout(() => el.innerHTML = '', 5000);
+  }
+
+  // RESET PASSWORD DIRECT
+  function openResetPwd(userId, name) {
+    document.getElementById('resetpwd-id').value = userId;
+    document.getElementById('resetpwd-name').value = name;
+    document.getElementById('resetpwd-new').value = '';
+    document.getElementById('resetpwd-alert').innerHTML = '';
+    document.getElementById('resetpwd-modal').classList.add('open');
+  }
+
+  async function saveResetPwd() {
+    const userId = document.getElementById('resetpwd-id').value;
+    const newPwd = document.getElementById('resetpwd-new').value;
+    if (newPwd.length < 6) {
+      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert error">Minimum 6 caractères</div>';
+      return;
+    }
+    const { error } = await sbAdmin.auth.admin.updateUserById(userId, { password: newPwd });
+    if (error) {
+      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert error">Erreur: ' + error.message + '</div>';
+    } else {
+      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert success">✓ Mot de passe changé!</div>';
+      setTimeout(() => document.getElementById('resetpwd-modal').classList.remove('open'), 1500);
+    }
   }
 
   // DELETE CLIENT
