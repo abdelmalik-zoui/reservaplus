@@ -318,8 +318,27 @@
   let selectedService = 'Coupe homme';
   let selectedTime = null;
   let lastReservationId = null;
+  let bizOpeningTime = null;
+  let bizClosingTime = null;
+  let bizSlotDuration = 30;
 
   const slots = ['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
+
+  function generateSlots() {
+    if (!bizOpeningTime || !bizClosingTime) return slots;
+    const result = [];
+    const [oh, om] = bizOpeningTime.split(':').map(Number);
+    const [ch, cm] = bizClosingTime.split(':').map(Number);
+    let current = oh * 60 + om;
+    const end = ch * 60 + cm;
+    while (current < end) {
+      const h = String(Math.floor(current / 60)).padStart(2, '0');
+      const m = String(current % 60).padStart(2, '0');
+      result.push(`${h}:${m}`);
+      current += bizSlotDuration;
+    }
+    return result;
+  }
 
   async function init() {
     const params = new URLSearchParams(window.location.search);
@@ -343,6 +362,11 @@
 
     document.getElementById('biz-name').textContent = biz.name;
     document.title = biz.name + ' — Réservation';
+
+    // Load business hours
+    if (biz.opening_time) bizOpeningTime = biz.opening_time.slice(0,5);
+    if (biz.closing_time) bizClosingTime = biz.closing_time.slice(0,5);
+    if (biz.slot_duration) bizSlotDuration = biz.slot_duration;
 
     // Load services if exist
     const { data: services } = await sb.from('services').select('*').eq('business_id', businessId);
@@ -387,7 +411,8 @@
 
     const occupiedTimes = (reservations || []).map(r => r.time.slice(0, 5));
 
-    grid.innerHTML = slots.map(s => {
+    const activeSlots = generateSlots();
+    grid.innerHTML = activeSlots.map(s => {
       const occupied = occupiedTimes.includes(s);
       // نشوفو إلا الوقت فات
       const [h, m] = s.split(':').map(Number);
