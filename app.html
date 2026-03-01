@@ -375,10 +375,10 @@
   <div style="text-align:center;max-width:440px;">
     <div style="font-size:3.5rem;margin-bottom:1.5rem;">🔒</div>
     <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;letter-spacing:-0.03em;margin-bottom:0.8rem;">Période d'essai terminée</div>
-    <div style="color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:2rem;">Votre période d'essai gratuite est terminée. Contactez-nous pour continuer à utiliser ReservaPlus.</div>
+    <div style="color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:2rem;">Votre période d'essai gratuite de 14 jours est terminée. Contactez-nous pour continuer à utiliser ReservaPlus.</div>
     <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
       <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20mon%20abonnement%20ReservaPlus." target="_blank" style="background:#4ade80;color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;">💬 WhatsApp</a>
-      <a onclick="window.location='mai'+'lto:abdlmalkezouiten79@gma'+'il.com?subject=Activation%20abonnement%20ReservaPlus'" style="background:var(--accent);color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;cursor:pointer;">✉️ abdlmalkezouiten79@gmail.com</a>
+      <a onclick="window.location='mai'+'lto:abdlmalkezouiten79@gma'+'il.com?subject=Activation%20abonnement%20ReservaPlus'" style="background:var(--accent);color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;cursor:pointer;">✉️ <span class="__cf_email__" data-cfemail="cdacafa9a1a0aca1a6a8b7a2b8a4b9a8a3faf48daaa0aca4a1e3aea2a0">[email&#160;protected]</span></a>
     </div>
     <div style="margin-top:1.5rem;">
       <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:0.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Se déconnecter</button>
@@ -711,7 +711,7 @@
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // ---- SUPABASE INIT ----
   const { createClient } = supabase;
   const sb = createClient(
@@ -930,7 +930,7 @@
     if (document.getElementById('dash-date')) {
       document.getElementById('dash-date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     }
-    document.getElementById('my-link-url').textContent = window.location.origin + window.location.pathname.replace('index.html','') + 'booking.html?id=' + (currentBusiness?.id || currentUser.id);
+    document.getElementById('my-link-url').textContent = window.location.origin + '/booking.html?id=' + (currentBusiness?.id || currentUser.id);
     loadReservations();
     loadServices();
     startRealtime();
@@ -1390,10 +1390,4 @@
     btn.textContent = '✓ Copié!';
     setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
   }
-  function shareWhatsApp() {
-    const link = document.getElementById("my-link-url").textContent;
-    window.open("https://wa.me/?text=" + encodeURIComponent("Réservez votre rendez-vous ici: " + link));
-  }
-</script>
-</body>
-</html>
+  function shareWhatsApp
