@@ -829,16 +829,16 @@
     console.log('loadBusiness called, user:', currentUser?.email, currentUser?.id);
     // Try by user_id first
     let { data, error } = await sb.from('businesses').select('*').eq('user_id', currentUser.id).single();
-    console.log('by user_id:', data, error);
+    console.log('by user_id result:', JSON.stringify(data), JSON.stringify(error));
     if (!data) {
-      // Fallback: try by email and update user_id
       const res = await sb.from('businesses').select('*').eq('email', currentUser.email).single();
-      console.log('by email:', res.data, res.error);
+      console.log('by email result:', JSON.stringify(res.data), JSON.stringify(res.error));
       if (res.data) {
         await sb.from('businesses').update({ user_id: currentUser.id }).eq('email', currentUser.email);
         data = res.data;
       }
     }
+    console.log('final data:', JSON.stringify(data));
     if (!data) {
       // No business found — show error
       await sb.auth.signOut();
