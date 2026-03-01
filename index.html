@@ -813,15 +813,21 @@
 
     // Auto-done: كل reservation وقتها فات بساعة تتبدل done
     const now = new Date();
+    const idsToMarkDone = [];
     for (const r of reservations) {
       if (r.status === 'confirme' || r.status === 'en_attente') {
-        const resDateTime = new Date(r.date + 'T' + (r.time || '00:00'));
-        resDateTime.setHours(resDateTime.getHours() + 1);
-        if (now > resDateTime) {
-          await sb.from('reservations').update({ status: 'done' }).eq('id', r.id);
+        const resDateTime = new Date(r.date + 'T' + (r.time || '00:00') + ':00');
+        // نزيدو ساعة للـ duration + offset
+        const doneAt = new Date(resDateTime.getTime() + 60 * 60 * 1000);
+        if (now > doneAt) {
+          idsToMarkDone.push(r.id);
           r.status = 'done';
         }
       }
+    }
+    // نحدثوهم كلهم مرة وحدة
+    if (idsToMarkDone.length > 0) {
+      await sb.from('reservations').update({ status: 'done' }).in('id', idsToMarkDone);
     }
 
     // KPIs — كيحسب كل شي حتى done
