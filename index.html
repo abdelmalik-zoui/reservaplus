@@ -636,12 +636,18 @@
     const rows = reservations.map(r => {
       const badgeClass = r.status === 'confirme' ? 'badge-green' : r.status === 'annule' ? 'badge-red' : 'badge-yellow';
       const statusLabel = r.status === 'confirme' ? 'Confirmé' : r.status === 'annule' ? 'Annulé' : 'En attente';
+      const actions = r.status !== 'confirme'
+        ? `<button onclick="changeStatus('${r.id}','confirme')" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:4px;" title="Confirmer">✓</button>`
+        : '';
+      const cancelBtn = r.status !== 'annule'
+        ? `<button onclick="changeStatus('${r.id}','annule')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Annuler">✗</button>`
+        : '';
       return `<div class="table-row">
-        <span>${r.client_name}</span>
+        <span>${r.client_name}<br><span style="color:var(--muted);font-size:0.72rem;">${r.client_phone || ''}</span></span>
         <span>${r.service_name || '—'}</span>
         <span>${r.date}</span>
         <span>${r.time?.slice(0,5) || '—'}</span>
-        <span><span class="badge ${badgeClass}">${statusLabel}</span></span>
+        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}</span>
       </div>`;
     }).join('');
     wrap.innerHTML = header + rows;
@@ -680,6 +686,12 @@
     }
 
     btn.disabled = false; btn.textContent = 'Ajouter le rendez-vous';
+  }
+
+  // ---- CHANGE STATUS ----
+  async function changeStatus(id, newStatus) {
+    await sb.from('reservations').update({ status: newStatus }).eq('id', id);
+    await loadReservations();
   }
 
   // ---- NAVIGATION ----
