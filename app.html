@@ -836,13 +836,10 @@
       }
     }
     if (!data) {
-      // Create business if not exists
-      const { data: newBiz } = await sb.from('businesses').insert({
-        name: currentUser.email,
-        email: currentUser.email,
-        user_id: currentUser.id
-      }).select().single();
-      data = newBiz;
+      // No business found — show error
+      await sb.auth.signOut();
+      showAlert('auth-alert', 'Compte non configuré. Contactez le support.', 'error');
+      return;
     }
     currentBusiness = data;
 
