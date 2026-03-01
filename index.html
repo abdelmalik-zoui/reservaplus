@@ -382,6 +382,7 @@
   <div class="dash-content">
     <div class="sidebar">
       <button class="nav-item active" onclick="showView('overview', this)">📊 &nbsp;Vue générale</button>
+      <button class="nav-item" onclick="showView('stats', this); loadStats()">📈 &nbsp;Statistiques</button>
       <button class="nav-item" onclick="showView('calendrier', this); renderCalendar()">📅 &nbsp;Calendrier</button>
       <button class="nav-item" onclick="showView('reservations', this)">📋 &nbsp;Réservations</button>
       <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
@@ -425,6 +426,58 @@
             <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
           </div>
           <div class="table-empty">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div id="view-stats" class="view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <div class="view-title" style="margin-bottom:0;">📈 Statistiques</div>
+          <div style="display:flex;gap:0.5rem;">
+            <button onclick="setStatsPeriod(7,this)" class="stat-period-btn active-period" style="background:var(--accent);border:1px solid var(--accent);color:white;padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">7 jours</button>
+            <button onclick="setStatsPeriod(30,this)" class="stat-period-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">30 jours</button>
+            <button onclick="setStatsPeriod(90,this)" class="stat-period-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">90 jours</button>
+          </div>
+        </div>
+
+        <!-- KPIs période -->
+        <div class="kpi-grid" style="margin-bottom:2rem;">
+          <div class="kpi">
+            <div class="kpi-label">Total période</div>
+            <div class="kpi-val" id="stat-total">—</div>
+            <div class="kpi-sub">Réservations reçues</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Confirmées</div>
+            <div class="kpi-val" id="stat-confirmed" style="color:var(--green)">—</div>
+            <div class="kpi-sub" id="stat-confirmed-pct" style="color:var(--green);">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">En attente</div>
+            <div class="kpi-val" id="stat-pending" style="color:var(--yellow)">—</div>
+            <div class="kpi-sub" style="color:var(--yellow);">En attente</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Annulées</div>
+            <div class="kpi-val" id="stat-annule" style="color:var(--red)">—</div>
+            <div class="kpi-sub" id="stat-annule-pct" style="color:var(--red);">—</div>
+          </div>
+        </div>
+
+        <!-- GRAPHIQUE PAR JOUR -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:1.2rem;">Réservations par jour</div>
+          <div id="bar-chart" style="display:flex;align-items:flex-end;gap:4px;height:120px;overflow-x:auto;padding-bottom:0.5rem;"></div>
+          <div id="bar-labels" style="display:flex;gap:4px;margin-top:0.3rem;overflow-x:auto;"></div>
+        </div>
+
+        <!-- TABLEAU PAR JOUR -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:0.92rem;">Détail par jour</div>
+          <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;padding:0.6rem 1.2rem;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">
+            <span>DATE</span><span>TOTAL</span><span style="color:var(--green)">CONFIRMÉES</span><span style="color:var(--yellow)">EN ATTENTE</span><span style="color:var(--red)">ANNULÉES</span>
+          </div>
+          <div id="stats-table-body"></div>
         </div>
       </div>
 
@@ -831,6 +884,91 @@
     }
 
     btn.disabled = false; btn.textContent = 'Ajouter le rendez-vous';
+  }
+
+  // ---- STATS ----
+  let statsPeriod = 7;
+
+  function setStatsPeriod(days, btn) {
+    statsPeriod = days;
+    document.querySelectorAll('.stat-period-btn').forEach(b => {
+      b.style.background = 'var(--surface)';
+      b.style.borderColor = 'var(--border)';
+      b.style.color = 'var(--muted)';
+    });
+    btn.style.background = 'var(--accent)';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'white';
+    loadStats();
+  }
+
+  async function loadStats() {
+    if (!currentBusiness) return;
+
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - statsPeriod + 1);
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
+
+    const { data } = await sb.from('reservations')
+      .select('*')
+      .eq('business_id', currentBusiness.id)
+      .gte('date', startStr)
+      .lte('date', endStr);
+
+    const reservations = data || [];
+    const total = reservations.length;
+    const confirmed = reservations.filter(r => r.status === 'confirme').length;
+    const pending = reservations.filter(r => r.status === 'en_attente').length;
+    const annule = reservations.filter(r => r.status === 'annule').length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-confirmed').textContent = confirmed;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-annule').textContent = annule;
+    document.getElementById('stat-confirmed-pct').textContent = total > 0 ? Math.round(confirmed/total*100) + '% du total' : '0%';
+    document.getElementById('stat-annule-pct').textContent = total > 0 ? Math.round(annule/total*100) + '% du total' : '0%';
+
+    // Build day-by-day data
+    const days = [];
+    for (let i = statsPeriod - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayRes = reservations.filter(r => r.date === dateStr);
+      days.push({
+        date: dateStr,
+        label: d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}),
+        total: dayRes.length,
+        confirmed: dayRes.filter(r => r.status === 'confirme').length,
+        pending: dayRes.filter(r => r.status === 'en_attente').length,
+        annule: dayRes.filter(r => r.status === 'annule').length,
+      });
+    }
+
+    // Bar chart
+    const maxVal = Math.max(...days.map(d => d.total), 1);
+    document.getElementById('bar-chart').innerHTML = days.map(d => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:24px;">
+        <div style="font-size:0.62rem;color:var(--muted);">${d.total || ''}</div>
+        <div style="width:100%;background:var(--accent);border-radius:4px 4px 0 0;height:${Math.max(d.total/maxVal*100,2)}px;opacity:0.85;min-height:4px;transition:height 0.3s;"></div>
+      </div>
+    `).join('');
+    document.getElementById('bar-labels').innerHTML = days.map(d => `
+      <div style="flex:1;min-width:24px;text-align:center;font-size:0.6rem;color:var(--muted);">${d.label}</div>
+    `).join('');
+
+    // Table
+    document.getElementById('stats-table-body').innerHTML = days.reverse().map(d => `
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;padding:0.7rem 1.2rem;font-size:0.82rem;border-bottom:1px solid rgba(30,30,46,0.5);align-items:center;" onmouseover="this.style.background='rgba(124,106,247,0.04)'" onmouseout="this.style.background='transparent'">
+        <span style="font-weight:500;">${d.date}</span>
+        <span>${d.total}</span>
+        <span style="color:var(--green)">${d.confirmed}</span>
+        <span style="color:var(--yellow)">${d.pending}</span>
+        <span style="color:var(--red)">${d.annule}</span>
+      </div>
+    `).join('') || '<div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:0.85rem;">Aucune donnée pour cette période</div>';
   }
 
   // ---- CHANGE STATUS ----
