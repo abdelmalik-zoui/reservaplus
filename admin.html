@@ -102,6 +102,7 @@
     <div class="login-error" id="login-error">Mot de passe incorrect</div>
     <input type="password" class="login-input" id="admin-password" placeholder="Mot de passe admin" onkeydown="if(event.key==='Enter')checkPassword()">
     <button class="btn-login" onclick="checkPassword()">Accéder</button>
+    <div style="margin-top:1rem;font-size:0.75rem;color:var(--muted);cursor:pointer;" onclick="resetAdminPwd()">Mot de passe oublié?</div>
   </div>
 </div>
 
@@ -311,6 +312,17 @@
     'https://uewtdxkpsraufzjsebnh.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo'
   );
+
+  function resetAdminPwd() {
+    const secret = prompt('Code secret de récupération:');
+    if (secret === 'reservaplus') {
+      localStorage.removeItem('admin_pwd');
+      ADMIN_PASSWORD = 'reservaplus2026';
+      alert('✅ Mot de passe réinitialisé: reservaplus2026');
+    } else {
+      alert('Code incorrect');
+    }
+  }
 
   // ADMIN PASSWORD — مخزن فـ localStorage
   let ADMIN_PASSWORD = localStorage.getItem('admin_pwd') || 'reservaplus2026';
