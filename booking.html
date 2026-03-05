@@ -444,20 +444,10 @@
     const staffIds = links.map(l => l.staff_id);
     const { data: staffMembers } = await sb.from('staff').select('*').in('id', staffIds);
 
-    // Store all staff for smart slot logic
+    // Store staff but don't show to client — smart auto-assign
     window.availableStaff = staffMembers || [];
-
-    staffListEl.innerHTML = (staffMembers || []).map(s => `
-      <div onclick="selectStaff(this, '${s.id}', '${s.opening_time?.slice(0,5)||bizOpeningTime}', '${s.closing_time?.slice(0,5)||bizClosingTime}', ${bizSlotDuration})"
-        style="display:flex;align-items:center;gap:1rem;padding:0.8rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.borderColor='#7c6af7'" onmouseout="if(!this.classList.contains('selected-staff'))this.style.borderColor='var(--border)'">
-        <div style="width:38px;height:38px;border-radius:50%;background:rgba(124,106,247,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">👤</div>
-        <div>
-          <div style="font-weight:600;font-size:0.9rem;">${s.name}</div>
-          ${s.specialty ? `<div style="color:var(--muted);font-size:0.75rem;">${s.specialty}</div>` : ''}
-        </div>
-      </div>
-    `).join('');
+    staffStep.style.display = 'none';
+    updateSlots();
   }
 
   function selectStaff(el, staffId, opening, closing, duration) {
