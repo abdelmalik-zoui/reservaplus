@@ -1622,7 +1622,8 @@
               <div style="font-weight:600;font-size:0.95rem;">${s.name}</div>
               ${s.specialty ? `<div style="color:var(--muted);font-size:0.78rem;">${s.specialty}</div>` : ''}
             </div>
-            <div style="display:flex;gap:0.3rem;">
+            <div style="display:flex;gap:0.3rem;align-items:center;">
+              <button onclick="toggleStaffActive('${s.id}', ${s.is_active})" style="background:${s.is_active!==false?'rgba(74,222,128,0.1)':'rgba(248,113,113,0.1)'};border:1px solid ${s.is_active!==false?'rgba(74,222,128,0.3)':'rgba(248,113,113,0.3)'};color:${s.is_active!==false?'#4ade80':'#f87171'};border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.75rem;">${s.is_active!==false?'✅ Actif':'❌ Inactif'}</button>
               <button onclick="openEditStaff(${JSON.stringify({...s, myServiceIds: (staffServices||[]).filter(ss=>ss.staff_id===s.id).map(ss=>ss.service_id)}).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem;">✏️</button>
               <button onclick="deleteStaff('${s.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;">🗑️</button>
             </div>
@@ -1716,6 +1717,11 @@
     }
 
     closeEditStaff();
+    await loadStaff();
+  }
+
+  async function toggleStaffActive(id, currentState) {
+    await sb.from('staff').update({ is_active: currentState === false ? true : false }).eq('id', id);
     await loadStaff();
   }
 
