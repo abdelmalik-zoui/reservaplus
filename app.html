@@ -774,6 +774,61 @@
 </div>
 
 <!-- EDIT MODAL -->
+<!-- STAFF EDIT MODAL -->
+<div id="staff-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;">
+    <button onclick="closeEditStaff()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:1.5rem;">✏️ Modifier le membre</div>
+    <input type="hidden" id="edit-staff-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" id="edit-staff-name">
+      </div>
+      <div class="form-group">
+        <label>Spécialité</label>
+        <input type="text" id="edit-staff-specialty">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Heure d'ouverture</label>
+        <div style="display:flex;gap:0.5rem;">
+          <select id="edit-staff-oh" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          </select>
+          <select id="edit-staff-om" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+          </select>
+          <select id="edit-staff-oampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="AM">AM</option><option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Heure de fermeture</label>
+        <div style="display:flex;gap:0.5rem;">
+          <select id="edit-staff-ch" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          </select>
+          <select id="edit-staff-cm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+          </select>
+          <select id="edit-staff-campm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="AM">AM</option><option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Services assignés</label>
+      <div id="edit-staff-services" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.3rem;"></div>
+    </div>
+    <div id="edit-staff-alert"></div>
+    <button onclick="saveEditStaff()" class="btn-add" style="width:100%;margin-top:0.5rem;">💾 Enregistrer</button>
+  </div>
+</div>
+
 <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:1rem;">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:460px;position:relative;">
     <button onclick="closeEditModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
@@ -1560,7 +1615,10 @@
               <div style="font-weight:600;font-size:0.95rem;">${s.name}</div>
               ${s.specialty ? `<div style="color:var(--muted);font-size:0.78rem;">${s.specialty}</div>` : ''}
             </div>
-            <button onclick="deleteStaff('${s.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;">🗑️</button>
+            <div style="display:flex;gap:0.3rem;">
+              <button onclick="openEditStaff(${JSON.stringify({...s, myServiceIds: (staffServices||[]).filter(ss=>ss.staff_id===s.id).map(ss=>ss.service_id)}).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem;">✏️</button>
+              <button onclick="deleteStaff('${s.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;">🗑️</button>
+            </div>
           </div>
           <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem;">⏰ ${o.h}:${o.m} ${o.ampm} — ${c.h}:${c.m} ${c.ampm}</div>
           <div style="display:flex;flex-wrap:wrap;gap:0.3rem;">
@@ -1597,6 +1655,60 @@
     document.getElementById('staff-name').value = '';
     document.getElementById('staff-specialty').value = '';
     showAlert('staff-alert', '✓ Membre ajouté!', 'success');
+    await loadStaff();
+  }
+
+  async function openEditStaff(s) {
+    document.getElementById('edit-staff-id').value = s.id;
+    document.getElementById('edit-staff-name').value = s.name;
+    document.getElementById('edit-staff-specialty').value = s.specialty || '';
+
+    const o = to12h(s.opening_time?.slice(0,5) || '08:00');
+    const c = to12h(s.closing_time?.slice(0,5) || '18:00');
+    document.getElementById('edit-staff-oh').value = o.h;
+    document.getElementById('edit-staff-om').value = o.m;
+    document.getElementById('edit-staff-oampm').value = o.ampm;
+    document.getElementById('edit-staff-ch').value = c.h;
+    document.getElementById('edit-staff-cm').value = c.m;
+    document.getElementById('edit-staff-campm').value = c.ampm;
+
+    // Load services checkboxes
+    const { data: services } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
+    const assignedIds = s.myServiceIds || [];
+    document.getElementById('edit-staff-services').innerHTML = (services || []).map(sv => `
+      <label style="display:flex;align-items:center;gap:0.4rem;background:var(--surface);border:1px solid var(--border);padding:0.35rem 0.7rem;border-radius:7px;cursor:pointer;font-size:0.82rem;">
+        <input type="checkbox" value="${sv.id}" ${assignedIds.includes(sv.id) ? 'checked' : ''} style="accent-color:var(--accent);">
+        ${sv.name}
+      </label>
+    `).join('');
+
+    document.getElementById('staff-edit-modal').style.display = 'flex';
+  }
+
+  function closeEditStaff() {
+    document.getElementById('staff-edit-modal').style.display = 'none';
+  }
+
+  async function saveEditStaff() {
+    const id = document.getElementById('edit-staff-id').value;
+    const name = document.getElementById('edit-staff-name').value.trim();
+    if (!name) return showAlert('edit-staff-alert', 'Nom obligatoire.', 'error');
+
+    const opening = ampmTo24(document.getElementById('edit-staff-oh').value, document.getElementById('edit-staff-om').value, document.getElementById('edit-staff-oampm').value);
+    const closing = ampmTo24(document.getElementById('edit-staff-ch').value, document.getElementById('edit-staff-cm').value, document.getElementById('edit-staff-campm').value);
+    const specialty = document.getElementById('edit-staff-specialty').value.trim();
+
+    await sb.from('staff').update({ name, specialty, opening_time: opening, closing_time: closing }).eq('id', id);
+
+    // Update services
+    await sb.from('staff_services').delete().eq('staff_id', id);
+    const checked = document.querySelectorAll('#edit-staff-services input:checked');
+    if (checked.length > 0) {
+      const links = Array.from(checked).map(cb => ({ staff_id: id, service_id: cb.value }));
+      await sb.from('staff_services').insert(links);
+    }
+
+    closeEditStaff();
     await loadStaff();
   }
 
