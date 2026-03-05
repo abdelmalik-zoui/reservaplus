@@ -337,18 +337,21 @@
 
   const slots = ['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
 
-  function generateSlots() {
-    if (!bizOpeningTime || !bizClosingTime) return slots;
+  function generateSlots(openTime, closeTime, duration) {
+    const opening = openTime || bizOpeningTime;
+    const closing = closeTime || bizClosingTime;
+    const slotDur = duration || bizSlotDuration;
+    if (!opening || !closing) return slots;
     const result = [];
-    const [oh, om] = bizOpeningTime.split(':').map(Number);
-    const [ch, cm] = bizClosingTime.split(':').map(Number);
+    const [oh, om] = opening.split(':').map(Number);
+    const [ch, cm] = closing.split(':').map(Number);
     let current = oh * 60 + om;
     const end = ch * 60 + cm;
     while (current < end) {
       const h = String(Math.floor(current / 60)).padStart(2, '0');
       const m = String(current % 60).padStart(2, '0');
       result.push(`${h}:${m}`);
-      current += bizSlotDuration;
+      current += slotDur;
     }
     return result;
   }
