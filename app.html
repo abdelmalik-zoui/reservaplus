@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Réservation — ReservaPlus</title>
+<title>ReservaPlus</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -17,126 +17,83 @@
     --card: #13131c;
     --green: #4ade80;
     --red: #f87171;
+    --yellow: #fbbf24;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  body::before {
+  /* ---- PAGES ---- */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; }
+
+  /* ---- AUTH PAGE ---- */
+  #auth-page {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  #auth-page::before {
     content: '';
-    position: fixed;
+    position: absolute;
     top: -200px; left: 50%; transform: translateX(-50%);
     width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(124,106,247,0.08) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(124,106,247,0.1) 0%, transparent 70%);
     pointer-events: none;
   }
 
-  .booking-wrap {
+  .auth-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2.5rem;
     width: 100%;
-    max-width: 480px;
+    max-width: 420px;
     position: relative;
     z-index: 1;
   }
 
-  .logo {
+  .auth-logo {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: 1.1rem;
-    text-align: center;
-    margin-bottom: 2rem;
-    color: var(--muted);
-  }
-  .logo span { color: var(--accent); }
-
-  .business-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  .business-name {
-    font-family: 'Syne', sans-serif;
     font-size: 1.6rem;
-    font-weight: 700;
+    text-align: center;
     margin-bottom: 0.3rem;
   }
-  .business-sub { color: var(--muted); font-size: 0.88rem; }
+  .auth-logo span { color: var(--accent); }
+  .auth-subtitle { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
 
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.8rem;
-    margin-bottom: 1rem;
-  }
-
-  .step-label {
-    font-size: 0.72rem;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    margin-bottom: 1rem;
-  }
-
-  /* SERVICES */
-  .services-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.7rem;
-  }
-  .service-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .service-item:hover { border-color: rgba(124,106,247,0.4); }
-  .service-item.selected { border-color: var(--accent); background: rgba(124,106,247,0.08); }
-  .service-name { font-weight: 500; font-size: 0.87rem; margin-bottom: 0.3rem; }
-  .service-meta { color: var(--muted); font-size: 0.75rem; }
-
-  /* DATE */
-  .date-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 0.75rem 1rem;
-    border-radius: 9px;
-    font-size: 0.88rem;
-    font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.2s;
-  }
-  .date-input:focus { outline: none; border-color: var(--accent); }
-
-  /* TIME SLOTS */
-  .slots-grid {
+  .auth-tabs {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .slot {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 0.45rem 0.9rem;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.15s;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 1.8rem;
   }
-  .slot:hover { border-color: var(--accent); }
-  .slot.selected { background: var(--accent); border-color: var(--accent); color: white; }
-  .slot.occupied { background: rgba(248,113,113,0.05); border-color: rgba(248,113,113,0.15); color: var(--muted); cursor: not-allowed; text-decoration: line-through; opacity: 0.45; pointer-events: none; }
+  .auth-tab {
+    flex: 1;
+    padding: 0.55rem;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 7px;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+  .auth-tab.active { background: var(--accent); color: white; }
 
-  /* FORM */
-  .form-group { margin-bottom: 1rem; }
+  .form-group { margin-bottom: 1.1rem; }
   .form-group label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.4rem; }
   .form-group input {
     width: 100%;
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: 0.72rem 1rem;
+    padding: 0.7rem 1rem;
     border-radius: 9px;
     font-size: 0.88rem;
     font-family: 'DM Sans', sans-serif;
@@ -144,12 +101,12 @@
   }
   .form-group input:focus { outline: none; border-color: var(--accent); }
 
-  .btn-book {
+  .btn-submit {
     width: 100%;
     background: var(--accent);
     color: white;
     border: none;
-    padding: 0.9rem;
+    padding: 0.85rem;
     border-radius: 10px;
     font-size: 0.95rem;
     font-weight: 600;
@@ -158,28 +115,9 @@
     font-family: 'DM Sans', sans-serif;
     margin-top: 0.5rem;
   }
-  .btn-book:hover { background: #6a58e5; transform: translateY(-1px); }
-  .btn-book:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-submit:hover { background: #6a58e5; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-  /* SUCCESS */
-  .success-screen {
-    text-align: center;
-    padding: 2rem;
-    display: none;
-  }
-  .success-icon {
-    width: 70px; height: 70px;
-    background: rgba(74,222,128,0.1);
-    border: 2px solid var(--green);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2rem;
-    margin: 0 auto 1.5rem;
-  }
-  .success-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
-  .success-sub { color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
-
-  /* ALERT */
   .alert {
     padding: 0.75rem 1rem;
     border-radius: 8px;
@@ -188,9 +126,178 @@
     display: none;
   }
   .alert.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--red); display: block; }
+  .alert.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); display: block; }
+
+  /* ---- DASHBOARD ---- */
+  #dashboard-page { flex-direction: column; }
+
+  /* NAV */
+  .dash-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .dash-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; }
+  .dash-logo span { color: var(--accent); }
+  .dash-user { display: flex; align-items: center; gap: 1rem; }
+  .user-email { color: var(--muted); font-size: 0.82rem; }
+  .btn-logout {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.4rem 1rem;
+    border-radius: 7px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+  /* DASH CONTENT */
+  .dash-content { display: flex; flex: 1; }
+
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    flex-shrink: 0;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-item:hover { background: rgba(124,106,247,0.08); color: var(--text); }
+  .nav-item.active { background: rgba(124,106,247,0.12); color: var(--accent); }
+
+  .main-area { flex: 1; padding: 2rem; overflow-y: auto; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .view-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+  /* KPI GRID */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+  }
+  .kpi-label { color: var(--muted); font-size: 0.75rem; margin-bottom: 0.5rem; }
+  .kpi-val { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 700; }
+  .kpi-sub { font-size: 0.72rem; color: var(--green); margin-top: 0.2rem; }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .table-head {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 100px;
+    padding: 0.7rem 1.2rem;
+    background: var(--surface);
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 100px;
+    padding: 0.85rem 1.2rem;
+    font-size: 0.83rem;
+    border-bottom: 1px solid rgba(30,30,46,0.5);
+    align-items: center;
+    transition: background 0.15s;
+  }
+  .table-row:hover { background: rgba(124,106,247,0.04); }
+  .table-row:last-child { border-bottom: none; }
+  .table-empty { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+
+  .badge { padding: 0.22rem 0.65rem; border-radius: 100px; font-size: 0.7rem; font-weight: 500; }
+  .badge-green { background: rgba(74,222,128,0.1); color: var(--green); }
+  .badge-yellow { background: rgba(251,191,36,0.1); color: var(--yellow); }
+  .badge-red { background: rgba(248,113,113,0.1); color: var(--red); }
+  .badge-done { background: rgba(139,92,246,0.1); color: #a78bfa; }
+
+  /* BOOKING FORM */
+  .booking-form-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.8rem;
+    max-width: 500px;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .btn-add {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 9px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 0.5rem;
+  }
+  .btn-add:hover { background: #6a58e5; }
+
+  /* LINK PAGE */
+  .link-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+  }
+  .link-url {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    font-size: 0.83rem;
+    color: var(--accent);
+    word-break: break-all;
+    margin: 1rem 0;
+  }
+  .btn-copy {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.83rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
 
   /* LOADING */
-  .loading { text-align: center; padding: 3rem; color: var(--muted); }
   .spinner {
     display: inline-block;
     width: 16px; height: 16px;
@@ -203,560 +310,1437 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .not-found { text-align: center; padding: 3rem; color: var(--muted); }
-  .not-found h2 { font-family: 'Syne', sans-serif; color: var(--text); margin-bottom: 0.5rem; }
-
-  footer {
-    margin-top: 2rem;
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--muted);
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .table-head, .table-row { grid-template-columns: 2fr 1fr 100px; }
+    .table-head > *:nth-child(2), .table-row > *:nth-child(2),
+    .table-head > *:nth-child(4), .table-row > *:nth-child(4) { display: none; }
+    .form-row { grid-template-columns: 1fr; }
   }
-  footer span { color: var(--accent); font-weight: 600; }
 </style>
 </head>
 <body>
 
-<div class="booking-wrap">
-  <div class="logo">Reserva<span>Plus</span></div>
+<!-- ===== AUTH PAGE ===== -->
+<div id="auth-page" class="page active">
+  <div class="auth-box">
+    <div class="auth-logo">Reserva<span>Plus</span></div>
+    <div class="auth-subtitle">Gérez vos réservations facilement</div>
 
-  <!-- LOADING -->
-  <div id="loading" class="loading">Chargement...</div>
-
-  <!-- NOT FOUND -->
-  <div id="not-found" class="not-found" style="display:none">
-    <h2>Page introuvable</h2>
-    <p>Ce lien de réservation n'est pas valide.</p>
-  </div>
-
-  <!-- BOOKING FORM -->
-  <div id="booking-main" style="display:none">
-    <div class="business-header">
-      <div class="business-name" id="biz-name">—</div>
-      <div class="business-sub">Réservez votre rendez-vous en ligne</div>
-      <button onclick="showManageScreen()" style="margin-top:0.8rem;background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);color:#a78bfa;padding:0.4rem 1rem;border-radius:100px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">🔍 Gérer ma réservation</button>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Se connecter</button>
+      <button class="auth-tab" onclick="window.open('https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus.','_blank')">S'inscrire</button>
     </div>
 
-    <div id="alert-box"></div>
+    <div id="auth-alert"></div>
 
-    <!-- STEP 1: SERVICE -->
-    <div class="card" id="step-service">
-      <div class="step-label">① Choisissez un service</div>
-      <div class="services-grid" id="services-list">
-        <div style="color:var(--muted);font-size:0.85rem;grid-column:span 2;padding:0.5rem;">Chargement des services...</div>
-      </div>
-    </div>
-
-    <!-- STEP 2: STAFF -->
-    <div class="card" id="step-staff" style="display:none">
-      <div class="step-label">② Choisissez un membre</div>
-      <div id="staff-list-booking" style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem;"></div>
-    </div>
-
-    <!-- STEP 3: DATE & TIME -->
-    <div class="card">
-      <div class="step-label">③ Choisissez une date</div>
-      <input type="date" class="date-input" id="booking-date" onchange="updateSlots()">
-      <div style="margin-top:1.2rem;">
-        <div class="step-label">④ Choisissez un créneau</div>
-        <div class="slots-grid" id="slots-grid"></div>
-      </div>
-    </div>
-
-    <!-- STEP 4: INFO CLIENT -->
-    <div class="card">
-      <div class="step-label">⑤ Vos informations</div>
+    <!-- LOGIN -->
+    <div id="login-form">
       <div class="form-group">
-        <label>Nom complet</label>
-        <input type="text" id="client-name" placeholder="Ex: Youssef Alami">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="votre@email.com">
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn-submit" onclick="login()">Se connecter</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Nom de votre établissement</label>
+        <input type="text" id="reg-name" placeholder="Ex: Salon Ahmed">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="votre@email.com">
       </div>
       <div class="form-group">
         <label>Téléphone</label>
-        <input type="tel" id="client-phone" placeholder="+212 6XX XXX XXX">
+        <input type="tel" id="reg-phone" placeholder="+212 6XX XXX XXX">
       </div>
-      <button class="btn-book" id="btn-book" onclick="confirmBooking()">Confirmer la réservation</button>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="reg-password" placeholder="••••••••">
+      </div>
+      <button class="btn-submit" onclick="register()">Créer mon compte</button>
     </div>
   </div>
+</div>
 
-  <!-- SUCCESS -->
-  <div id="success-screen" class="card success-screen">
-    <div class="success-icon">✓</div>
-    <div class="success-title">Réservation confirmée!</div>
-    <div class="success-sub" id="success-details">Votre rendez-vous a été enregistré.</div>
-    <button onclick="cancelMyReservation()" style="margin-top:1.5rem;background:none;border:1px solid rgba(248,113,113,0.3);color:#f87171;padding:0.6rem 1.5rem;border-radius:8px;font-size:0.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;" onmouseover="this.style.background='rgba(248,113,113,0.1)'" onmouseout="this.style.background='none'">
-      Annuler ma réservation
-    </button>
-  </div>
-
-  <!-- CANCELLED -->
-  <div id="cancelled-screen" class="card success-screen" style="display:none">
-    <div class="success-icon" style="border-color:#f87171;background:rgba(248,113,113,0.1);">✗</div>
-    <div class="success-title">Réservation annulée</div>
-    <div class="success-sub">Votre réservation a été annulée avec succès.</div>
-  </div>
-
-  <!-- GÉRER RÉSERVATION -->
-  <div id="manage-screen" class="card" style="display:none;padding:1.5rem;">
-    <div style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">🔍 Gérer ma réservation</div>
-    <div id="manage-search" >
-      <input type="text" id="code-input" placeholder="Entrez votre code (ex: RES-ABC123)" style="width:100%;padding:0.75rem 1rem;border-radius:9px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.9rem;margin-bottom:0.8rem;box-sizing:border-box;">
-      <button onclick="searchReservation()" style="width:100%;background:#7c6af7;border:none;color:white;padding:0.8rem;border-radius:9px;font-size:0.9rem;font-weight:600;cursor:pointer;">Rechercher</button>
-      <div id="search-alert" style="margin-top:0.5rem;"></div>
+<!-- BLOCKED PAGE -->
+<div id="blocked-page" class="page" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;">
+  <div style="text-align:center;max-width:440px;">
+    <div style="font-size:3.5rem;margin-bottom:1.5rem;">🔒</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;letter-spacing:-0.03em;margin-bottom:0.8rem;">Période d'essai terminée</div>
+    <div style="color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:2rem;">Votre période d'essai gratuite de 14 jours est terminée. Contactez-nous pour continuer à utiliser ReservaPlus.</div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20mon%20abonnement%20ReservaPlus." target="_blank" style="background:#4ade80;color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;">💬 WhatsApp</a>
+      <a onclick="window.location='mai'+'lto:abdlmalkezouiten79@gma'+'il.com?subject=Activation%20abonnement%20ReservaPlus'" style="background:var(--accent);color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;cursor:pointer;">✉️ <span class="__cf_email__" data-cfemail="cdacafa9a1a0aca1a6a8b7a2b8a4b9a8a3faf48daaa0aca4a1e3aea2a0">[email&#160;protected]</span></a>
     </div>
-    <div id="manage-result" style="display:none;margin-top:1rem;">
-      <div id="manage-info" style="background:rgba(124,106,247,0.08);border:1px solid rgba(124,106,247,0.2);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:0.85rem;"></div>
-      <div style="margin-bottom:0.8rem;">
-        <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouveau service</label>
-        <select id="manage-service" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;"></select>
-      </div>
-      <div style="margin-bottom:0.8rem;">
-        <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouvelle date</label>
-        <input type="date" id="manage-date" oninput="loadManageSlots()" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;box-sizing:border-box;">
-      </div>
-      <div style="margin-bottom:0.8rem;">
-        <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouvelle heure</label>
-        <div id="manage-slots" style="display:flex;flex-wrap:wrap;gap:0.4rem;"></div>
-        <input type="hidden" id="manage-time">
-      </div>
-      <button onclick="updateReservation()" style="width:100%;background:#7c6af7;border:none;color:white;padding:0.75rem;border-radius:9px;font-size:0.88rem;font-weight:600;cursor:pointer;margin-bottom:0.5rem;">💾 Modifier</button>
-      <button onclick="cancelByCode()" style="width:100%;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;padding:0.75rem;border-radius:9px;font-size:0.88rem;font-weight:600;cursor:pointer;">✗ Annuler ma réservation</button>
+    <div style="margin-top:1.5rem;">
+      <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:0.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Se déconnecter</button>
     </div>
   </div>
+</div>
 
-  <footer>Propulsé par <span>ReservaPlus</span></footer>
+<!-- DASHBOARD PAGE -->
+<div id="dashboard-page" class="page">
+  <nav class="dash-nav">
+    <div class="dash-logo">Reserva<span>Plus</span></div>
+    <div class="dash-user">
+      <span id="plan-badge" style="font-size:0.72rem;font-weight:600;border:1px solid;padding:0.2rem 0.7rem;border-radius:100px;margin-right:0.5rem;">Starter</span>
+      <span class="user-email" id="user-email-display"></span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </nav>
+
+  <div class="dash-content">
+    <div class="sidebar">
+      <button class="nav-item active" onclick="showView('overview', this)">📊 &nbsp;Vue générale</button>
+      <button class="nav-item" onclick="if(checkAccess('hasStats')){showView('stats', this); loadStats()}">📈 &nbsp;Statistiques</button>
+      <button class="nav-item" onclick="if(checkAccess('hasCalendar')){showView('calendrier', this); renderCalendar()}">📅 &nbsp;Calendrier</button>
+      <button class="nav-item" onclick="showView('reservations', this)">📋 &nbsp;Réservations</button>
+      <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
+      <button class="nav-item" onclick="showView('services', this); loadServices()">⚙️ &nbsp;Mes services</button>
+      <button class="nav-item" onclick="showView('staff', this); loadStaff()">👥 &nbsp;Mon staff</button>
+      <button class="nav-item" onclick="showView('my-link', this)">🔗 &nbsp;Mon lien</button>
+      <button class="nav-item" onclick="showView('change-pwd', this)">🔑 &nbsp;Changer mot de passe</button>
+      <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border);margin-top:2rem;">
+        <a href="https://wa.me/212632506969?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20avec%20ReservaPlus." target="_blank" style="display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.9rem;border-radius:8px;font-size:0.83rem;color:#4ade80;text-decoration:none;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);">
+          💬 &nbsp;Support WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <div class="main-area">
+
+      <!-- OVERVIEW -->
+      <div id="view-overview" class="view active">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+          <div class="view-title" style="margin-bottom:0;">Tableau de bord</div>
+          <div style="color:var(--muted);font-size:0.82rem;" id="dash-date"></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Total</div>
+            <div class="kpi-val" id="kpi-total">—</div>
+            <div class="kpi-sub">Toutes réservations</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Confirmées</div>
+            <div class="kpi-val" id="kpi-confirmed" style="color:var(--green)">—</div>
+            <div class="kpi-sub" style="color:var(--green);">✓ Confirmées</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">En attente</div>
+            <div class="kpi-val" id="kpi-pending" style="color:var(--yellow)">—</div>
+            <div class="kpi-sub" style="color:var(--yellow);">⏳ En attente</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Annulées</div>
+            <div class="kpi-val" id="kpi-annule" style="color:var(--red)">—</div>
+            <div class="kpi-sub" style="color:var(--red);">✗ Annulées</div>
+          </div>
+        </div>
+        <div class="view-title" style="font-size:1rem;">Dernières réservations</div>
+        <div class="table-wrap" id="overview-table">
+          <div class="table-head">
+            <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
+          </div>
+          <div class="table-empty">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div id="view-stats" class="view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <div class="view-title" style="margin-bottom:0;">📈 Statistiques</div>
+          <div style="display:flex;gap:0.5rem;">
+            <button onclick="setStatsPeriod(7,this)" class="stat-period-btn active-period" style="background:var(--accent);border:1px solid var(--accent);color:white;padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">7 jours</button>
+            <button onclick="setStatsPeriod(30,this)" class="stat-period-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">30 jours</button>
+            <button onclick="setStatsPeriod(90,this)" class="stat-period-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">90 jours</button>
+          </div>
+        </div>
+
+        <!-- KPIs période -->
+        <div class="kpi-grid" style="margin-bottom:2rem;">
+          <div class="kpi">
+            <div class="kpi-label">Total période</div>
+            <div class="kpi-val" id="stat-total">—</div>
+            <div class="kpi-sub">Réservations reçues</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Confirmées</div>
+            <div class="kpi-val" id="stat-confirmed" style="color:var(--green)">—</div>
+            <div class="kpi-sub" id="stat-confirmed-pct" style="color:var(--green);">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">En attente</div>
+            <div class="kpi-val" id="stat-pending" style="color:var(--yellow)">—</div>
+            <div class="kpi-sub" style="color:var(--yellow);">En attente</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Annulées</div>
+            <div class="kpi-val" id="stat-annule" style="color:var(--red)">—</div>
+            <div class="kpi-sub" id="stat-annule-pct" style="color:var(--red);">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Terminées</div>
+            <div class="kpi-val" id="stat-done" style="color:#a78bfa">—</div>
+            <div class="kpi-sub" id="stat-done-pct" style="color:#a78bfa;">—</div>
+          </div>
+        </div>
+
+        <!-- GRAPHIQUE PAR JOUR -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:1.2rem;">Réservations par jour</div>
+          <div id="bar-chart" style="display:flex;align-items:flex-end;gap:4px;height:120px;overflow-x:auto;padding-bottom:0.5rem;"></div>
+          <div id="bar-labels" style="display:flex;gap:4px;margin-top:0.3rem;overflow-x:auto;"></div>
+        </div>
+
+        <!-- TABLEAU PAR JOUR -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:0.92rem;">Détail par jour</div>
+          <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;padding:0.6rem 1.2rem;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">
+            <span>DATE</span><span>TOTAL</span><span style="color:var(--green)">CONFIRMÉES</span><span style="color:var(--yellow)">EN ATTENTE</span><span style="color:var(--red)">ANNULÉES</span><span style="color:#a78bfa">TERMINÉES</span>
+          </div>
+          <div id="stats-table-body"></div>
+        </div>
+      </div>
+
+      <!-- CALENDRIER -->
+      <div id="view-calendrier" class="view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+          <div class="view-title" style="margin-bottom:0;">Calendrier</div>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <button onclick="changeMonth(-1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:7px;cursor:pointer;font-size:1rem;">‹</button>
+            <span id="cal-month-label" style="font-family:'Syne',sans-serif;font-weight:700;min-width:140px;text-align:center;"></span>
+            <button onclick="changeMonth(1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:7px;cursor:pointer;font-size:1rem;">›</button>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);">
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Lun</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Mar</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Mer</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Jeu</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Ven</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Sam</div>
+            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Dim</div>
+          </div>
+          <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
+        </div>
+        <!-- RDV du jour sélectionné -->
+        <div id="cal-day-reservations" style="margin-top:1.5rem;display:none;">
+          <div class="view-title" style="font-size:1rem;" id="cal-day-title"></div>
+          <div class="table-wrap" id="cal-day-table">
+            <div class="table-head"><span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESERVATIONS -->
+      <div id="view-reservations" class="view">
+        <div class="view-title">Toutes les réservations</div>
+        <div class="table-wrap" id="all-reservations-table">
+          <div class="table-head">
+            <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
+          </div>
+          <div class="table-empty">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- NEW RESERVATION -->
+      <div id="view-new-reservation" class="view">
+        <div class="view-title">Nouveau rendez-vous</div>
+        <div class="booking-form-wrap">
+          <div id="booking-alert"></div>
+          <div class="form-group">
+            <label>Nom du client</label>
+            <input type="text" id="b-name" placeholder="Ex: Youssef Alami">
+          </div>
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="tel" id="b-phone" placeholder="+212 6XX XXX XXX">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Service</label>
+              <input type="text" id="b-service" placeholder="Ex: Coupe homme">
+            </div>
+            <div class="form-group">
+              <label>Statut</label>
+              <select id="b-status" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                <option value="en_attente">En attente</option>
+                <option value="confirme">Confirmé</option>
+                <option value="annule">Annulé</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="b-date">
+            </div>
+            <div class="form-group">
+              <label>Heure</label>
+              <input type="time" id="b-time">
+            </div>
+          </div>
+          <button class="btn-add" onclick="addReservation()">Ajouter le rendez-vous</button>
+        </div>
+      </div>
+
+      <!-- SERVICES -->
+      <div id="view-services" class="view">
+        <div class="view-title">Mes services & Horaires</div>
+
+        <!-- HORAIRES -->
+        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
+          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:0.3rem;">🕐 Horaires de travail</div>
+          <div style="color:var(--muted);font-size:0.8rem;margin-bottom:1.2rem;">Les clients verront uniquement les créneaux dans cet intervalle</div>
+          <div id="hours-alert"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Heure d'ouverture</label>
+              <div style="display:flex;gap:0.5rem;">
+                <select id="biz-opening-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <select id="biz-opening-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                </select>
+                <select id="biz-opening-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="AM">AM</option><option value="PM">PM</option>
+                </select>
+              </div>
+              <input type="hidden" id="biz-opening">
+            </div>
+            <div class="form-group">
+              <label>Heure de fermeture</label>
+              <div style="display:flex;gap:0.5rem;">
+                <select id="biz-closing-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <select id="biz-closing-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                </select>
+                <select id="biz-closing-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="AM">AM</option><option value="PM">PM</option>
+                </select>
+              </div>
+              <input type="hidden" id="biz-closing">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Durée d'un créneau (minutes)</label>
+            <select id="biz-slot-duration" style="width:100%;max-width:200px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="30" selected>30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+            </select>
+          </div>
+          <button id="save-hours-btn" class="btn-add" onclick="saveHours()">💾 Enregistrer les horaires</button>
+        </div>
+
+        <!-- SERVICES -->
+        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
+          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:1rem;">➕ Ajouter un service</div>
+          <div id="service-alert"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom du service</label>
+              <input type="text" id="svc-name" placeholder="Ex: Coupe homme">
+            </div>
+            <div class="form-group">
+              <label>Durée (minutes)</label>
+              <input type="number" id="svc-duration" placeholder="Ex: 30" min="5">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prix (MAD)</label>
+              <input type="number" id="svc-price" placeholder="Ex: 50" min="0">
+            </div>
+            <div class="form-group">
+              <label>Description (optionnel)</label>
+              <input type="text" id="svc-desc" placeholder="Ex: Coupe + finition">
+            </div>
+          </div>
+          <button class="btn-add" onclick="addService()">Ajouter le service</button>
+        </div>
+
+        <div class="view-title" style="font-size:1rem;">Services actuels</div>
+        <div id="services-list-dash" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
+      </div>
+
+      <!-- STAFF VIEW -->
+      <div id="view-staff" class="view">
+        <div class="view-title">👥 Mon staff</div>
+
+        <!-- ADD STAFF FORM -->
+        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
+          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:1rem;">➕ Ajouter un membre</div>
+          <div id="staff-alert"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" id="staff-name" placeholder="Ex: Ahmed">
+            </div>
+            <div class="form-group">
+              <label>Spécialité (optionnel)</label>
+              <input type="text" id="staff-specialty" placeholder="Ex: Coupe homme">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Heure d'ouverture</label>
+              <div style="display:flex;gap:0.5rem;">
+                <select id="staff-opening-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08" selected>8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <select id="staff-opening-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="00" selected>00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                </select>
+                <select id="staff-opening-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="AM" selected>AM</option><option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Heure de fermeture</label>
+              <div style="display:flex;gap:0.5rem;">
+                <select id="staff-closing-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12" selected>12</option>
+                </select>
+                <select id="staff-closing-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="00" selected>00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                </select>
+                <select id="staff-closing-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="AM">AM</option><option value="PM" selected>PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>Services assignés</label>
+            <div id="staff-services-check" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.3rem;"></div>
+          </div>
+          <button class="btn-add" onclick="addStaff()">➕ Ajouter</button>
+        </div>
+
+        <!-- STAFF LIST -->
+        <div id="staff-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;"></div>
+      </div>
+
+      <!-- CHANGE PASSWORD -->
+      <div id="view-change-pwd" class="view">
+        <div class="view-title">🔑 Changer mot de passe</div>
+        <div class="booking-form-wrap" style="max-width:420px;">
+          <div id="pwd-alert"></div>
+          <div class="form-group" style="margin-bottom:0.8rem;">
+            <label>Nouveau mot de passe</label>
+            <input type="password" id="new-pwd" placeholder="Minimum 6 caractères" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label>Confirmer mot de passe</label>
+            <input type="password" id="confirm-pwd" placeholder="Répétez le mot de passe" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+          </div>
+          <button class="btn-add" onclick="changePassword()">Enregistrer</button>
+        </div>
+      </div>
+
+      <!-- MY LINK -->
+      <div id="view-my-link" class="view">
+        <div class="view-title">Mon lien de réservation</div>
+        <div class="link-box">
+          <p style="color:var(--muted);font-size:0.88rem;margin-bottom:0.5rem;">Partagez ce lien à vos clients pour qu'ils puissent réserver en ligne.</p>
+          <div class="link-url" id="my-link-url">Chargement...</div>
+          <button class="btn-copy" onclick="copyLink()">📋 Copier le lien</button>
+          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;">Partagez aussi via:</div>
+            <button class="btn-copy" onclick="shareWhatsApp()" style="margin-right:0.5rem;">💬 WhatsApp</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<!-- STAFF EDIT MODAL -->
+<div id="staff-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;">
+    <button onclick="closeEditStaff()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:1.5rem;">✏️ Modifier le membre</div>
+    <input type="hidden" id="edit-staff-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" id="edit-staff-name">
+      </div>
+      <div class="form-group">
+        <label>Spécialité</label>
+        <input type="text" id="edit-staff-specialty">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Heure d'ouverture</label>
+        <div style="display:flex;gap:0.5rem;">
+          <select id="edit-staff-oh" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          </select>
+          <select id="edit-staff-om" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+          </select>
+          <select id="edit-staff-oampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="AM">AM</option><option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Heure de fermeture</label>
+        <div style="display:flex;gap:0.5rem;">
+          <select id="edit-staff-ch" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          </select>
+          <select id="edit-staff-cm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+          </select>
+          <select id="edit-staff-campm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+            <option value="AM">AM</option><option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Services assignés</label>
+      <div id="edit-staff-services" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.3rem;"></div>
+    </div>
+    <div id="edit-staff-alert"></div>
+    <button onclick="saveEditStaff()" class="btn-add" style="width:100%;margin-top:0.5rem;">💾 Enregistrer</button>
+  </div>
+</div>
+
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:460px;position:relative;">
+    <button onclick="closeEditModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:1.5rem;">✏️ Modifier la réservation</div>
+    <input type="hidden" id="edit-id">
+    <div class="form-group"><label>Nom du client</label><input type="text" id="edit-name" placeholder="Nom du client"></div>
+    <div class="form-group"><label>Téléphone</label><input type="tel" id="edit-phone" placeholder="+212..."></div>
+    <div class="form-group"><label>Service</label><input type="text" id="edit-service" placeholder="Service"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Date</label><input type="date" id="edit-date"></div>
+      <div class="form-group"><label>Heure</label><input type="time" id="edit-time"></div>
+    </div>
+    <div class="form-group">
+      <label>Statut</label>
+      <select id="edit-status" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+        <option value="en_attente">En attente</option>
+        <option value="confirme">Confirmé</option>
+        <option value="annule">Annulé</option>
+      </select>
+    </div>
+    <button class="btn-add" onclick="saveEdit()" style="width:100%;margin-top:0.5rem;">Enregistrer</button>
+  </div>
 </div>
 
 <script>
+  // ---- SUPABASE INIT ----
   const { createClient } = supabase;
   const sb = createClient(
     'https://uewtdxkpsraufzjsebnh.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
   );
 
-  let businessId = null;
-  let selectedService = null;
-  let selectedServiceId = null;
-  let selectedStaffId = null;
-  let selectedStaffOpening = null;
-  let selectedStaffClosing = null;
-  let selectedStaffDuration = 30;
-  let selectedTime = null;
-  let lastReservationId = null;
-  let bizOpeningTime = null;
-  let bizClosingTime = null;
-  let bizSlotDuration = 30;
-
-  const slots = ['09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
-
-  function generateSlots(openTime, closeTime, duration) {
-    const opening = openTime || bizOpeningTime;
-    const closing = closeTime || bizClosingTime;
-    const slotDur = duration || bizSlotDuration;
-    if (!opening || !closing) return slots;
-    const result = [];
-    const [oh, om] = opening.split(':').map(Number);
-    const [ch, cm] = closing.split(':').map(Number);
-    let current = oh * 60 + om;
-    const end = ch * 60 + cm;
-    while (current < end) {
-      const h = String(Math.floor(current / 60)).padStart(2, '0');
-      const m = String(current % 60).padStart(2, '0');
-      result.push(`${h}:${m}`);
-      current += slotDur;
-    }
-    return result;
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = `<div style="padding:0.6rem 1rem;border-radius:8px;font-size:0.83rem;margin-bottom:0.8rem;background:${type==='success'?'rgba(74,222,128,0.1)':'rgba(248,113,113,0.1)'};border:1px solid ${type==='success'?'rgba(74,222,128,0.3)':'rgba(248,113,113,0.3)'};color:${type==='success'?'#4ade80':'#f87171'}">${msg}</div>`;
+    setTimeout(() => el.innerHTML = '', 4000);
   }
 
-  async function init() {
-    const params = new URLSearchParams(window.location.search);
-    businessId = params.get('id') || params.get('business');
+  let currentUser = null;
+  let currentBusiness = null;
 
-    if (!businessId) {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('not-found').style.display = 'block';
+  // ---- CHECK SESSION ----
+  async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      currentUser = session.user;
+      await loadBusiness();
+      if (currentBusiness) showDashboard();
+    }
+  }
+
+  checkSession();
+
+  // ---- AUTH FUNCTIONS ----
+  function switchTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+    });
+    document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+    clearAlert('auth-alert');
+  }
+
+  async function register() {
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const password = document.getElementById('reg-password').value;
+
+    if (!name || !email || !password) return showAlert('auth-alert', 'Veuillez remplir tous les champs.', 'error');
+
+    const btn = document.querySelector('#register-form .btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Création...';
+
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) {
+      showAlert('auth-alert', error.message, 'error');
+      btn.disabled = false; btn.textContent = "Créer mon compte";
       return;
     }
 
-    // Load business info
-    const { data: biz } = await sb.from('businesses').select('*').eq('id', businessId).single();
+    currentUser = data.user;
 
-    document.getElementById('loading').style.display = 'none';
+    // Save business info
+    await sb.from('businesses').insert({ name, email, phone });
+    await loadBusiness();
+    showDashboard();
+  }
 
-    if (!biz) {
-      document.getElementById('not-found').style.display = 'block';
+  async function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) return showAlert('auth-alert', 'Veuillez remplir tous les champs.', 'error');
+
+    const btn = document.querySelector('#login-form .btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Connexion...';
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      showAlert('auth-alert', 'Email ou mot de passe incorrect.', 'error');
+      btn.disabled = false; btn.textContent = "Se connecter";
       return;
     }
 
-    document.getElementById('biz-name').textContent = biz.name;
-    document.title = biz.name + ' — Réservation';
+    currentUser = data.user;
+    await loadBusiness();
+    if (!currentBusiness) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter'; }
+      return;
+    }
+    showDashboard();
+  }
 
-    // Load business hours
-    if (biz.opening_time) bizOpeningTime = biz.opening_time.slice(0,5);
-    if (biz.closing_time) bizClosingTime = biz.closing_time.slice(0,5);
-    if (biz.slot_duration) bizSlotDuration = biz.slot_duration;
+  async function logout() {
+    await sb.auth.signOut();
+    currentUser = null; currentBusiness = null;
+    document.getElementById('dashboard-page').classList.remove('active');
+    document.getElementById('auth-page').classList.add('active');
+  }
 
-    // Load services
-    const { data: services } = await sb.from('services').select('*').eq('business_id', businessId);
-    const grid = document.getElementById('services-list');
-    if (services && services.length > 0) {
-      grid.innerHTML = services.map(s => `
-        <div class="service-item" onclick="selectService(this, '${s.name}', '${s.id}')">
-          <div class="service-name">${s.name}</div>
-          <div class="service-meta">${s.duration} min · ${s.price} MAD</div>
+  // ---- BUSINESS ----
+  async function loadBusiness() {
+    console.log('loadBusiness called, user:', currentUser?.email, currentUser?.id);
+    // Try by user_id first
+    const { data: d1 } = await sb.from('businesses').select('*').eq('user_id', currentUser.id).maybeSingle();
+    let data = d1;
+    console.log('by user_id result:', JSON.stringify(data));
+    if (!data) {
+      const { data: d2 } = await sb.from('businesses').select('*').eq('email', currentUser.email).maybeSingle();
+      console.log('by email result:', JSON.stringify(d2));
+      if (d2) {
+        await sb.from('businesses').update({ user_id: currentUser.id }).eq('email', currentUser.email);
+        data = d2;
+      }
+    }
+    console.log('final data:', JSON.stringify(data));
+    if (!data) {
+      // No business found — show error
+      await sb.auth.signOut();
+      const loginBtn = document.querySelector('#login-form .btn-submit');
+      if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Se connecter'; }
+      showAlert('auth-alert', 'Compte non configuré. Contactez le support.', 'error');
+      return;
+    }
+    currentBusiness = data;
+
+    // Check trial
+    const trialEnd = new Date(data.trial_end);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    if (trialEnd < today && data.is_active !== false) {
+      await sb.from('businesses').update({ is_active: false }).eq('id', data.id);
+      data.is_active = false;
+    }
+    currentBusiness = data;
+  }
+
+  // ---- PLANS CONFIG ----
+  const PLANS = {
+    starter: {
+      name: 'Starter',
+      price: 99,
+      maxServices: 2,
+      maxReservations: 50,
+      hasStats: false,
+      hasCalendar: false,
+      hasSupport: false,
+      color: '#7070a0'
+    },
+    pro: {
+      name: 'Pro',
+      price: 249,
+      maxServices: 10,
+      maxReservations: 500,
+      hasStats: true,
+      hasCalendar: true,
+      hasSupport: true,
+      color: '#7c6af7'
+    },
+    business: {
+      name: 'Business',
+      price: 499,
+      maxServices: Infinity,
+      maxReservations: Infinity,
+      hasStats: true,
+      hasCalendar: true,
+      hasSupport: true,
+      color: '#f7706a'
+    }
+  };
+
+  function getPlan() {
+    return PLANS[currentBusiness?.plan || 'starter'];
+  }
+
+  function checkAccess(feature) {
+    const plan = getPlan();
+    if (!plan[feature]) {
+      showUpgradeModal(feature);
+      return false;
+    }
+    return true;
+  }
+
+  function showUpgradeModal(feature) {
+    const plan = getPlan();
+    const needed = feature === 'hasStats' || feature === 'hasCalendar' ? 'Pro (249 MAD)' : 'Pro (249 MAD)';
+    const msg = `Cette fonctionnalité n'est pas disponible dans votre plan ${plan.name}.\n\nUpgradez vers ${needed} pour y accéder.`;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;';
+    modal.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:380px;width:100%;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:1rem;">🔒</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0.8rem;">Fonctionnalité Premium</div>
+        <div style="color:var(--muted);font-size:0.85rem;line-height:1.6;margin-bottom:1.5rem;">Cette fonctionnalité n'est pas disponible dans le plan <strong style="color:var(--text)">${plan.name}</strong>. Upgradez pour y accéder.</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.5rem;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.3rem;">Plan Pro — 249 MAD/mois</div>
+          <div style="color:var(--muted);font-size:0.8rem;">Statistiques · Calendrier · Support · 10 services</div>
         </div>
-      `).join('');
-    } else {
-      grid.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;grid-column:span 2;padding:0.5rem;">Aucun service disponible pour le moment.</div>';
-    }
+        <div style="display:flex;gap:0.8rem;">
+          <button onclick="this.closest('div[style*=fixed]').remove()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);padding:0.7rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;">Fermer</button>
+          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20upgrader%20mon%20plan%20ReservaPlus." target="_blank" style="flex:1;background:var(--accent);color:white;padding:0.7rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:0.88rem;">💬 Upgrader</a>
+        </div>
+      </div>
+    `;
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+  }
 
-    // Set default date = today
+  // ---- SHOW DASHBOARD ----
+  function showDashboard() {
+    // Check if blocked
+    if (currentBusiness?.is_active === false) {
+      document.getElementById('auth-page').classList.remove('active');
+      document.getElementById('blocked-page').style.display = 'flex';
+      return;
+    }
+    document.getElementById('blocked-page').style.display = 'none';
+    document.getElementById('auth-page').classList.remove('active');
+    document.getElementById('dashboard-page').classList.add('active');
+    const plan = getPlan();
+    document.getElementById('user-email-display').textContent = currentUser.email;
+    // Plan badge
+    const planBadge = document.getElementById('plan-badge');
+    if (planBadge) {
+      planBadge.textContent = plan.name;
+      planBadge.style.color = plan.color;
+      planBadge.style.borderColor = plan.color;
+    }
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('booking-date').value = today;
-    document.getElementById('booking-date').min = today;
-
-    document.getElementById('booking-main').style.display = 'block';
+    document.getElementById('b-date').value = today;
+    if (document.getElementById('dash-date')) {
+      document.getElementById('dash-date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    }
+    document.getElementById('my-link-url').textContent = window.location.origin + '/booking.html?id=' + (currentBusiness?.id || currentUser.id);
+    loadReservations();
+    loadServices();
+    startRealtime();
   }
 
-  async function selectService(el, name, serviceId) {
-    document.querySelectorAll('.service-item').forEach(i => i.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedService = name;
-    selectedServiceId = serviceId;
-    selectedStaffId = null;
-    selectedTime = null;
+  // ---- REAL-TIME ----
+  function startRealtime() {
+    // Real-time Supabase
+    sb.channel('reservations-' + currentBusiness.id)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'reservations'
+      }, payload => {
+        loadReservations();
+        if (payload.eventType === 'INSERT') {
+          showToast('🔔 Nouvelle réservation de ' + payload.new.client_name + '!');
+        }
+      })
+      .subscribe();
 
-    const staffStep = document.getElementById('step-staff');
-    const staffListEl = document.getElementById('staff-list-booking');
-    staffListEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Chargement...</div>';
-    staffStep.style.display = 'block';
+    // Auto-refresh كل 15 ثانية كحل احتياطي
+    setInterval(() => loadReservations(), 15000);
+  }
 
-    const { data: links } = await sb.from('staff_services').select('staff_id').eq('service_id', serviceId);
+  // ---- TOAST NOTIFICATION ----
+  function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.cssText = `
+      position:fixed; bottom:2rem; right:2rem;
+      background:#7c6af7; color:white;
+      padding:0.9rem 1.5rem; border-radius:10px;
+      font-size:0.88rem; font-weight:500;
+      box-shadow:0 8px 30px rgba(124,106,247,0.4);
+      z-index:999; animation:fadeUp 0.3s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
 
-    if (!links || links.length === 0) {
-      staffStep.style.display = 'none';
-      selectedStaffOpening = bizOpeningTime;
-      selectedStaffClosing = bizClosingTime;
-      selectedStaffDuration = bizSlotDuration;
-      updateSlots();
+  // ---- RESERVATIONS ----
+  async function loadReservations() {
+    if (!currentBusiness) return;
+    const { data } = await sb.from('reservations').select('*').eq('business_id', currentBusiness.id).order('date', { ascending: false });
+    const reservations = data || [];
+    allReservations = reservations;
+
+    // Auto-done: بعد 2 ساعة من وقت الحجز
+    const now = new Date();
+    const idsToMarkDone = [];
+    for (const r of reservations) {
+      if (r.status === 'confirme' || r.status === 'en_attente') {
+        const resDateTime = new Date(r.date + 'T' + (r.time || '00:00') + ':00');
+        const doneAt = new Date(resDateTime.getTime() + 2 * 60 * 60 * 1000);
+        if (now > doneAt) {
+          idsToMarkDone.push(r.id);
+          r.status = 'done';
+        }
+      }
+    }
+    if (idsToMarkDone.length > 0) {
+      await sb.from('reservations').update({ status: 'done' }).in('id', idsToMarkDone);
+    }
+
+    // KPIs — كيحسب كل شي حتى done و annule
+    document.getElementById('kpi-total').textContent = reservations.filter(r => r.status !== 'done').length;
+    document.getElementById('kpi-confirmed').textContent = reservations.filter(r => r.status === 'confirme').length;
+    document.getElementById('kpi-pending').textContent = reservations.filter(r => r.status === 'en_attente').length;
+    if (document.getElementById('kpi-annule'))
+      document.getElementById('kpi-annule').textContent = reservations.filter(r => r.status === 'annule').length;
+
+    // Tables — ما تبانش done و annule
+    const visible = reservations.filter(r => r.status !== 'done' && r.status !== 'annule');
+    renderTable('overview-table', visible.slice(0, 5));
+    renderTable('all-reservations-table', visible);
+  }
+
+  function renderTable(id, reservations) {
+    const wrap = document.getElementById(id);
+    const header = `<div class="table-head"><span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span></div>`;
+    if (!reservations.length) {
+      wrap.innerHTML = header + '<div class="table-empty">Aucune réservation pour le moment.</div>';
+      return;
+    }
+    const rows = reservations.map(r => {
+      const badgeClass = r.status === 'confirme' ? 'badge-green' : r.status === 'annule' ? 'badge-red' : r.status === 'done' ? 'badge-done' : 'badge-yellow';
+      const statusLabel = r.status === 'confirme' ? 'Confirmé' : r.status === 'annule' ? 'Annulé' : r.status === 'done' ? '✓ Terminé' : 'En attente';
+      const actions = r.status !== 'confirme' && r.status !== 'done'
+        ? `<button onclick="changeStatus('${r.id}','confirme')" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:4px;" title="Confirmer">✓</button>`
+        : '';
+      const cancelBtn = r.status !== 'annule' && r.status !== 'done'
+        ? `<button onclick="changeStatus('${r.id}','annule')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Annuler">✗</button>`
+        : '';
+      const doneBtn = r.status !== 'done'
+        ? `<button onclick="changeStatus('${r.id}','done')" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Marquer terminé">✔</button>`
+        : '';
+      const editBtn = `<button onclick="openEditModal(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);color:var(--accent);border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Modifier">✏️</button>`;
+      const phone = (r.client_phone || '').replace(/\s/g,'').replace(/^\+/,'');
+      const waMsg = encodeURIComponent(`Bonjour ${r.client_name}! Votre rendez-vous est confirmé:\n📅 Date: ${r.date}\n⏰ Heure: ${r.time?.slice(0,5)}\n💈 Service: ${r.service_name || ''}\n\nMerci de votre confiance! — ${currentBusiness?.name}`);
+      const waBtn = phone ? `<a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;text-decoration:none;" title="WhatsApp">💬</a>` : '';
+      return `<div class="table-row">
+        <span>${r.client_name}<br><span style="color:var(--muted);font-size:0.72rem;">${r.client_phone || ''}</span></span>
+        <span>${r.service_name || '—'}</span>
+        <span>${r.date}</span>
+        <span>${r.time?.slice(0,5) || '—'}</span>
+        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}${doneBtn}${editBtn}${waBtn}</span>
+      </div>`;
+    }).join('');
+    wrap.innerHTML = header + rows;
+  }
+
+  async function addReservation() {
+    const name = document.getElementById('b-name').value.trim();
+    const phone = document.getElementById('b-phone').value.trim();
+    const service = document.getElementById('b-service').value.trim();
+    const date = document.getElementById('b-date').value;
+    const time = document.getElementById('b-time').value;
+    const status = document.getElementById('b-status').value;
+
+    if (!name || !date || !time) return showAlert('booking-alert', 'Nom, date et heure sont obligatoires.', 'error');
+
+    const btn = document.querySelector('#view-new-reservation .btn-add');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Ajout...';
+
+    const { error } = await sb.from('reservations').insert({
+      business_id: currentBusiness.id,
+      client_name: name,
+      client_phone: phone,
+      service_name: service,
+      date, time, status
+    });
+
+    if (error) {
+      showAlert('booking-alert', 'Erreur: ' + error.message, 'error');
+    } else {
+      showAlert('booking-alert', '✓ Rendez-vous ajouté avec succès!', 'success');
+      document.getElementById('b-name').value = '';
+      document.getElementById('b-phone').value = '';
+      document.getElementById('b-service').value = '';
+      document.getElementById('b-time').value = '';
+      await loadReservations();
+    }
+
+    btn.disabled = false; btn.textContent = 'Ajouter le rendez-vous';
+  }
+
+  // ---- STATS ----
+  let statsPeriod = 7;
+
+  function setStatsPeriod(days, btn) {
+    statsPeriod = days;
+    document.querySelectorAll('.stat-period-btn').forEach(b => {
+      b.style.background = 'var(--surface)';
+      b.style.borderColor = 'var(--border)';
+      b.style.color = 'var(--muted)';
+    });
+    btn.style.background = 'var(--accent)';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'white';
+    loadStats();
+  }
+
+  async function loadStats() {
+    if (!currentBusiness) return;
+
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + statsPeriod); // future too
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - statsPeriod + 1);
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
+
+    const { data } = await sb.from('reservations')
+      .select('*')
+      .eq('business_id', currentBusiness.id)
+      .gte('date', startStr)
+      .lte('date', endStr);
+
+    const reservations = data || [];
+    const total = reservations.length;
+    const confirmed = reservations.filter(r => r.status === 'confirme').length;
+    const pending = reservations.filter(r => r.status === 'en_attente').length;
+    const annule = reservations.filter(r => r.status === 'annule').length;
+    const done = reservations.filter(r => r.status === 'done').length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-confirmed').textContent = confirmed;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-annule').textContent = annule;
+    document.getElementById('stat-done').textContent = done;
+    document.getElementById('stat-confirmed-pct').textContent = total > 0 ? Math.round(confirmed/total*100) + '% du total' : '0%';
+    document.getElementById('stat-annule-pct').textContent = total > 0 ? Math.round(annule/total*100) + '% du total' : '0%';
+    document.getElementById('stat-done-pct').textContent = total > 0 ? Math.round(done/total*100) + '% du total' : '0%';
+
+    // Build day-by-day data (past + future)
+    const days = [];
+    for (let i = statsPeriod - 1; i >= -statsPeriod; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayRes = reservations.filter(r => r.date === dateStr);
+      if (dayRes.length > 0 || i >= 0) {
+        days.push({
+          date: dateStr,
+          label: d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}),
+          total: dayRes.length,
+          confirmed: dayRes.filter(r => r.status === 'confirme').length,
+          pending: dayRes.filter(r => r.status === 'en_attente').length,
+          annule: dayRes.filter(r => r.status === 'annule').length,
+          done: dayRes.filter(r => r.status === 'done').length,
+        });
+      }
+    }
+
+    // Bar chart
+    const maxVal = Math.max(...days.map(d => d.total), 1);
+    document.getElementById('bar-chart').innerHTML = days.map(d => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:24px;">
+        <div style="font-size:0.62rem;color:var(--muted);">${d.total || ''}</div>
+        <div style="width:100%;background:var(--accent);border-radius:4px 4px 0 0;height:${Math.max(d.total/maxVal*100,2)}px;opacity:0.85;min-height:4px;transition:height 0.3s;"></div>
+      </div>
+    `).join('');
+    document.getElementById('bar-labels').innerHTML = days.map(d => `
+      <div style="flex:1;min-width:24px;text-align:center;font-size:0.6rem;color:var(--muted);">${d.label}</div>
+    `).join('');
+
+    // Table
+    document.getElementById('stats-table-body').innerHTML = days.reverse().map(d => `
+      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;padding:0.7rem 1.2rem;font-size:0.82rem;border-bottom:1px solid rgba(30,30,46,0.5);align-items:center;" onmouseover="this.style.background='rgba(124,106,247,0.04)'" onmouseout="this.style.background='transparent'">
+        <span style="font-weight:500;">${d.date}</span>
+        <span>${d.total}</span>
+        <span style="color:var(--green)">${d.confirmed}</span>
+        <span style="color:var(--yellow)">${d.pending}</span>
+        <span style="color:var(--red)">${d.annule}</span>
+        <span style="color:#a78bfa">${d.done}</span>
+      </div>
+    `).join('') || '<div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:0.85rem;">Aucune donnée pour cette période</div>';
+  }
+
+  // ---- CHANGE STATUS ----
+  async function changeStatus(id, newStatus) {
+    await sb.from('reservations').update({ status: newStatus }).eq('id', id);
+    await loadReservations();
+  }
+
+  // ---- EDIT MODAL ----
+  function openEditModal(r) {
+    document.getElementById('edit-id').value = r.id;
+    document.getElementById('edit-name').value = r.client_name || '';
+    document.getElementById('edit-phone').value = r.client_phone || '';
+    document.getElementById('edit-service').value = r.service_name || '';
+    document.getElementById('edit-date').value = r.date || '';
+    document.getElementById('edit-time').value = r.time?.slice(0,5) || '';
+    document.getElementById('edit-status').value = r.status || 'en_attente';
+    document.getElementById('edit-modal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+  }
+
+  async function saveEdit() {
+    const id = document.getElementById('edit-id').value;
+    const updates = {
+      client_name: document.getElementById('edit-name').value.trim(),
+      client_phone: document.getElementById('edit-phone').value.trim(),
+      service_name: document.getElementById('edit-service').value.trim(),
+      date: document.getElementById('edit-date').value,
+      time: document.getElementById('edit-time').value,
+      status: document.getElementById('edit-status').value
+    };
+    await sb.from('reservations').update(updates).eq('id', id);
+    closeEditModal();
+    await loadReservations();
+    renderCalendar();
+  }
+
+  // ---- CALENDAR ----
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let allReservations = [];
+
+  function changeMonth(dir) {
+    calMonth += dir;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
+
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+    const grid = document.getElementById('cal-grid');
+    let html = '';
+
+    for (let i = 0; i < offset; i++) {
+      html += '<div style="padding:0.6rem;min-height:60px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);opacity:0.3;"></div>';
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayRes = allReservations.filter(r => r.date === dateStr);
+      const isToday = dateStr === today;
+      const confirmed = dayRes.filter(r => r.status === 'confirme').length;
+      const pending = dayRes.filter(r => r.status === 'en_attente').length;
+
+      html += `
+        <div onclick="showDayReservations('${dateStr}')" style="padding:0.5rem;min-height:60px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;${isToday ? 'background:rgba(124,106,247,0.08);' : ''}" onmouseover="this.style.background='rgba(124,106,247,0.06)'" onmouseout="this.style.background='${isToday ? 'rgba(124,106,247,0.08)' : 'transparent'}'">
+          <div style="font-size:0.78rem;font-weight:${isToday ? '700' : '400'};color:${isToday ? 'var(--accent)' : 'var(--text)'};margin-bottom:0.3rem;">${d}</div>
+          ${confirmed > 0 ? `<div style="background:rgba(74,222,128,0.15);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.65rem;color:var(--green);margin-bottom:2px;">✓ ${confirmed}</div>` : ''}
+          ${pending > 0 ? `<div style="background:rgba(251,191,36,0.15);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.65rem;color:#fbbf24;">⏳ ${pending}</div>` : ''}
+        </div>`;
+    }
+
+    grid.innerHTML = html;
+  }
+
+  function showDayReservations(dateStr) {
+    const dayRes = allReservations.filter(r => r.date === dateStr);
+    const wrap = document.getElementById('cal-day-reservations');
+    document.getElementById('cal-day-title').textContent = 'Réservations du ' + dateStr;
+    wrap.style.display = 'block';
+    renderTable('cal-day-table', dayRes);
+  }
+
+  function ampmTo24(h, m, ampm) {
+    let hour = parseInt(h);
+    if (ampm === 'AM' && hour === 12) hour = 0;
+    else if (ampm === 'PM' && hour !== 12) hour += 12;
+    else if (ampm === 'PM' && hour === 12) hour = 12;
+    return String(hour).padStart(2,'0') + ':' + m;
+  }
+
+  function to12h(time24) {
+    if (!time24) return { h: '09', m: '00', ampm: 'AM' };
+    const [h, m] = time24.split(':');
+    let hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    if (hour === 0) hour = 12;
+    if (hour > 12) hour -= 12;
+    return { h: String(hour).padStart(2,'0'), m: m || '00', ampm };
+  }
+
+  async function saveHours() {
+    const opening = ampmTo24(
+      document.getElementById('biz-opening-h').value,
+      document.getElementById('biz-opening-m').value,
+      document.getElementById('biz-opening-ampm').value
+    );
+    const closing = ampmTo24(
+      document.getElementById('biz-closing-h').value,
+      document.getElementById('biz-closing-m').value,
+      document.getElementById('biz-closing-ampm').value
+    );
+    document.getElementById('biz-opening').value = opening;
+    document.getElementById('biz-closing').value = closing;
+    const slotDuration = parseInt(document.getElementById('biz-slot-duration').value);
+
+    if (!opening || !closing) return showAlert('hours-alert', 'Veuillez remplir les deux horaires.', 'error');
+
+    const btn = document.getElementById('save-hours-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
+
+    const { error } = await sb.from('businesses').update({
+      opening_time: opening,
+      closing_time: closing,
+      slot_duration: slotDuration
+    }).eq('id', currentBusiness.id);
+
+    if (error) {
+      showAlert('hours-alert', 'Erreur: ' + error.message, 'error');
+    } else {
+      currentBusiness.opening_time = opening;
+      currentBusiness.closing_time = closing;
+      currentBusiness.slot_duration = slotDuration;
+      showAlert('hours-alert', '✓ Horaires enregistrés!', 'success');
+    }
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer les horaires'; }
+  }
+
+  // ---- SERVICES ----
+  async function loadServices() {
+    if (!currentBusiness) return;
+
+    // Load hours
+    const { data: biz } = await sb.from('businesses').select('opening_time,closing_time,slot_duration').eq('id', currentBusiness.id).single();
+    if (biz) {
+      if (biz.opening_time) {
+        const o = to12h(biz.opening_time.slice(0,5));
+        document.getElementById('biz-opening-h').value = o.h;
+        document.getElementById('biz-opening-m').value = o.m;
+        document.getElementById('biz-opening-ampm').value = o.ampm;
+        document.getElementById('biz-opening').value = biz.opening_time.slice(0,5);
+      }
+      if (biz.closing_time) {
+        const c = to12h(biz.closing_time.slice(0,5));
+        document.getElementById('biz-closing-h').value = c.h;
+        document.getElementById('biz-closing-m').value = c.m;
+        document.getElementById('biz-closing-ampm').value = c.ampm;
+        document.getElementById('biz-closing').value = biz.closing_time.slice(0,5);
+      }
+      if (biz.slot_duration) document.getElementById('biz-slot-duration').value = biz.slot_duration;
+      currentBusiness.opening_time = biz.opening_time;
+      currentBusiness.closing_time = biz.closing_time;
+      currentBusiness.slot_duration = biz.slot_duration || 30;
+    }
+    const { data } = await sb.from('services').select('*').eq('business_id', currentBusiness.id).order('created_at');
+    const services = data || [];
+    const wrap = document.getElementById('services-list-dash');
+    if (!wrap) return;
+
+    if (!services.length) {
+      wrap.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:1rem;">Aucun service pour le moment. Ajoutez votre premier service!</div>';
       return;
     }
 
-    const staffIds = links.map(l => l.staff_id);
-    const { data: staffMembers } = await sb.from('staff').select('*').in('id', staffIds);
-
-    // Store all staff for smart slot logic
-    window.availableStaff = staffMembers || [];
-
-    staffListEl.innerHTML = (staffMembers || []).map(s => `
-      <div onclick="selectStaff(this, '${s.id}', '${s.opening_time?.slice(0,5)||bizOpeningTime}', '${s.closing_time?.slice(0,5)||bizClosingTime}', ${bizSlotDuration})"
-        style="display:flex;align-items:center;gap:1rem;padding:0.8rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.2s;"
-        onmouseover="this.style.borderColor='#7c6af7'" onmouseout="if(!this.classList.contains('selected-staff'))this.style.borderColor='var(--border)'">
-        <div style="width:38px;height:38px;border-radius:50%;background:rgba(124,106,247,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">👤</div>
-        <div>
-          <div style="font-weight:600;font-size:0.9rem;">${s.name}</div>
-          ${s.specialty ? `<div style="color:var(--muted);font-size:0.75rem;">${s.specialty}</div>` : ''}
-        </div>
+    wrap.innerHTML = services.map(s => `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;position:relative;">
+        <button onclick="deleteService('${s.id}')" style="position:absolute;top:0.8rem;right:0.8rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;" title="Supprimer">🗑️</button>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.4rem;">${s.name}</div>
+        <div style="color:var(--accent);font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">${s.price} MAD</div>
+        <div style="color:var(--muted);font-size:0.78rem;">⏱ ${s.duration} min${s.description ? ' · ' + s.description : ''}</div>
       </div>
     `).join('');
   }
 
-  function selectStaff(el, staffId, opening, closing, duration) {
-    document.querySelectorAll('#staff-list-booking > div').forEach(d => {
-      d.classList.remove('selected-staff');
-      d.style.borderColor = 'var(--border)';
-      d.style.background = 'var(--surface)';
+  async function addService() {
+    const name = document.getElementById('svc-name').value.trim();
+    const duration = parseInt(document.getElementById('svc-duration').value);
+    const price = parseFloat(document.getElementById('svc-price').value);
+    const desc = document.getElementById('svc-desc').value.trim();
+
+    if (!name) return showAlert('service-alert', 'Le nom est obligatoire.', 'error');
+    if (!duration || duration < 5) return showAlert('service-alert', 'Durée invalide.', 'error');
+    if (isNaN(price) || price < 0) return showAlert('service-alert', 'Prix invalide.', 'error');
+
+    // Check plan limit
+    const plan = getPlan();
+    const { count } = await sb.from('services').select('*', { count: 'exact', head: true }).eq('business_id', currentBusiness.id);
+    if (count >= plan.maxServices) {
+      return showUpgradeModal('maxServices');
+    }
+
+    const btn = document.querySelector('#view-services .btn-add');
+    btn.disabled = true; btn.textContent = 'Ajout...';
+
+    const { error } = await sb.from('services').insert({
+      business_id: currentBusiness.id,
+      name, duration, price,
+      description: desc || null
     });
-    el.classList.add('selected-staff');
-    el.style.borderColor = '#7c6af7';
-    el.style.background = 'rgba(124,106,247,0.08)';
-    selectedStaffId = staffId;
-    selectedStaffOpening = opening;
-    selectedStaffClosing = closing;
-    selectedStaffDuration = duration;
-    updateSlots();
-  }
-
-  async function updateSlots() {
-    selectedTime = null;
-    const date = document.getElementById('booking-date').value;
-    const grid = document.getElementById('slots-grid');
-    grid.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Chargement...</div>';
-
-    const staffList = window.availableStaff || [];
-
-    if (selectedStaffId) {
-      // Single staff selected — show their slots only
-      const { data: reservations } = await sb.from('reservations').select('time').eq('business_id', businessId).eq('date', date).eq('staff_id', selectedStaffId).neq('status', 'annule');
-      const occupiedTimes = (reservations || []).map(r => r.time.slice(0,5));
-      const activeSlots = generateSlots(selectedStaffOpening, selectedStaffClosing, selectedStaffDuration);
-      const now = new Date();
-      grid.innerHTML = activeSlots.map(s => {
-        const occupied = occupiedTimes.includes(s);
-        const isPast = new Date(date + 'T' + s + ':00') < now;
-        if (occupied || isPast) return `<div class="slot occupied" title="${isPast?'Passé':'Occupé'}">${s}</div>`;
-        return `<div class="slot" onclick="selectSlot(this,'${s}')">${s}</div>`;
-      }).join('');
-
-    } else if (staffList.length > 0) {
-      // Multiple staff — show smart combined slots
-      // Fetch all reservations for all staff on this date
-      const staffIds = staffList.map(s => s.id);
-      const { data: allRes } = await sb.from('reservations').select('time,staff_id').eq('business_id', businessId).eq('date', date).neq('status', 'annule');
-
-      // For each slot, check if at least one staff is free
-      const allSlots = new Set();
-      staffList.forEach(s => {
-        const slts = generateSlots(s.opening_time?.slice(0,5)||bizOpeningTime, s.closing_time?.slice(0,5)||bizClosingTime, bizSlotDuration);
-        slts.forEach(sl => allSlots.add(sl));
-      });
-
-      const now = new Date();
-      const sortedSlots = Array.from(allSlots).sort();
-
-      grid.innerHTML = sortedSlots.map(sl => {
-        const isPast = new Date(date + 'T' + sl + ':00') < now;
-        if (isPast) return `<div class="slot occupied" title="Passé">${sl}</div>`;
-
-        // Check if any staff is free at this slot
-        const freeStaff = staffList.filter(s => {
-          const sSlots = generateSlots(s.opening_time?.slice(0,5)||bizOpeningTime, s.closing_time?.slice(0,5)||bizClosingTime, bizSlotDuration);
-          if (!sSlots.includes(sl)) return false;
-          const takenByThisStaff = (allRes||[]).some(r => r.staff_id === s.id && r.time?.slice(0,5) === sl);
-          return !takenByThisStaff;
-        });
-
-        if (freeStaff.length === 0) return `<div class="slot occupied" title="Complet">${sl}</div>`;
-        return `<div class="slot" onclick="selectSmartSlot(this,'${sl}')">${sl}</div>`;
-      }).join('');
-
-    } else {
-      // No staff — use business hours
-      const { data: reservations } = await sb.from('reservations').select('time').eq('business_id', businessId).eq('date', date).neq('status', 'annule');
-      const occupiedTimes = (reservations || []).map(r => r.time.slice(0,5));
-      const activeSlots = generateSlots(bizOpeningTime, bizClosingTime, bizSlotDuration);
-      const now = new Date();
-      grid.innerHTML = activeSlots.map(s => {
-        const occupied = occupiedTimes.includes(s);
-        const isPast = new Date(date + 'T' + s + ':00') < now;
-        if (occupied || isPast) return `<div class="slot occupied">${s}</div>`;
-        return `<div class="slot" onclick="selectSlot(this,'${s}')">${s}</div>`;
-      }).join('');
-    }
-  }
-
-  function selectSmartSlot(el, time) {
-    selectSlot(el, time);
-    window.smartSlotTime = time;
-  }
-
-  function selectSlot(el, time) {
-    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedTime = time;
-  }
-
-  async function confirmBooking() {
-    const name = document.getElementById('client-name').value.trim();
-    const phone = document.getElementById('client-phone').value.trim();
-    const date = document.getElementById('booking-date').value;
-
-    if (!selectedService) return showAlert('Veuillez choisir un service.');
-    if (!name) return showAlert('Veuillez entrer votre nom.');
-    if (!selectedTime) return showAlert('Veuillez choisir un créneau.');
-    if (!date) return showAlert('Veuillez choisir une date.');
-
-    const btn = document.getElementById('btn-book');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Confirmation...';
-
-    const resCode = 'RES-' + Math.random().toString(36).substr(2,6).toUpperCase();
-
-    const insertData = {
-      business_id: businessId,
-      client_name: name,
-      client_phone: phone,
-      service_name: selectedService,
-      date: date,
-      time: selectedTime,
-      status: 'en_attente',
-      reservation_code: resCode
-    };
-
-    // Auto-assign free staff if not manually selected
-    if (!selectedStaffId && window.availableStaff?.length > 0) {
-      const { data: allRes } = await sb.from('reservations').select('time,staff_id').eq('business_id', businessId).eq('date', date).neq('status', 'annule');
-      const freeStaff = window.availableStaff.find(s => {
-        const sSlots = generateSlots(s.opening_time?.slice(0,5)||bizOpeningTime, s.closing_time?.slice(0,5)||bizClosingTime, bizSlotDuration);
-        if (!sSlots.includes(selectedTime)) return false;
-        return !(allRes||[]).some(r => r.staff_id === s.id && r.time?.slice(0,5) === selectedTime);
-      });
-      if (freeStaff) insertData.staff_id = freeStaff.id;
-    } else if (selectedStaffId) {
-      insertData.staff_id = selectedStaffId;
-    }
-
-    const { data: newRes, error } = await sb.from('reservations').insert(insertData).select().single();
 
     if (error) {
-      showAlert('Erreur: ' + error.message);
-      btn.disabled = false;
-      btn.textContent = 'Confirmer la réservation';
+      showAlert('service-alert', 'Erreur: ' + error.message, 'error');
+    } else {
+      showAlert('service-alert', '✓ Service ajouté!', 'success');
+      document.getElementById('svc-name').value = '';
+      document.getElementById('svc-duration').value = '';
+      document.getElementById('svc-price').value = '';
+      document.getElementById('svc-desc').value = '';
+      await loadServices();
+    }
+    btn.disabled = false; btn.textContent = 'Ajouter le service';
+  }
+
+  async function deleteService(id) {
+    if (!confirm('Supprimer ce service?')) return;
+    await sb.from('services').delete().eq('id', id);
+    await loadServices();
+  }
+
+  // ---- NAVIGATION ----
+  function showView(view, btn) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ---- LINK ----
+  // ---- STAFF ----
+  async function loadStaff() {
+    if (!currentBusiness) return;
+
+    const { data: services } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
+    const checksDiv = document.getElementById('staff-services-check');
+    checksDiv.innerHTML = (services || []).map(s => `
+      <label style="display:flex;align-items:center;gap:0.4rem;background:var(--surface);border:1px solid var(--border);padding:0.35rem 0.7rem;border-radius:7px;cursor:pointer;font-size:0.82rem;">
+        <input type="checkbox" value="${s.id}" data-name="${s.name}" style="accent-color:var(--accent);">
+        ${s.name}
+      </label>
+    `).join('');
+
+    const { data: staffList } = await sb.from('staff').select('*').eq('business_id', currentBusiness.id).order('created_at');
+    const wrap = document.getElementById('staff-list');
+    if (!staffList?.length) {
+      wrap.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Aucun membre pour le moment</div>';
       return;
     }
 
-    lastReservationId = newRes.id;
+    const staffIds = staffList.map(s => s.id);
+    const { data: staffServices } = await sb.from('staff_services').select('*').in('staff_id', staffIds);
+    const { data: allServices } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
 
-    // Show success with code
-    document.getElementById('booking-main').style.display = 'none';
-    document.getElementById('success-screen').style.display = 'block';
-    document.getElementById('success-details').innerHTML =
-      `Merci ${name}! Votre rendez-vous pour "<strong>${selectedService}</strong>" le <strong>${date}</strong> à <strong>${selectedTime}</strong> a été enregistré.<br><br>
-      <div style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);border-radius:12px;padding:1rem;text-align:center;margin-top:0.5rem;">
-        <div style="font-size:0.8rem;color:#a78bfa;margin-bottom:0.3rem;">Votre code de réservation</div>
-        <div style="font-size:1.8rem;font-weight:800;letter-spacing:0.1em;color:white;">${resCode}</div>
-        <div style="font-size:0.75rem;color:#7070a0;margin-top:0.3rem;">Gardez ce code pour modifier ou annuler votre réservation</div>
-      </div>`;
-  }
-
-  function showAlert(msg) {
-    const el = document.getElementById('alert-box');
-    el.innerHTML = `<div class="alert error">${msg}</div>`;
-  }
-
-  let currentManagedRes = null;
-
-  function showManageScreen() {
-    document.getElementById('booking-main').style.display = 'none';
-    document.getElementById('success-screen').style.display = 'none';
-    document.getElementById('manage-screen').style.display = 'block';
-    document.getElementById('manage-result').style.display = 'none';
-    document.getElementById('code-input').value = '';
-    document.getElementById('search-alert').innerHTML = '';
-  }
-
-  async function searchReservation() {
-    const code = document.getElementById('code-input').value.trim().toUpperCase();
-    if (!code) return;
-    const { data } = await sb.from('reservations').select('*').eq('reservation_code', code).eq('business_id', businessId).maybeSingle();
-    if (!data) {
-      document.getElementById('search-alert').innerHTML = '<div style="color:#f87171;font-size:0.82rem;margin-top:0.3rem;">❌ Code introuvable</div>';
-      return;
-    }
-    if (data.status === 'annule' || data.status === 'done') {
-      document.getElementById('search-alert').innerHTML = '<div style="color:#f87171;font-size:0.82rem;margin-top:0.3rem;">Cette réservation est déjà ' + (data.status === 'annule' ? 'annulée' : 'terminée') + '</div>';
-      return;
-    }
-    currentManagedRes = data;
-    document.getElementById('search-alert').innerHTML = '';
-    document.getElementById('manage-result').style.display = 'block';
-    document.getElementById('manage-info').innerHTML = `
-      <div><strong>${data.client_name}</strong> — ${data.service_name}</div>
-      <div style="color:#a78bfa;margin-top:0.3rem;">📅 ${data.date} à ${data.time?.slice(0,5)}</div>
-      <div style="margin-top:0.3rem;font-size:0.78rem;color:#7070a0;">Code: ${data.reservation_code}</div>
-    `;
-    document.getElementById('manage-service').value = data.service_name;
-    document.getElementById('manage-date').value = data.date;
-    document.getElementById('manage-date').min = new Date().toISOString().split('T')[0];
-    await loadManageSlots();
-    // Pre-select current time
-    setTimeout(() => {
-      const currentTime = data.time?.slice(0,5);
-      document.querySelectorAll('#manage-slots button').forEach(btn => {
-        if (btn.textContent.trim().startsWith(currentTime)) {
-          selectManageSlot(btn, currentTime);
-        }
-      });
-    }, 500);
-
-    // Load services
-    const { data: services } = await sb.from('services').select('*').eq('business_id', businessId);
-    const sel = document.getElementById('manage-service');
-    sel.innerHTML = (services || []).map(s => `<option value="${s.name}" ${s.name === data.service_name ? 'selected' : ''}>${s.name}</option>`).join('');
-  }
-
-  async function loadManageSlots() {
-    const date = document.getElementById('manage-date').value;
-    if (!date) return;
-    const slotsDiv = document.getElementById('manage-slots');
-    document.getElementById('manage-time').value = '';
-    slotsDiv.innerHTML = '<span style="color:#7070a0;font-size:0.8rem;">Chargement...</span>';
-
-    // Get occupied slots
-    const { data: occupied } = await sb.from('reservations')
-      .select('time').eq('business_id', businessId).eq('date', date)
-      .not('id', 'eq', currentManagedRes?.id)
-      .in('status', ['en_attente', 'confirme']);
-
-    const occupiedTimes = (occupied || []).map(r => r.time?.slice(0,5));
-    const now = new Date();
-    const isToday = date === now.toISOString().split('T')[0];
-
-    const allSlots = generateSlots(bizOpeningTime, bizClosingTime, bizSlotDuration);
-    slotsDiv.innerHTML = allSlots.map(slot => {
-      const isPast = isToday && slot <= now.toTimeString().slice(0,5);
-      const isTaken = occupiedTimes.includes(slot);
-      const disabled = isPast || isTaken;
-      return `<button onclick="selectManageSlot(this,'${slot}')" 
-        style="padding:0.35rem 0.7rem;border-radius:7px;font-size:0.78rem;cursor:${disabled?'not-allowed':'pointer'};
-        background:${disabled?'rgba(30,30,46,0.5)':'rgba(124,106,247,0.1)'};
-        border:1px solid ${disabled?'#2a2a3e':'rgba(124,106,247,0.3)'};
-        color:${disabled?'#404060':'#a78bfa'};
-        opacity:${disabled?'0.5':'1'}"
-        ${disabled?'disabled':''}>
-        ${slot}${isTaken?' ✗':''}
-      </button>`;
+    wrap.innerHTML = staffList.map(s => {
+      const myServices = (staffServices || [])
+        .filter(ss => ss.staff_id === s.id)
+        .map(ss => allServices?.find(sv => sv.id === ss.service_id)?.name)
+        .filter(Boolean);
+      const o = to12h(s.opening_time?.slice(0,5) || '08:00');
+      const c = to12h(s.closing_time?.slice(0,5) || '18:00');
+      return `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem;">
+            <div>
+              <div style="font-weight:600;font-size:0.95rem;">${s.name}</div>
+              ${s.specialty ? `<div style="color:var(--muted);font-size:0.78rem;">${s.specialty}</div>` : ''}
+            </div>
+            <div style="display:flex;gap:0.3rem;">
+              <button onclick="openEditStaff(${JSON.stringify({...s, myServiceIds: (staffServices||[]).filter(ss=>ss.staff_id===s.id).map(ss=>ss.service_id)}).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem;">✏️</button>
+              <button onclick="deleteStaff('${s.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;">🗑️</button>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem;">⏰ ${o.h}:${o.m} ${o.ampm} — ${c.h}:${c.m} ${c.ampm}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.3rem;">
+            ${myServices.map(sv => `<span style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);padding:0.15rem 0.5rem;border-radius:5px;font-size:0.72rem;">${sv}</span>`).join('') || '<span style="color:var(--muted);font-size:0.78rem;">Aucun service assigné</span>'}
+          </div>
+        </div>`;
     }).join('');
   }
 
-  function selectManageSlot(btn, slot) {
-    document.querySelectorAll('#manage-slots button').forEach(b => {
-      b.style.background = 'rgba(124,106,247,0.1)';
-      b.style.borderColor = 'rgba(124,106,247,0.3)';
-      b.style.color = '#a78bfa';
-    });
-    btn.style.background = '#7c6af7';
-    btn.style.borderColor = '#7c6af7';
-    btn.style.color = 'white';
-    document.getElementById('manage-time').value = slot;
+  async function addStaff() {
+    const name = document.getElementById('staff-name').value.trim();
+    if (!name) return showAlert('staff-alert', 'Nom obligatoire.', 'error');
+    const opening = ampmTo24(
+      document.getElementById('staff-opening-h').value,
+      document.getElementById('staff-opening-m').value,
+      document.getElementById('staff-opening-ampm').value
+    );
+    const closing = ampmTo24(
+      document.getElementById('staff-closing-h').value,
+      document.getElementById('staff-closing-m').value,
+      document.getElementById('staff-closing-ampm').value
+    );
+    const specialty = document.getElementById('staff-specialty').value.trim();
+    const { data: newStaff, error } = await sb.from('staff').insert({
+      business_id: currentBusiness.id,
+      name, specialty, opening_time: opening, closing_time: closing
+    }).select().single();
+    if (error) return showAlert('staff-alert', 'Erreur: ' + error.message, 'error');
+    const checked = document.querySelectorAll('#staff-services-check input:checked');
+    if (checked.length > 0) {
+      const links = Array.from(checked).map(cb => ({ staff_id: newStaff.id, service_id: cb.value }));
+      await sb.from('staff_services').insert(links);
+    }
+    document.getElementById('staff-name').value = '';
+    document.getElementById('staff-specialty').value = '';
+    showAlert('staff-alert', '✓ Membre ajouté!', 'success');
+    await loadStaff();
   }
 
-  async function updateReservation() {
-    if (!currentManagedRes) return;
-    const service = document.getElementById('manage-service').value;
-    const date = document.getElementById('manage-date').value;
-    const time = document.getElementById('manage-time').value;
+  async function openEditStaff(s) {
+    document.getElementById('edit-staff-id').value = s.id;
+    document.getElementById('edit-staff-name').value = s.name;
+    document.getElementById('edit-staff-specialty').value = s.specialty || '';
 
-    // Check if date/time is in the past
-    const selectedDateTime = new Date(date + 'T' + time);
-    if (selectedDateTime < new Date()) {
-      document.getElementById('search-alert').innerHTML = '<div style="color:#f87171;font-size:0.82rem;margin-top:0.5rem;">❌ Impossible de choisir une heure passée</div>';
-      return;
+    const o = to12h(s.opening_time?.slice(0,5) || '08:00');
+    const c = to12h(s.closing_time?.slice(0,5) || '18:00');
+    document.getElementById('edit-staff-oh').value = o.h;
+    document.getElementById('edit-staff-om').value = o.m;
+    document.getElementById('edit-staff-oampm').value = o.ampm;
+    document.getElementById('edit-staff-ch').value = c.h;
+    document.getElementById('edit-staff-cm').value = c.m;
+    document.getElementById('edit-staff-campm').value = c.ampm;
+
+    // Load services checkboxes
+    const { data: services } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
+    const assignedIds = s.myServiceIds || [];
+    document.getElementById('edit-staff-services').innerHTML = (services || []).map(sv => `
+      <label style="display:flex;align-items:center;gap:0.4rem;background:var(--surface);border:1px solid var(--border);padding:0.35rem 0.7rem;border-radius:7px;cursor:pointer;font-size:0.82rem;">
+        <input type="checkbox" value="${sv.id}" ${assignedIds.includes(sv.id) ? 'checked' : ''} style="accent-color:var(--accent);">
+        ${sv.name}
+      </label>
+    `).join('');
+
+    document.getElementById('staff-edit-modal').style.display = 'flex';
+  }
+
+  function closeEditStaff() {
+    document.getElementById('staff-edit-modal').style.display = 'none';
+  }
+
+  async function saveEditStaff() {
+    const id = document.getElementById('edit-staff-id').value;
+    const name = document.getElementById('edit-staff-name').value.trim();
+    if (!name) return showAlert('edit-staff-alert', 'Nom obligatoire.', 'error');
+
+    const opening = ampmTo24(document.getElementById('edit-staff-oh').value, document.getElementById('edit-staff-om').value, document.getElementById('edit-staff-oampm').value);
+    const closing = ampmTo24(document.getElementById('edit-staff-ch').value, document.getElementById('edit-staff-cm').value, document.getElementById('edit-staff-campm').value);
+    const specialty = document.getElementById('edit-staff-specialty').value.trim();
+
+    await sb.from('staff').update({ name, specialty, opening_time: opening, closing_time: closing }).eq('id', id);
+
+    // Update services
+    await sb.from('staff_services').delete().eq('staff_id', id);
+    const checked = document.querySelectorAll('#edit-staff-services input:checked');
+    if (checked.length > 0) {
+      const links = Array.from(checked).map(cb => ({ staff_id: id, service_id: cb.value }));
+      await sb.from('staff_services').insert(links);
     }
 
-    await sb.from('reservations').update({ service_name: service, date, time, status: 'en_attente' }).eq('id', currentManagedRes.id);
-    document.getElementById('manage-result').style.display = 'none';
-    document.getElementById('search-alert').innerHTML = '<div style="color:#4ade80;font-size:0.85rem;margin-top:0.5rem;">✅ Réservation modifiée avec succès!</div>';
-    currentManagedRes = null;
+    closeEditStaff();
+    await loadStaff();
   }
 
-  async function cancelByCode() {
-    if (!currentManagedRes) return;
-    if (!confirm('Annuler cette réservation?')) return;
-    await sb.from('reservations').update({ status: 'annule' }).eq('id', currentManagedRes.id);
-    document.getElementById('manage-screen').style.display = 'none';
-    document.getElementById('cancelled-screen').style.display = 'block';
-    currentManagedRes = null;
+  async function deleteStaff(id) {
+    if (!confirm('Supprimer ce membre?')) return;
+    await sb.from('staff_services').delete().eq('staff_id', id);
+    await sb.from('staff').delete().eq('id', id);
+    await loadStaff();
   }
 
-  async function cancelMyReservation() {
-    if (!lastReservationId) return;
-    await sb.from('reservations').delete().eq('id', lastReservationId);
-    document.getElementById('success-screen').style.display = 'none';
-    document.getElementById('cancelled-screen').style.display = 'block';
-    lastReservationId = null;
+  async function changePassword() {
+    const newPwd = document.getElementById('new-pwd').value;
+    const confirmPwd = document.getElementById('confirm-pwd').value;
+    if (newPwd.length < 6) return showAlert('pwd-alert', 'Minimum 6 caractères.', 'error');
+    if (newPwd !== confirmPwd) return showAlert('pwd-alert', 'Les mots de passe ne correspondent pas.', 'error');
+    const { error } = await sb.auth.updateUser({ password: newPwd });
+    if (error) return showAlert('pwd-alert', 'Erreur: ' + error.message, 'error');
+    showAlert('pwd-alert', '✓ Mot de passe changé avec succès!', 'success');
+    document.getElementById('new-pwd').value = '';
+    document.getElementById('confirm-pwd').value = '';
   }
 
-  init();
+  function copyLink() {
+    navigator.clipboard.writeText(document.getElementById('my-link-url').textContent);
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copié!';
+    setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
+  }
+  function shareWhatsApp() {
+    const link = document.getElementById('my-link-url').textContent;
+    window.open('https://wa.me/?text=' + encodeURIComponent('Réservez votre rendez-vous ici: ' + link));
+  }
 </script>
 </body>
 </html>
