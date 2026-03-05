@@ -442,7 +442,7 @@
     }
 
     const staffIds = links.map(l => l.staff_id);
-    const { data: staffMembers } = await sb.from('staff').select('*').in('id', staffIds);
+    const { data: staffMembers } = await sb.from('staff').select('*').in('id', staffIds).eq('is_active', true);
 
     // Store staff but don't show to client — smart auto-assign
     window.availableStaff = staffMembers || [];
