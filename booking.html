@@ -425,16 +425,14 @@
     selectedStaffId = null;
     selectedTime = null;
 
-    // Load staff for this service
     const staffStep = document.getElementById('step-staff');
-    const staffList = document.getElementById('staff-list-booking');
-    staffList.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Chargement...</div>';
+    const staffListEl = document.getElementById('staff-list-booking');
+    staffListEl.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Chargement...</div>';
     staffStep.style.display = 'block';
 
     const { data: links } = await sb.from('staff_services').select('staff_id').eq('service_id', serviceId);
-    
+
     if (!links || links.length === 0) {
-      // No staff assigned — use business hours directly
       staffStep.style.display = 'none';
       selectedStaffOpening = bizOpeningTime;
       selectedStaffClosing = bizClosingTime;
@@ -446,7 +444,10 @@
     const staffIds = links.map(l => l.staff_id);
     const { data: staffMembers } = await sb.from('staff').select('*').in('id', staffIds);
 
-    staffList.innerHTML = (staffMembers || []).map(s => `
+    // Store all staff for smart slot logic
+    window.availableStaff = staffMembers || [];
+
+    staffListEl.innerHTML = (staffMembers || []).map(s => `
       <div onclick="selectStaff(this, '${s.id}', '${s.opening_time?.slice(0,5)||bizOpeningTime}', '${s.closing_time?.slice(0,5)||bizClosingTime}', ${bizSlotDuration})"
         style="display:flex;align-items:center;gap:1rem;padding:0.8rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.2s;"
         onmouseover="this.style.borderColor='#7c6af7'" onmouseout="if(!this.classList.contains('selected-staff'))this.style.borderColor='var(--border)'">
@@ -481,29 +482,71 @@
     const grid = document.getElementById('slots-grid');
     grid.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Chargement...</div>';
 
-    // Fetch reserved slots for this date (filter by staff if selected)
-    let query = sb.from('reservations').select('time').eq('business_id', businessId).eq('date', date).neq('status', 'annule');
-    if (selectedStaffId) query = query.eq('staff_id', selectedStaffId);
+    const staffList = window.availableStaff || [];
 
-    const { data: reservations } = await query;
-    const occupiedTimes = (reservations || []).map(r => r.time.slice(0, 5));
+    if (selectedStaffId) {
+      // Single staff selected — show their slots only
+      const { data: reservations } = await sb.from('reservations').select('time').eq('business_id', businessId).eq('date', date).eq('staff_id', selectedStaffId).neq('status', 'annule');
+      const occupiedTimes = (reservations || []).map(r => r.time.slice(0,5));
+      const activeSlots = generateSlots(selectedStaffOpening, selectedStaffClosing, selectedStaffDuration);
+      const now = new Date();
+      grid.innerHTML = activeSlots.map(s => {
+        const occupied = occupiedTimes.includes(s);
+        const isPast = new Date(date + 'T' + s + ':00') < now;
+        if (occupied || isPast) return `<div class="slot occupied" title="${isPast?'Passé':'Occupé'}">${s}</div>`;
+        return `<div class="slot" onclick="selectSlot(this,'${s}')">${s}</div>`;
+      }).join('');
 
-    const opening = selectedStaffOpening || bizOpeningTime;
-    const closing = selectedStaffClosing || bizClosingTime;
-    const duration = selectedStaffDuration || bizSlotDuration;
-    const activeSlots = generateSlots(opening, closing, duration);
-    grid.innerHTML = activeSlots.map(s => {
-      const occupied = occupiedTimes.includes(s);
-      // نشوفو إلا الوقت فات
-      const [h, m] = s.split(':').map(Number);
-      const slotDateTime = new Date(date + 'T' + s + ':00');
-      const isPast = slotDateTime < new Date();
-      
-      if (occupied || isPast) {
-        return `<div class="slot occupied" title="${isPast ? 'Créneau passé' : 'Créneau occupé'}">${s}</div>`;
-      }
-      return `<div class="slot" onclick="selectSlot(this, '${s}')">${s}</div>`;
-    }).join('');
+    } else if (staffList.length > 0) {
+      // Multiple staff — show smart combined slots
+      // Fetch all reservations for all staff on this date
+      const staffIds = staffList.map(s => s.id);
+      const { data: allRes } = await sb.from('reservations').select('time,staff_id').eq('business_id', businessId).eq('date', date).neq('status', 'annule');
+
+      // For each slot, check if at least one staff is free
+      const allSlots = new Set();
+      staffList.forEach(s => {
+        const slts = generateSlots(s.opening_time?.slice(0,5)||bizOpeningTime, s.closing_time?.slice(0,5)||bizClosingTime, bizSlotDuration);
+        slts.forEach(sl => allSlots.add(sl));
+      });
+
+      const now = new Date();
+      const sortedSlots = Array.from(allSlots).sort();
+
+      grid.innerHTML = sortedSlots.map(sl => {
+        const isPast = new Date(date + 'T' + sl + ':00') < now;
+        if (isPast) return `<div class="slot occupied" title="Passé">${sl}</div>`;
+
+        // Check if any staff is free at this slot
+        const freeStaff = staffList.filter(s => {
+          const sSlots = generateSlots(s.opening_time?.slice(0,5)||bizOpeningTime, s.closing_time?.slice(0,5)||bizClosingTime, bizSlotDuration);
+          if (!sSlots.includes(sl)) return false;
+          const takenByThisStaff = (allRes||[]).some(r => r.staff_id === s.id && r.time?.slice(0,5) === sl);
+          return !takenByThisStaff;
+        });
+
+        if (freeStaff.length === 0) return `<div class="slot occupied" title="Complet">${sl}</div>`;
+        return `<div class="slot" onclick="selectSmartSlot(this,'${sl}')">${sl}</div>`;
+      }).join('');
+
+    } else {
+      // No staff — use business hours
+      const { data: reservations } = await sb.from('reservations').select('time').eq('business_id', businessId).eq('date', date).neq('status', 'annule');
+      const occupiedTimes = (reservations || []).map(r => r.time.slice(0,5));
+      const activeSlots = generateSlots(bizOpeningTime, bizClosingTime, bizSlotDuration);
+      const now = new Date();
+      grid.innerHTML = activeSlots.map(s => {
+        const occupied = occupiedTimes.includes(s);
+        const isPast = new Date(date + 'T' + s + ':00') < now;
+        if (occupied || isPast) return `<div class="slot occupied">${s}</div>`;
+        return `<div class="slot" onclick="selectSlot(this,'${s}')">${s}</div>`;
+      }).join('');
+    }
+  }
+
+  function selectSmartSlot(el, time) {
+    selectSlot(el, time);
+    window.smartSlotTime = time;
   }
 
   function selectSlot(el, time) {
@@ -538,7 +581,19 @@
       status: 'en_attente',
       reservation_code: resCode
     };
-    if (selectedStaffId) insertData.staff_id = selectedStaffId;
+
+    // Auto-assign free staff if not manually selected
+    if (!selectedStaffId && window.availableStaff?.length > 0) {
+      const { data: allRes } = await sb.from('reservations').select('time,staff_id').eq('business_id', businessId).eq('date', date).neq('status', 'annule');
+      const freeStaff = window.availableStaff.find(s => {
+        const sSlots = generateSlots(s.opening_time?.slice(0,5)||bizOpeningTime, s.closing_time?.slice(0,5)||bizClosingTime, bizSlotDuration);
+        if (!sSlots.includes(selectedTime)) return false;
+        return !(allRes||[]).some(r => r.staff_id === s.id && r.time?.slice(0,5) === selectedTime);
+      });
+      if (freeStaff) insertData.staff_id = freeStaff.id;
+    } else if (selectedStaffId) {
+      insertData.staff_id = selectedStaffId;
+    }
 
     const { data: newRes, error } = await sb.from('reservations').insert(insertData).select().single();
 
