@@ -405,6 +405,7 @@
       <button class="nav-item" onclick="showView('reservations', this)">📋 &nbsp;Réservations</button>
       <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
       <button class="nav-item" onclick="showView('services', this); loadServices()">⚙️ &nbsp;Mes services</button>
+      <button class="nav-item" onclick="showView('staff', this); loadStaff()">👥 &nbsp;Mon staff</button>
       <button class="nav-item" onclick="showView('my-link', this)">🔗 &nbsp;Mon lien</button>
       <button class="nav-item" onclick="showView('change-pwd', this)">🔑 &nbsp;Changer mot de passe</button>
       <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border);margin-top:2rem;">
@@ -676,6 +677,65 @@
 
         <div class="view-title" style="font-size:1rem;">Services actuels</div>
         <div id="services-list-dash" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
+      </div>
+
+      <!-- STAFF VIEW -->
+      <div id="view-staff" class="view">
+        <div class="view-title">👥 Mon staff</div>
+
+        <!-- ADD STAFF FORM -->
+        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
+          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:1rem;">➕ Ajouter un membre</div>
+          <div id="staff-alert"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" id="staff-name" placeholder="Ex: Ahmed">
+            </div>
+            <div class="form-group">
+              <label>Spécialité (optionnel)</label>
+              <input type="text" id="staff-specialty" placeholder="Ex: Coupe homme">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Heure d'ouverture</label>
+              <div style="display:flex;gap:0.5rem;">
+                <select id="staff-opening-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08" selected>8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <select id="staff-opening-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="00" selected>00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                </select>
+                <select id="staff-opening-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="AM" selected>AM</option><option value="PM">PM</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Heure de fermeture</label>
+              <div style="display:flex;gap:0.5rem;">
+                <select id="staff-closing-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12" selected>12</option>
+                </select>
+                <select id="staff-closing-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="00" selected>00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                </select>
+                <select id="staff-closing-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+                  <option value="AM">AM</option><option value="PM" selected>PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>Services assignés</label>
+            <div id="staff-services-check" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.3rem;"></div>
+          </div>
+          <button class="btn-add" onclick="addStaff()">➕ Ajouter</button>
+        </div>
+
+        <!-- STAFF LIST -->
+        <div id="staff-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;"></div>
       </div>
 
       <!-- CHANGE PASSWORD -->
@@ -1310,7 +1370,8 @@
   function ampmTo24(h, m, ampm) {
     let hour = parseInt(h);
     if (ampm === 'AM' && hour === 12) hour = 0;
-    if (ampm === 'PM' && hour !== 12) hour += 12;
+    else if (ampm === 'PM' && hour !== 12) hour += 12;
+    else if (ampm === 'PM' && hour === 12) hour = 12;
     return String(hour).padStart(2,'0') + ':' + m;
   }
 
@@ -1461,6 +1522,91 @@
   }
 
   // ---- LINK ----
+  // ---- STAFF ----
+  async function loadStaff() {
+    if (!currentBusiness) return;
+
+    const { data: services } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
+    const checksDiv = document.getElementById('staff-services-check');
+    checksDiv.innerHTML = (services || []).map(s => `
+      <label style="display:flex;align-items:center;gap:0.4rem;background:var(--surface);border:1px solid var(--border);padding:0.35rem 0.7rem;border-radius:7px;cursor:pointer;font-size:0.82rem;">
+        <input type="checkbox" value="${s.id}" data-name="${s.name}" style="accent-color:var(--accent);">
+        ${s.name}
+      </label>
+    `).join('');
+
+    const { data: staffList } = await sb.from('staff').select('*').eq('business_id', currentBusiness.id).order('created_at');
+    const wrap = document.getElementById('staff-list');
+    if (!staffList?.length) {
+      wrap.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Aucun membre pour le moment</div>';
+      return;
+    }
+
+    const staffIds = staffList.map(s => s.id);
+    const { data: staffServices } = await sb.from('staff_services').select('*').in('staff_id', staffIds);
+    const { data: allServices } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
+
+    wrap.innerHTML = staffList.map(s => {
+      const myServices = (staffServices || [])
+        .filter(ss => ss.staff_id === s.id)
+        .map(ss => allServices?.find(sv => sv.id === ss.service_id)?.name)
+        .filter(Boolean);
+      const o = to12h(s.opening_time?.slice(0,5) || '08:00');
+      const c = to12h(s.closing_time?.slice(0,5) || '18:00');
+      return `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem;">
+            <div>
+              <div style="font-weight:600;font-size:0.95rem;">${s.name}</div>
+              ${s.specialty ? `<div style="color:var(--muted);font-size:0.78rem;">${s.specialty}</div>` : ''}
+            </div>
+            <button onclick="deleteStaff('${s.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;">🗑️</button>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem;">⏰ ${o.h}:${o.m} ${o.ampm} — ${c.h}:${c.m} ${c.ampm}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.3rem;">
+            ${myServices.map(sv => `<span style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);padding:0.15rem 0.5rem;border-radius:5px;font-size:0.72rem;">${sv}</span>`).join('') || '<span style="color:var(--muted);font-size:0.78rem;">Aucun service assigné</span>'}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function addStaff() {
+    const name = document.getElementById('staff-name').value.trim();
+    if (!name) return showAlert('staff-alert', 'Nom obligatoire.', 'error');
+    const opening = ampmTo24(
+      document.getElementById('staff-opening-h').value,
+      document.getElementById('staff-opening-m').value,
+      document.getElementById('staff-opening-ampm').value
+    );
+    const closing = ampmTo24(
+      document.getElementById('staff-closing-h').value,
+      document.getElementById('staff-closing-m').value,
+      document.getElementById('staff-closing-ampm').value
+    );
+    const specialty = document.getElementById('staff-specialty').value.trim();
+    const { data: newStaff, error } = await sb.from('staff').insert({
+      business_id: currentBusiness.id,
+      name, specialty, opening_time: opening, closing_time: closing
+    }).select().single();
+    if (error) return showAlert('staff-alert', 'Erreur: ' + error.message, 'error');
+    const checked = document.querySelectorAll('#staff-services-check input:checked');
+    if (checked.length > 0) {
+      const links = Array.from(checked).map(cb => ({ staff_id: newStaff.id, service_id: cb.value }));
+      await sb.from('staff_services').insert(links);
+    }
+    document.getElementById('staff-name').value = '';
+    document.getElementById('staff-specialty').value = '';
+    showAlert('staff-alert', '✓ Membre ajouté!', 'success');
+    await loadStaff();
+  }
+
+  async function deleteStaff(id) {
+    if (!confirm('Supprimer ce membre?')) return;
+    await sb.from('staff_services').delete().eq('staff_id', id);
+    await sb.from('staff').delete().eq('id', id);
+    await loadStaff();
+  }
+
   async function changePassword() {
     const newPwd = document.getElementById('new-pwd').value;
     const confirmPwd = document.getElementById('confirm-pwd').value;
