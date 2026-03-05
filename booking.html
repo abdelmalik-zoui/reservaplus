@@ -533,6 +533,7 @@
     `;
     document.getElementById('manage-service').value = data.service_name;
     document.getElementById('manage-date').value = data.date;
+    document.getElementById('manage-date').min = new Date().toISOString().split('T')[0];
     document.getElementById('manage-time').value = data.time?.slice(0,5);
 
     // Load services
@@ -546,6 +547,14 @@
     const service = document.getElementById('manage-service').value;
     const date = document.getElementById('manage-date').value;
     const time = document.getElementById('manage-time').value;
+
+    // Check if date/time is in the past
+    const selectedDateTime = new Date(date + 'T' + time);
+    if (selectedDateTime < new Date()) {
+      document.getElementById('search-alert').innerHTML = '<div style="color:#f87171;font-size:0.82rem;margin-top:0.5rem;">❌ Impossible de choisir une heure passée</div>';
+      return;
+    }
+
     await sb.from('reservations').update({ service_name: service, date, time, status: 'en_attente' }).eq('id', currentManagedRes.id);
     document.getElementById('manage-result').style.display = 'none';
     document.getElementById('search-alert').innerHTML = '<div style="color:#4ade80;font-size:0.85rem;margin-top:0.5rem;">✅ Réservation modifiée avec succès!</div>';
