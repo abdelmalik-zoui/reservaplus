@@ -213,6 +213,46 @@
     color: var(--muted);
   }
   footer span { color: var(--accent); font-weight: 600; }
+
+  /* ===== BOOKING MOBILE ===== */
+  @media(max-width:768px){
+    body { padding:1rem 0.8rem; justify-content:flex-start; padding-top:2rem; padding-bottom:80px; }
+    .booking-wrap { max-width:100%; }
+
+    /* Steps */
+    .steps-bar { gap:0.3rem; margin-bottom:1.5rem; }
+    .step-dot { width:7px; height:7px; }
+    .step-line { flex:1; height:1px; }
+
+    /* Cards */
+    .card { border-radius:12px; padding:1.3rem 1.1rem; }
+
+    /* Service cards */
+    .service-card { padding:0.9rem 0.8rem; }
+    .service-name { font-size:0.88rem; }
+    .service-meta { font-size:0.72rem; }
+
+    /* Slots */
+    .slots-grid { grid-template-columns:repeat(4,1fr); gap:0.4rem; }
+    .slot-btn { padding:0.5rem 0.3rem; font-size:0.75rem; border-radius:7px; }
+
+    /* Buttons - full width touch friendly */
+    .btn-next, .btn-back { padding:0.9rem 1.2rem; font-size:0.92rem; border-radius:9px; }
+    .btn-next { min-height:48px; }
+
+    /* Inputs */
+    input, select { font-size:16px !important; min-height:44px; }
+    .form-group label { font-size:0.8rem; }
+
+    /* Success */
+    .success-icon { width:52px; height:52px; font-size:1.4rem; }
+    .success-title { font-size:1rem; }
+    .code-display { font-size:1.3rem; letter-spacing:0.08em; }
+
+    /* Bottom nav */
+    .booking-bnav { display:grid !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -748,5 +788,21 @@
 
   init();
 </script>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="booking-bnav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,22,0.96);backdrop-filter:blur(20px);border-top:1px solid rgba(124,106,247,0.15);z-index:200;padding:0.4rem 0 calc(0.4rem + env(safe-area-inset-bottom));grid-template-columns:repeat(4,1fr);">
+  <a href="index.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">🏠</span><span style="font-size:0.58rem;font-weight:500;">Accueil</span>
+  </a>
+  <a href="admin.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">💻</span><span style="font-size:0.58rem;font-weight:500;">Admin</span>
+  </a>
+  <a href="app.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">📊</span><span style="font-size:0.58rem;font-weight:500;">Dashboard</span>
+  </a>
+  <span style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;color:var(--accent);padding:0.4rem 0;font-family:'DM Sans',sans-serif;">
+    <span style="font-size:1.1rem;">📅</span><span style="font-size:0.58rem;font-weight:500;">Réserver</span>
+  </span>
+</div>
 </body>
 </html>
