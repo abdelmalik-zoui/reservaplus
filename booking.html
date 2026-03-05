@@ -234,6 +234,7 @@
     <div class="business-header">
       <div class="business-name" id="biz-name">—</div>
       <div class="business-sub">Réservez votre rendez-vous en ligne</div>
+      <button onclick="showManageScreen()" style="margin-top:0.8rem;background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);color:#a78bfa;padding:0.4rem 1rem;border-radius:100px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">🔍 Gérer ma réservation</button>
     </div>
 
     <div id="alert-box"></div>
@@ -286,6 +287,35 @@
     <div class="success-icon" style="border-color:#f87171;background:rgba(248,113,113,0.1);">✗</div>
     <div class="success-title">Réservation annulée</div>
     <div class="success-sub">Votre réservation a été annulée avec succès.</div>
+  </div>
+
+  <!-- GÉRER RÉSERVATION -->
+  <div id="manage-screen" class="card" style="display:none;padding:1.5rem;">
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">🔍 Gérer ma réservation</div>
+    <div id="manage-search" >
+      <input type="text" id="code-input" placeholder="Entrez votre code (ex: RES-ABC123)" style="width:100%;padding:0.75rem 1rem;border-radius:9px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.9rem;margin-bottom:0.8rem;box-sizing:border-box;">
+      <button onclick="searchReservation()" style="width:100%;background:#7c6af7;border:none;color:white;padding:0.8rem;border-radius:9px;font-size:0.9rem;font-weight:600;cursor:pointer;">Rechercher</button>
+      <div id="search-alert" style="margin-top:0.5rem;"></div>
+    </div>
+    <div id="manage-result" style="display:none;margin-top:1rem;">
+      <div id="manage-info" style="background:rgba(124,106,247,0.08);border:1px solid rgba(124,106,247,0.2);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:0.85rem;"></div>
+      <div style="margin-bottom:0.8rem;">
+        <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouveau service</label>
+        <select id="manage-service" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;"></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:0.8rem;">
+        <div>
+          <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouvelle date</label>
+          <input type="date" id="manage-date" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouvelle heure</label>
+          <input type="time" id="manage-time" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;box-sizing:border-box;">
+        </div>
+      </div>
+      <button onclick="updateReservation()" style="width:100%;background:#7c6af7;border:none;color:white;padding:0.75rem;border-radius:9px;font-size:0.88rem;font-weight:600;cursor:pointer;margin-bottom:0.5rem;">💾 Modifier</button>
+      <button onclick="cancelByCode()" style="width:100%;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;padding:0.75rem;border-radius:9px;font-size:0.88rem;font-weight:600;cursor:pointer;">✗ Annuler ma réservation</button>
+    </div>
   </div>
 
   <footer>Propulsé par <span>ReservaPlus</span></footer>
@@ -431,6 +461,8 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Confirmation...';
 
+    const resCode = 'RES-' + Math.random().toString(36).substr(2,6).toUpperCase();
+
     const { data: newRes, error } = await sb.from('reservations').insert({
       business_id: businessId,
       client_name: name,
@@ -438,7 +470,8 @@
       service_name: selectedService,
       date: date,
       time: selectedTime,
-      status: 'en_attente'
+      status: 'en_attente',
+      reservation_code: resCode
     }).select().single();
 
     if (error) {
@@ -450,16 +483,82 @@
 
     lastReservationId = newRes.id;
 
-    // Show success
+    // Show success with code
     document.getElementById('booking-main').style.display = 'none';
     document.getElementById('success-screen').style.display = 'block';
-    document.getElementById('success-details').textContent =
-      `Merci ${name}! Votre rendez-vous pour "${selectedService}" le ${date} à ${selectedTime} a été enregistré.`;
+    document.getElementById('success-details').innerHTML =
+      `Merci ${name}! Votre rendez-vous pour "<strong>${selectedService}</strong>" le <strong>${date}</strong> à <strong>${selectedTime}</strong> a été enregistré.<br><br>
+      <div style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);border-radius:12px;padding:1rem;text-align:center;margin-top:0.5rem;">
+        <div style="font-size:0.8rem;color:#a78bfa;margin-bottom:0.3rem;">Votre code de réservation</div>
+        <div style="font-size:1.8rem;font-weight:800;letter-spacing:0.1em;color:white;">${resCode}</div>
+        <div style="font-size:0.75rem;color:#7070a0;margin-top:0.3rem;">Gardez ce code pour modifier ou annuler votre réservation</div>
+      </div>`;
   }
 
   function showAlert(msg) {
     const el = document.getElementById('alert-box');
     el.innerHTML = `<div class="alert error">${msg}</div>`;
+  }
+
+  let currentManagedRes = null;
+
+  function showManageScreen() {
+    document.getElementById('booking-main').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'none';
+    document.getElementById('manage-screen').style.display = 'block';
+    document.getElementById('manage-result').style.display = 'none';
+    document.getElementById('code-input').value = '';
+    document.getElementById('search-alert').innerHTML = '';
+  }
+
+  async function searchReservation() {
+    const code = document.getElementById('code-input').value.trim().toUpperCase();
+    if (!code) return;
+    const { data } = await sb.from('reservations').select('*').eq('reservation_code', code).eq('business_id', businessId).maybeSingle();
+    if (!data) {
+      document.getElementById('search-alert').innerHTML = '<div style="color:#f87171;font-size:0.82rem;margin-top:0.3rem;">❌ Code introuvable</div>';
+      return;
+    }
+    if (data.status === 'annule' || data.status === 'done') {
+      document.getElementById('search-alert').innerHTML = '<div style="color:#f87171;font-size:0.82rem;margin-top:0.3rem;">Cette réservation est déjà ' + (data.status === 'annule' ? 'annulée' : 'terminée') + '</div>';
+      return;
+    }
+    currentManagedRes = data;
+    document.getElementById('search-alert').innerHTML = '';
+    document.getElementById('manage-result').style.display = 'block';
+    document.getElementById('manage-info').innerHTML = `
+      <div><strong>${data.client_name}</strong> — ${data.service_name}</div>
+      <div style="color:#a78bfa;margin-top:0.3rem;">📅 ${data.date} à ${data.time?.slice(0,5)}</div>
+      <div style="margin-top:0.3rem;font-size:0.78rem;color:#7070a0;">Code: ${data.reservation_code}</div>
+    `;
+    document.getElementById('manage-service').value = data.service_name;
+    document.getElementById('manage-date').value = data.date;
+    document.getElementById('manage-time').value = data.time?.slice(0,5);
+
+    // Load services
+    const { data: services } = await sb.from('services').select('*').eq('business_id', businessId);
+    const sel = document.getElementById('manage-service');
+    sel.innerHTML = (services || []).map(s => `<option value="${s.name}" ${s.name === data.service_name ? 'selected' : ''}>${s.name}</option>`).join('');
+  }
+
+  async function updateReservation() {
+    if (!currentManagedRes) return;
+    const service = document.getElementById('manage-service').value;
+    const date = document.getElementById('manage-date').value;
+    const time = document.getElementById('manage-time').value;
+    await sb.from('reservations').update({ service_name: service, date, time, status: 'en_attente' }).eq('id', currentManagedRes.id);
+    document.getElementById('manage-result').style.display = 'none';
+    document.getElementById('search-alert').innerHTML = '<div style="color:#4ade80;font-size:0.85rem;margin-top:0.5rem;">✅ Réservation modifiée avec succès!</div>';
+    currentManagedRes = null;
+  }
+
+  async function cancelByCode() {
+    if (!currentManagedRes) return;
+    if (!confirm('Annuler cette réservation?')) return;
+    await sb.from('reservations').update({ status: 'annule' }).eq('id', currentManagedRes.id);
+    document.getElementById('manage-screen').style.display = 'none';
+    document.getElementById('cancelled-screen').style.display = 'block';
+    currentManagedRes = null;
   }
 
   async function cancelMyReservation() {
