@@ -86,9 +86,53 @@
   .modal-close { position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; }
 
   @media (max-width:768px) {
-    .table-head, .table-row { grid-template-columns:2fr 1.5fr 1fr 1fr; }
-    .table-head span:nth-child(2), .table-row span:nth-child(2) { display:none; }
-    .table-head span:nth-child(3), .table-row span:nth-child(3) { display:none; }
+    /* NAV */
+    .admin-nav { padding:0.8rem 4%; flex-wrap:wrap; gap:0.5rem; }
+    .admin-logo { font-size:1.1rem; }
+    .admin-badge { font-size:0.55rem; padding:0.15rem 0.4rem; }
+    .btn-logout { padding:0.4rem 0.7rem; font-size:0.72rem; }
+
+    /* KPIs */
+    .stats-grid { grid-template-columns:1fr 1fr; gap:0.6rem; padding:0 4% 0.5rem; }
+    .stat-card { padding:1rem 0.8rem; }
+    .stat-val { font-size:1.5rem; }
+    .stat-label { font-size:0.7rem; }
+
+    /* FILTERS */
+    .filters { padding:0.8rem 4%; flex-wrap:wrap; gap:0.5rem; }
+    .filter-btn { padding:0.4rem 0.8rem; font-size:0.75rem; }
+    .search-wrap { width:100%; }
+    .search-wrap input { width:100%; }
+
+    /* TABLE -> CARDS on mobile */
+    .table-wrap { padding:0 4% 1rem; }
+    .table-head { display:none; }
+    .table-row {
+      display:flex; flex-direction:column; gap:0.4rem;
+      padding:1rem; border-radius:10px;
+      border:1px solid var(--border); margin-bottom:0.5rem;
+      background:var(--card);
+    }
+    .table-row span { font-size:0.82rem; }
+    .table-row span:before { color:var(--muted); font-size:0.65rem; font-weight:600; display:block; margin-bottom:0.1rem; text-transform:uppercase; letter-spacing:0.06em; }
+    .table-row span:nth-child(1):before { content:'Client'; }
+    .table-row span:nth-child(2):before { content:'Service'; }
+    .table-row span:nth-child(3):before { content:'Staff'; }
+    .table-row span:nth-child(4):before { content:'Date'; }
+    .table-row span:nth-child(5):before { content:'Heure'; }
+    .table-row span:nth-child(6):before { content:'Statut'; }
+    .table-row span:nth-child(7) { display:flex; gap:0.4rem; flex-wrap:wrap; }
+
+    /* SECTION HEADER */
+    .section-header { padding:1rem 4% 0.5rem; flex-wrap:wrap; gap:0.5rem; }
+    .section-header h2 { font-size:1rem; }
+
+    /* MODALS */
+    .modal-box { padding:1.5rem; margin:1rem; width:calc(100% - 2rem); max-width:100%; }
+
+    /* BOTTOM NAV */
+    .admin-bottom-nav { display:flex; }
+    body { padding-bottom:70px; }
   }
 </style>
 </head>
@@ -637,5 +681,26 @@
   document.getElementById('new-start-date').addEventListener('input', calcNewClientEnd);
   document.getElementById('new-trial').addEventListener('change', calcNewClientEnd);
 </script>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="admin-bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,22,0.96);backdrop-filter:blur(20px);border-top:1px solid rgba(124,106,247,0.15);z-index:200;padding:0.4rem 0 calc(0.4rem + env(safe-area-inset-bottom));grid-template-columns:repeat(4,1fr);" id="admin-bnav">
+  <a href="index.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">🏠</span><span style="font-size:0.58rem;font-weight:500;">Accueil</span>
+  </a>
+  <a href="app.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">📊</span><span style="font-size:0.58rem;font-weight:500;">Dashboard</span>
+  </a>
+  <a href="booking.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">📅</span><span style="font-size:0.58rem;font-weight:500;">Réserver</span>
+  </a>
+  <span style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;color:var(--accent);padding:0.4rem 0;font-family:'DM Sans',sans-serif;">
+    <span style="font-size:1.1rem;">💻</span><span style="font-size:0.58rem;font-weight:500;">Admin</span>
+  </span>
+</div>
+<style>
+@media(max-width:768px){
+  #admin-bnav{display:grid !important;}
+}
+</style>
 </body>
 </html>
