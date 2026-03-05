@@ -213,7 +213,7 @@
   }
   .table-head {
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 1fr 100px;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 120px;
     padding: 0.7rem 1.2rem;
     background: var(--surface);
     font-size: 0.72rem;
@@ -224,7 +224,7 @@
   }
   .table-row {
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 1fr 100px;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 120px;
     padding: 0.85rem 1.2rem;
     font-size: 0.83rem;
     border-bottom: 1px solid rgba(30,30,46,0.5);
@@ -1137,6 +1137,11 @@
     const reservations = data || [];
     allReservations = reservations;
 
+    // Load staff names
+    const { data: staffData } = await sb.from('staff').select('id,name').eq('business_id', currentBusiness.id);
+    window.staffMap = {};
+    (staffData || []).forEach(s => window.staffMap[s.id] = s.name);
+
     // Auto-done: بعد 2 ساعة من وقت الحجز
     const now = new Date();
     const idsToMarkDone = [];
@@ -1169,7 +1174,7 @@
 
   function renderTable(id, reservations) {
     const wrap = document.getElementById(id);
-    const header = `<div class="table-head"><span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span></div>`;
+    const header = `<div class="table-head"><span>CLIENT</span><span>SERVICE</span><span>STAFF</span><span>DATE</span><span>HEURE</span><span>STATUT</span></div>`;
     if (!reservations.length) {
       wrap.innerHTML = header + '<div class="table-empty">Aucune réservation pour le moment.</div>';
       return;
@@ -1190,9 +1195,11 @@
       const phone = (r.client_phone || '').replace(/\s/g,'').replace(/^\+/,'');
       const waMsg = encodeURIComponent(`Bonjour ${r.client_name}! Votre rendez-vous est confirmé:\n📅 Date: ${r.date}\n⏰ Heure: ${r.time?.slice(0,5)}\n💈 Service: ${r.service_name || ''}\n\nMerci de votre confiance! — ${currentBusiness?.name}`);
       const waBtn = phone ? `<a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;text-decoration:none;" title="WhatsApp">💬</a>` : '';
+      const staffName = r.staff_id && window.staffMap?.[r.staff_id] ? `<span style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);padding:0.1rem 0.4rem;border-radius:5px;font-size:0.7rem;">👤 ${window.staffMap[r.staff_id]}</span>` : '<span style="color:var(--muted);font-size:0.75rem;">—</span>';
       return `<div class="table-row">
         <span>${r.client_name}<br><span style="color:var(--muted);font-size:0.72rem;">${r.client_phone || ''}</span></span>
         <span>${r.service_name || '—'}</span>
+        <span>${staffName}</span>
         <span>${r.date}</span>
         <span>${r.time?.slice(0,5) || '—'}</span>
         <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}${doneBtn}${editBtn}${waBtn}</span>
