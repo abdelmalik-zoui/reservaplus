@@ -247,19 +247,25 @@
       </div>
     </div>
 
-    <!-- STEP 2: DATE & TIME -->
+    <!-- STEP 2: STAFF -->
+    <div class="card" id="step-staff" style="display:none">
+      <div class="step-label">② Choisissez un membre</div>
+      <div id="staff-list-booking" style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem;"></div>
+    </div>
+
+    <!-- STEP 3: DATE & TIME -->
     <div class="card">
-      <div class="step-label">② Choisissez une date</div>
+      <div class="step-label">③ Choisissez une date</div>
       <input type="date" class="date-input" id="booking-date" onchange="updateSlots()">
       <div style="margin-top:1.2rem;">
-        <div class="step-label">③ Choisissez un créneau</div>
+        <div class="step-label">④ Choisissez un créneau</div>
         <div class="slots-grid" id="slots-grid"></div>
       </div>
     </div>
 
-    <!-- STEP 3: INFO CLIENT -->
+    <!-- STEP 4: INFO CLIENT -->
     <div class="card">
-      <div class="step-label">④ Vos informations</div>
+      <div class="step-label">⑤ Vos informations</div>
       <div class="form-group">
         <label>Nom complet</label>
         <input type="text" id="client-name" placeholder="Ex: Youssef Alami">
@@ -328,7 +334,12 @@
   );
 
   let businessId = null;
-  let selectedService = 'Coupe homme';
+  let selectedService = null;
+  let selectedServiceId = null;
+  let selectedStaffId = null;
+  let selectedStaffOpening = null;
+  let selectedStaffClosing = null;
+  let selectedStaffDuration = 30;
   let selectedTime = null;
   let lastReservationId = null;
   let bizOpeningTime = null;
@@ -388,13 +399,12 @@
     const { data: services } = await sb.from('services').select('*').eq('business_id', businessId);
     const grid = document.getElementById('services-list');
     if (services && services.length > 0) {
-      grid.innerHTML = services.map((s, i) => `
-        <div class="service-item ${i === 0 ? 'selected' : ''}" onclick="selectService(this, '${s.name}', ${s.duration}, ${s.price})">
+      grid.innerHTML = services.map(s => `
+        <div class="service-item" onclick="selectService(this, '${s.name}', '${s.id}')">
           <div class="service-name">${s.name}</div>
           <div class="service-meta">${s.duration} min · ${s.price} MAD</div>
         </div>
       `).join('');
-      selectedService = services[0].name;
     } else {
       grid.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;grid-column:span 2;padding:0.5rem;">Aucun service disponible pour le moment.</div>';
     }
@@ -403,15 +413,66 @@
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('booking-date').value = today;
     document.getElementById('booking-date').min = today;
-    updateSlots();
 
     document.getElementById('booking-main').style.display = 'block';
   }
 
-  function selectService(el, name) {
+  async function selectService(el, name, serviceId) {
     document.querySelectorAll('.service-item').forEach(i => i.classList.remove('selected'));
     el.classList.add('selected');
     selectedService = name;
+    selectedServiceId = serviceId;
+    selectedStaffId = null;
+    selectedTime = null;
+
+    // Load staff for this service
+    const staffStep = document.getElementById('step-staff');
+    const staffList = document.getElementById('staff-list-booking');
+    staffList.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Chargement...</div>';
+    staffStep.style.display = 'block';
+
+    const { data: links } = await sb.from('staff_services').select('staff_id').eq('service_id', serviceId);
+    
+    if (!links || links.length === 0) {
+      // No staff assigned — use business hours directly
+      staffStep.style.display = 'none';
+      selectedStaffOpening = bizOpeningTime;
+      selectedStaffClosing = bizClosingTime;
+      selectedStaffDuration = bizSlotDuration;
+      updateSlots();
+      return;
+    }
+
+    const staffIds = links.map(l => l.staff_id);
+    const { data: staffMembers } = await sb.from('staff').select('*').in('id', staffIds);
+
+    staffList.innerHTML = (staffMembers || []).map(s => `
+      <div onclick="selectStaff(this, '${s.id}', '${s.opening_time?.slice(0,5)||bizOpeningTime}', '${s.closing_time?.slice(0,5)||bizClosingTime}', ${bizSlotDuration})"
+        style="display:flex;align-items:center;gap:1rem;padding:0.8rem 1rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all 0.2s;"
+        onmouseover="this.style.borderColor='#7c6af7'" onmouseout="if(!this.classList.contains('selected-staff'))this.style.borderColor='var(--border)'">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(124,106,247,0.2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">👤</div>
+        <div>
+          <div style="font-weight:600;font-size:0.9rem;">${s.name}</div>
+          ${s.specialty ? `<div style="color:var(--muted);font-size:0.75rem;">${s.specialty}</div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function selectStaff(el, staffId, opening, closing, duration) {
+    document.querySelectorAll('#staff-list-booking > div').forEach(d => {
+      d.classList.remove('selected-staff');
+      d.style.borderColor = 'var(--border)';
+      d.style.background = 'var(--surface)';
+    });
+    el.classList.add('selected-staff');
+    el.style.borderColor = '#7c6af7';
+    el.style.background = 'rgba(124,106,247,0.08)';
+    selectedStaffId = staffId;
+    selectedStaffOpening = opening;
+    selectedStaffClosing = closing;
+    selectedStaffDuration = duration;
+    updateSlots();
   }
 
   async function updateSlots() {
@@ -420,16 +481,17 @@
     const grid = document.getElementById('slots-grid');
     grid.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Chargement...</div>';
 
-    // Fetch reserved slots for this date
-    const { data: reservations } = await sb.from('reservations')
-      .select('time')
-      .eq('business_id', businessId)
-      .eq('date', date)
-      .neq('status', 'annule');
+    // Fetch reserved slots for this date (filter by staff if selected)
+    let query = sb.from('reservations').select('time').eq('business_id', businessId).eq('date', date).neq('status', 'annule');
+    if (selectedStaffId) query = query.eq('staff_id', selectedStaffId);
 
+    const { data: reservations } = await query;
     const occupiedTimes = (reservations || []).map(r => r.time.slice(0, 5));
 
-    const activeSlots = generateSlots();
+    const opening = selectedStaffOpening || bizOpeningTime;
+    const closing = selectedStaffClosing || bizClosingTime;
+    const duration = selectedStaffDuration || bizSlotDuration;
+    const activeSlots = generateSlots(opening, closing, duration);
     grid.innerHTML = activeSlots.map(s => {
       const occupied = occupiedTimes.includes(s);
       // نشوفو إلا الوقت فات
@@ -455,6 +517,7 @@
     const phone = document.getElementById('client-phone').value.trim();
     const date = document.getElementById('booking-date').value;
 
+    if (!selectedService) return showAlert('Veuillez choisir un service.');
     if (!name) return showAlert('Veuillez entrer votre nom.');
     if (!selectedTime) return showAlert('Veuillez choisir un créneau.');
     if (!date) return showAlert('Veuillez choisir une date.');
@@ -465,7 +528,7 @@
 
     const resCode = 'RES-' + Math.random().toString(36).substr(2,6).toUpperCase();
 
-    const { data: newRes, error } = await sb.from('reservations').insert({
+    const insertData = {
       business_id: businessId,
       client_name: name,
       client_phone: phone,
@@ -474,7 +537,10 @@
       time: selectedTime,
       status: 'en_attente',
       reservation_code: resCode
-    }).select().single();
+    };
+    if (selectedStaffId) insertData.staff_id = selectedStaffId;
+
+    const { data: newRes, error } = await sb.from('reservations').insert(insertData).select().single();
 
     if (error) {
       showAlert('Erreur: ' + error.message);
