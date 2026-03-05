@@ -605,11 +605,33 @@
           <div class="form-row">
             <div class="form-group">
               <label>Heure d'ouverture</label>
-              <input type="time" id="biz-opening" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+              <div style="display:flex;gap:0.5rem;">
+                <select id="biz-opening-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <select id="biz-opening-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                </select>
+                <select id="biz-opening-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="AM">AM</option><option value="PM">PM</option>
+                </select>
+              </div>
+              <input type="hidden" id="biz-opening">
             </div>
             <div class="form-group">
               <label>Heure de fermeture</label>
-              <input type="time" id="biz-closing" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+              <div style="display:flex;gap:0.5rem;">
+                <select id="biz-closing-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+                <select id="biz-closing-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
+                </select>
+                <select id="biz-closing-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
+                  <option value="AM">AM</option><option value="PM">PM</option>
+                </select>
+              </div>
+              <input type="hidden" id="biz-closing">
             </div>
           </div>
           <div class="form-group">
@@ -1050,12 +1072,15 @@
         ? `<button onclick="changeStatus('${r.id}','done')" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Marquer terminé">✔</button>`
         : '';
       const editBtn = `<button onclick="openEditModal(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);color:var(--accent);border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Modifier">✏️</button>`;
+      const phone = (r.client_phone || '').replace(/\s/g,'').replace(/^\+/,'');
+      const waMsg = encodeURIComponent(`Bonjour ${r.client_name}! Votre rendez-vous est confirmé:\n📅 Date: ${r.date}\n⏰ Heure: ${r.time?.slice(0,5)}\n💈 Service: ${r.service_name || ''}\n\nMerci de votre confiance! — ${currentBusiness?.name}`);
+      const waBtn = phone ? `<a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;text-decoration:none;" title="WhatsApp">💬</a>` : '';
       return `<div class="table-row">
         <span>${r.client_name}<br><span style="color:var(--muted);font-size:0.72rem;">${r.client_phone || ''}</span></span>
         <span>${r.service_name || '—'}</span>
         <span>${r.date}</span>
         <span>${r.time?.slice(0,5) || '—'}</span>
-        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}${doneBtn}${editBtn}</span>
+        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}${doneBtn}${editBtn}${waBtn}</span>
       </div>`;
     }).join('');
     wrap.innerHTML = header + rows;
@@ -1282,9 +1307,36 @@
     renderTable('cal-day-table', dayRes);
   }
 
+  function ampmTo24(h, m, ampm) {
+    let hour = parseInt(h);
+    if (ampm === 'AM' && hour === 12) hour = 0;
+    if (ampm === 'PM' && hour !== 12) hour += 12;
+    return String(hour).padStart(2,'0') + ':' + m;
+  }
+
+  function to12h(time24) {
+    if (!time24) return { h: '09', m: '00', ampm: 'AM' };
+    const [h, m] = time24.split(':');
+    let hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    if (hour === 0) hour = 12;
+    if (hour > 12) hour -= 12;
+    return { h: String(hour).padStart(2,'0'), m: m || '00', ampm };
+  }
+
   async function saveHours() {
-    const opening = document.getElementById('biz-opening').value;
-    const closing = document.getElementById('biz-closing').value;
+    const opening = ampmTo24(
+      document.getElementById('biz-opening-h').value,
+      document.getElementById('biz-opening-m').value,
+      document.getElementById('biz-opening-ampm').value
+    );
+    const closing = ampmTo24(
+      document.getElementById('biz-closing-h').value,
+      document.getElementById('biz-closing-m').value,
+      document.getElementById('biz-closing-ampm').value
+    );
+    document.getElementById('biz-opening').value = opening;
+    document.getElementById('biz-closing').value = closing;
     const slotDuration = parseInt(document.getElementById('biz-slot-duration').value);
 
     if (!opening || !closing) return showAlert('hours-alert', 'Veuillez remplir les deux horaires.', 'error');
@@ -1316,8 +1368,20 @@
     // Load hours
     const { data: biz } = await sb.from('businesses').select('opening_time,closing_time,slot_duration').eq('id', currentBusiness.id).single();
     if (biz) {
-      if (biz.opening_time) document.getElementById('biz-opening').value = biz.opening_time.slice(0,5);
-      if (biz.closing_time) document.getElementById('biz-closing').value = biz.closing_time.slice(0,5);
+      if (biz.opening_time) {
+        const o = to12h(biz.opening_time.slice(0,5));
+        document.getElementById('biz-opening-h').value = o.h;
+        document.getElementById('biz-opening-m').value = o.m;
+        document.getElementById('biz-opening-ampm').value = o.ampm;
+        document.getElementById('biz-opening').value = biz.opening_time.slice(0,5);
+      }
+      if (biz.closing_time) {
+        const c = to12h(biz.closing_time.slice(0,5));
+        document.getElementById('biz-closing-h').value = c.h;
+        document.getElementById('biz-closing-m').value = c.m;
+        document.getElementById('biz-closing-ampm').value = c.ampm;
+        document.getElementById('biz-closing').value = biz.closing_time.slice(0,5);
+      }
       if (biz.slot_duration) document.getElementById('biz-slot-duration').value = biz.slot_duration;
       currentBusiness.opening_time = biz.opening_time;
       currentBusiness.closing_time = biz.closing_time;
