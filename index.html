@@ -22,18 +22,18 @@ nav ul a:hover{color:var(--text);}
 .btn-cta:hover{background:#6a58e5;}
 .hero{padding:5rem 6% 3rem;position:relative;overflow:hidden;}
 .hero-glow{position:absolute;top:-150px;left:50%;transform:translateX(-50%);width:900px;height:700px;background:radial-gradient(ellipse,rgba(124,106,247,0.1) 0%,transparent 65%);pointer-events:none;}
-.hero-text{max-width:1200px;margin:0 auto 3.5rem;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
+.hero-text{max-width:860px;margin:0 auto 4.5rem;text-align:center;}
 .hero-badge{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(124,106,247,0.08);border:1px solid rgba(124,106,247,0.2);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.75rem;color:#a78bfa;margin-bottom:1.5rem;animation:fadeDown 0.6s ease both;}
-.hero-title{font-family:'Syne',sans-serif;font-size:clamp(2.6rem,4.5vw,4rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.5rem;animation:fadeUp 0.7s ease 0.1s both;}
+.hero-title{font-family:'Syne',sans-serif;font-size:clamp(3rem,6.5vw,5.8rem);font-weight:800;line-height:1.02;letter-spacing:-0.04em;margin-bottom:1.8rem;animation:fadeUp 0.7s ease 0.1s both;}
 .hero-title .accent{color:var(--accent);}
 .hero-title .dim{color:rgba(124,106,247,0.4);}
 .hero-sub{color:var(--muted);font-size:1rem;line-height:1.75;margin-bottom:2rem;animation:fadeUp 0.7s ease 0.2s both;}
-.hero-btns{display:flex;gap:0.8rem;flex-wrap:wrap;animation:fadeUp 0.7s ease 0.3s both;}
+.hero-btns{display:flex;gap:0.8rem;flex-wrap:wrap;justify-content:center;animation:fadeUp 0.7s ease 0.3s both;}
 .btn-hero{background:var(--accent);color:white;border:none;padding:0.85rem 1.8rem;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;text-decoration:none;display:inline-block;}
 .btn-hero:hover{background:#6a58e5;transform:translateY(-2px);box-shadow:0 12px 35px rgba(124,106,247,0.4);}
 .btn-hero-out{background:none;border:1px solid var(--border);color:var(--text);padding:0.85rem 1.8rem;border-radius:10px;font-size:0.95rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;text-decoration:none;display:inline-block;}
 .btn-hero-out:hover{border-color:var(--accent);}
-.hero-stats{display:flex;gap:2.5rem;margin-top:2.5rem;animation:fadeUp 0.7s ease 0.4s both;}
+.hero-stats{display:flex;gap:2.5rem;margin-top:2.5rem;justify-content:center;animation:fadeUp 0.7s ease 0.4s both;}
 .hstat-val{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--accent);}
 .hstat-label{font-size:0.73rem;color:var(--muted);}
 .hero-sims{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.55fr 0.85fr;gap:2rem;align-items:start;animation:fadeUp 0.7s ease 0.4s both;}
@@ -102,7 +102,7 @@ nav ul a:hover{color:var(--text);}
 .step-content{padding:1.5rem;}
 .step-item:nth-child(odd) .step-content:first-child{text-align:right;}
 .step-item:nth-child(even) .step-content:first-child{order:3;}
-.step-item:nth-child(even) .step-icon{order:2;}
+.step-item:nth-child(even) .step-item:nth-child(even) .step-icon{order:2;}
 .step-item:nth-child(even) .step-content:last-child{order:1;text-align:right;}
 .step-icon{width:56px;height:56px;background:var(--card);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin:0 auto;position:relative;z-index:2;animation:glow 3s ease-in-out infinite;}
 .step-num{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:var(--accent);border-radius:50%;font-size:0.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:white;}
@@ -152,12 +152,54 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;justify-c
 @keyframes glow{0%,100%{box-shadow:0 0 0 6px rgba(124,106,247,0.08);}50%{box-shadow:0 0 0 10px rgba(124,106,247,0.15);}}
 @media(max-width:1100px){.hero-text{grid-template-columns:1fr;}.hero-sims{grid-template-columns:1fr;max-width:560px;}.phone-wrap{display:none;}}
 @media(max-width:900px){.steps-timeline::before{display:none;}.step-item{grid-template-columns:60px 1fr;}.step-item:nth-child(even) .step-content:last-child,.step-item:nth-child(odd) .step-content:first-child{order:unset;text-align:left;}.step-item .step-content:empty{display:none;}.pricing-grid{grid-template-columns:1fr;max-width:380px;}nav ul{display:none;}}
+
+/* ===== HAMBURGER ===== */
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px;}
+.hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:all 0.3s;}
+
+/* ===== MOBILE MENU OVERLAY ===== */
+.mob-menu{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;padding:1.5rem 6%;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;}
+.mob-menu.open{transform:translateX(0);}
+.mob-menu-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2.5rem;}
+.mob-close{background:none;border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:8px;font-size:1rem;cursor:pointer;}
+.mob-links{display:flex;flex-direction:column;gap:0.3rem;margin-bottom:2rem;}
+.mob-link{color:var(--text);text-decoration:none;font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;padding:0.6rem 0;border-bottom:1px solid var(--border);opacity:0.85;transition:opacity 0.2s,color 0.2s;}
+.mob-link:hover{opacity:1;color:var(--accent);}
+.mob-actions{display:flex;flex-direction:column;gap:0.7rem;margin-bottom:2.5rem;}
+.mob-btn-ghost{background:none;border:1px solid var(--border);color:var(--text);padding:0.9rem;border-radius:10px;text-align:center;text-decoration:none;font-size:0.95rem;}
+.mob-btn-cta{background:var(--accent);color:white;padding:0.9rem;border-radius:10px;text-align:center;text-decoration:none;font-size:0.95rem;font-weight:600;}
+.mob-quick{margin-top:auto;padding-top:1.5rem;border-top:1px solid var(--border);}
+.mob-quick-title{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:1rem;}
+.mob-quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.7rem;}
+.mob-quick-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem 0.5rem;text-align:center;text-decoration:none;transition:all 0.2s;display:block;}
+.mob-quick-card:hover{border-color:var(--accent);background:rgba(124,106,247,0.08);}
+.mob-quick-icon{font-size:1.5rem;margin-bottom:0.4rem;}
+.mob-quick-label{font-size:0.75rem;color:var(--muted);font-weight:500;}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,22,0.96);backdrop-filter:blur(20px);border-top:1px solid rgba(124,106,247,0.15);z-index:200;padding:0.4rem 0 calc(0.4rem + env(safe-area-inset-bottom));grid-template-columns:repeat(5,1fr);}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0.4rem 0;transition:color 0.2s;-webkit-tap-highlight-color:transparent;}
+.bn-item.active,.bn-item:hover{color:var(--accent);}
+.bn-item.bn-center{position:relative;}
+.bn-item.bn-center .bn-icon{background:var(--accent);color:white;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-top:-8px;box-shadow:0 4px 15px rgba(124,106,247,0.4);}
+.bn-icon{font-size:1.1rem;line-height:1;}
+.bn-label{font-size:0.58rem;font-weight:500;}
+
+/* ===== RESPONSIVE OVERRIDES ===== */
+@media(max-width:768px){
+  .hamburger{display:flex;}
+  .nav-links,.nav-btns{display:none !important;}
+  .bottom-nav{display:grid;}
+  body{padding-bottom:70px;}
+  .hero{padding-top:3.5rem;}
+}
+
 </style>
 </head>
 <body>
 <nav>
   <a href="#" class="logo">Reserva<span>Plus</span></a>
-  <ul>
+  <ul class="nav-links">
     <li><a href="#comment">Comment &#231;a marche</a></li>
     <li><a href="#features">Fonctionnalit&#233;s</a></li>
     <li><a href="#pricing">Tarifs</a></li>
@@ -166,25 +208,83 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;justify-c
     <a href="app.html" class="btn-ghost">Se connecter</a>
     <a href="app.html" class="btn-cta">Essai gratuit</a>
   </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- MOBILE MENU OVERLAY -->
+<div class="mob-menu" id="mob-menu">
+  <div class="mob-menu-top">
+    <a href="#" class="logo">Reserva<span>Plus</span></a>
+    <button class="mob-close" id="mob-close">&#10005;</button>
+  </div>
+  <div class="mob-links">
+    <a href="#comment" class="mob-link" onclick="closeMobMenu()">Comment &#231;a marche</a>
+    <a href="#features" class="mob-link" onclick="closeMobMenu()">Fonctionnalit&#233;s</a>
+    <a href="#pricing" class="mob-link" onclick="closeMobMenu()">Tarifs</a>
+  </div>
+  <div class="mob-actions">
+    <a href="app.html" class="mob-btn-ghost">Se connecter</a>
+    <a href="app.html" class="mob-btn-cta">Commencer gratuitement &#8594;</a>
+  </div>
+  <div class="mob-quick">
+    <div class="mob-quick-title">Acc&#232;s rapide</div>
+    <div class="mob-quick-grid">
+      <a href="admin.html" class="mob-quick-card">
+        <div class="mob-quick-icon">&#128187;</div>
+        <div class="mob-quick-label">Admin</div>
+      </a>
+      <a href="app.html" class="mob-quick-card">
+        <div class="mob-quick-icon">&#128202;</div>
+        <div class="mob-quick-label">Dashboard</div>
+      </a>
+      <a href="booking.html" class="mob-quick-card">
+        <div class="mob-quick-icon">&#128197;</div>
+        <div class="mob-quick-label">R&#233;server</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="bottom-nav">
+  <a href="#" class="bn-item active">
+    <div class="bn-icon">&#127968;</div>
+    <div class="bn-label">Accueil</div>
+  </a>
+  <a href="admin.html" class="bn-item">
+    <div class="bn-icon">&#128187;</div>
+    <div class="bn-label">Admin</div>
+  </a>
+  <a href="app.html" class="bn-item bn-center">
+    <div class="bn-icon">&#128202;</div>
+    <div class="bn-label">Dashboard</div>
+  </a>
+  <a href="booking.html" class="bn-item">
+    <div class="bn-icon">&#128197;</div>
+    <div class="bn-label">R&#233;server</div>
+  </a>
+  <button class="bn-item" onclick="openMobMenu()">
+    <div class="bn-icon">&#9776;</div>
+    <div class="bn-label">Menu</div>
+  </button>
+</div>
 <section class="hero">
   <div class="hero-glow"></div>
   <div class="hero-text">
-    <div>
-      <div class="hero-badge">Nouveau &#8212; Gestion du staff incluse</div>
-      <h1 class="hero-title">Fini les rendez-vous<br><span class="accent">rat&#233;s</span><br><span class="dim">pour votre business</span></h1>
-      <p class="hero-sub">ReservaPlus permet &#224; chaque entreprise de g&#233;rer ses r&#233;servations, ses clients et ses rappels &#8212; en quelques clics. Sans comp&#233;tence technique.</p>
-      <div class="hero-btns">
-        <a href="app.html" class="btn-hero">Commencer gratuitement &#8594;</a>
-        <a href="#comment" class="btn-hero-out">Voir la d&#233;mo</a>
-      </div>
-      <div class="hero-stats">
-        <div><div class="hstat-val">+500</div><div class="hstat-label">R&#233;servations/jour</div></div>
-        <div><div class="hstat-val">3 min</div><div class="hstat-label">Pour d&#233;marrer</div></div>
-        <div><div class="hstat-val">0 MAD</div><div class="hstat-label">Pour commencer</div></div>
-      </div>
+    <div class="hero-badge">Nouveau &#8212; Gestion du staff incluse</div>
+    <h1 class="hero-title">Fini les rendez-vous <span class="accent">rat&#233;s</span><br><span class="dim">pour votre business</span></h1>
+    <p class="hero-sub">ReservaPlus permet &#224; chaque entreprise de g&#233;rer ses r&#233;servations, ses clients et ses rappels &#8212; en quelques clics. Sans comp&#233;tence technique.</p>
+    <div class="hero-btns">
+      <a href="app.html" class="btn-hero">Commencer gratuitement &#8594;</a>
+      <a href="#comment" class="btn-hero-out">Voir la d&#233;mo</a>
     </div>
-    <div></div>
+    <div class="hero-stats">
+      <div><div class="hstat-val">+500</div><div class="hstat-label">R&#233;servations/jour</div></div>
+      <div><div class="hstat-val">3 min</div><div class="hstat-label">Pour d&#233;marrer</div></div>
+      <div><div class="hstat-val">0 MAD</div><div class="hstat-label">Pour commencer</div></div>
+    </div>
   </div>
 
   <div class="hero-sims">
@@ -197,7 +297,7 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;justify-c
           </div>
           <div style="display:flex;align-items:center;gap:0.4rem;">
             <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;"></div>
-            <span style="font-size:0.62rem;color:var(--muted);">salon@gmail.com</span>
+            <span style="font-size:0.62rem;color:var(--muted);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e093818c8f8ea0878d81898cce838f8d">[email&#160;protected]</a></span>
           </div>
         </div>
         <div class="dash-kpis">
@@ -332,7 +432,7 @@ footer{border-top:1px solid var(--border);padding:2rem 6%;display:flex;justify-c
   <div class="footer-logo">Reserva<span>Plus</span></div>
   <div class="footer-copy">&#169; 2026 ReservaPlus. Tous droits r&#233;serv&#233;s.</div>
 </footer>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const clients=['Karim A.','Youssef M.','Ahmed B.','Mohamed R.','Omar S.'];
 const svcs=['Coupe homme','Barbe','Coupe + Barbe','Soin visage'];
 const sfs=['Ahmed','Omar','Yassine'];
@@ -381,9 +481,44 @@ function addRow(name,svc,sf,time){
   if(rows.children.length>5)rows.removeChild(rows.lastChild);
   setTimeout(()=>{toast.style.display='none';},3000);
 }
-const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');});},{threshold:0.12});
-document.querySelectorAll('.step-item,.feature-card,.plan').forEach((el,i)=>{el.style.transitionDelay=(i%3)*0.12+'s';obs.observe(el);});
+const obs=new IntersectionObserver(e=>{
+  e.forEach(x=>{
+    if(x.isIntersecting){
+      x.target.classList.add('visible');
+      obs.unobserve(x.target);
+    }
+  });
+},{threshold:0.15});
+
+document.querySelectorAll('.step-item,.feature-card,.plan').forEach((el,i)=>{
+  el.style.transitionDelay=(i%3)*0.13+'s';
+  obs.observe(el);
+});
+
 setTimeout(run,900);
+</script>
+
+<script>
+function openMobMenu(){document.getElementById('mob-menu').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobMenu(){document.getElementById('mob-menu').classList.remove('open');document.body.style.overflow='';}
+const hbg=document.getElementById('hamburger');
+const mc=document.getElementById('mob-close');
+if(hbg)hbg.addEventListener('click',openMobMenu);
+if(mc)mc.addEventListener('click',closeMobMenu);
+
+// Close mobile menu when nav links clicked
+document.querySelectorAll('.mob-link').forEach(a=>{
+  a.addEventListener('click',()=>setTimeout(closeMobMenu,100));
+});
+
+// Bottom nav active state
+const bnItems=document.querySelectorAll('.bn-item');
+bnItems.forEach(item=>{
+  item.addEventListener('click',function(){
+    bnItems.forEach(i=>i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
 </script>
 </body>
 </html>
