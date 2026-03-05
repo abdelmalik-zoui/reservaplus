@@ -303,15 +303,14 @@
         <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouveau service</label>
         <select id="manage-service" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;"></select>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-bottom:0.8rem;">
-        <div>
-          <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouvelle date</label>
-          <input type="date" id="manage-date" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;box-sizing:border-box;">
-        </div>
-        <div>
-          <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouvelle heure</label>
-          <input type="time" id="manage-time" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;box-sizing:border-box;">
-        </div>
+      <div style="margin-bottom:0.8rem;">
+        <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouvelle date</label>
+        <input type="date" id="manage-date" oninput="loadManageSlots()" style="width:100%;padding:0.65rem;border-radius:8px;border:1px solid #2a2a3e;background:#1a1a2e;color:white;font-size:0.85rem;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:0.8rem;">
+        <label style="font-size:0.8rem;color:#7070a0;display:block;margin-bottom:0.3rem;">Nouvelle heure</label>
+        <div id="manage-slots" style="display:flex;flex-wrap:wrap;gap:0.4rem;"></div>
+        <input type="hidden" id="manage-time">
       </div>
       <button onclick="updateReservation()" style="width:100%;background:#7c6af7;border:none;color:white;padding:0.75rem;border-radius:9px;font-size:0.88rem;font-weight:600;cursor:pointer;margin-bottom:0.5rem;">💾 Modifier</button>
       <button onclick="cancelByCode()" style="width:100%;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;padding:0.75rem;border-radius:9px;font-size:0.88rem;font-weight:600;cursor:pointer;">✗ Annuler ma réservation</button>
@@ -534,12 +533,67 @@
     document.getElementById('manage-service').value = data.service_name;
     document.getElementById('manage-date').value = data.date;
     document.getElementById('manage-date').min = new Date().toISOString().split('T')[0];
-    document.getElementById('manage-time').value = data.time?.slice(0,5);
+    await loadManageSlots();
+    // Pre-select current time
+    setTimeout(() => {
+      const currentTime = data.time?.slice(0,5);
+      document.querySelectorAll('#manage-slots button').forEach(btn => {
+        if (btn.textContent.trim().startsWith(currentTime)) {
+          selectManageSlot(btn, currentTime);
+        }
+      });
+    }, 500);
 
     // Load services
     const { data: services } = await sb.from('services').select('*').eq('business_id', businessId);
     const sel = document.getElementById('manage-service');
     sel.innerHTML = (services || []).map(s => `<option value="${s.name}" ${s.name === data.service_name ? 'selected' : ''}>${s.name}</option>`).join('');
+  }
+
+  async function loadManageSlots() {
+    const date = document.getElementById('manage-date').value;
+    if (!date) return;
+    const slotsDiv = document.getElementById('manage-slots');
+    document.getElementById('manage-time').value = '';
+    slotsDiv.innerHTML = '<span style="color:#7070a0;font-size:0.8rem;">Chargement...</span>';
+
+    // Get occupied slots
+    const { data: occupied } = await sb.from('reservations')
+      .select('time').eq('business_id', businessId).eq('date', date)
+      .not('id', 'eq', currentManagedRes?.id)
+      .in('status', ['en_attente', 'confirme']);
+
+    const occupiedTimes = (occupied || []).map(r => r.time?.slice(0,5));
+    const now = new Date();
+    const isToday = date === now.toISOString().split('T')[0];
+
+    const allSlots = generateSlots(bizOpeningTime, bizClosingTime, bizSlotDuration);
+    slotsDiv.innerHTML = allSlots.map(slot => {
+      const isPast = isToday && slot <= now.toTimeString().slice(0,5);
+      const isTaken = occupiedTimes.includes(slot);
+      const disabled = isPast || isTaken;
+      return `<button onclick="selectManageSlot(this,'${slot}')" 
+        style="padding:0.35rem 0.7rem;border-radius:7px;font-size:0.78rem;cursor:${disabled?'not-allowed':'pointer'};
+        background:${disabled?'rgba(30,30,46,0.5)':'rgba(124,106,247,0.1)'};
+        border:1px solid ${disabled?'#2a2a3e':'rgba(124,106,247,0.3)'};
+        color:${disabled?'#404060':'#a78bfa'};
+        opacity:${disabled?'0.5':'1'}"
+        ${disabled?'disabled':''}>
+        ${slot}${isTaken?' ✗':''}
+      </button>`;
+    }).join('');
+  }
+
+  function selectManageSlot(btn, slot) {
+    document.querySelectorAll('#manage-slots button').forEach(b => {
+      b.style.background = 'rgba(124,106,247,0.1)';
+      b.style.borderColor = 'rgba(124,106,247,0.3)';
+      b.style.color = '#a78bfa';
+    });
+    btn.style.background = '#7c6af7';
+    btn.style.borderColor = '#7c6af7';
+    btn.style.color = 'white';
+    document.getElementById('manage-time').value = slot;
   }
 
   async function updateReservation() {
