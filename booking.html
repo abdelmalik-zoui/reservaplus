@@ -18,6 +18,42 @@
     --green: #4ade80;
     --red: #f87171;
   }
+  body.light-mode {
+    --bg: #f4f4f8;
+    --surface: #ffffff;
+    --border: #e0e0ec;
+    --accent: #7c6af7;
+    --text: #1a1a2e;
+    --muted: #8888aa;
+    --card: #ffffff;
+    --green: #16a34a;
+    --red: #dc2626;
+  }
+  body.light-mode::before {
+    background: radial-gradient(circle, rgba(124,106,247,0.06) 0%, transparent 70%);
+  }
+
+  /* THEME TOGGLE */
+  .theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 999;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
 
@@ -309,6 +345,8 @@
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
 
 <div class="booking-wrap">
   <div class="logo">Reserva<span>Plus</span></div>
@@ -838,6 +876,21 @@
     document.getElementById('cancelled-screen').style.display = 'block';
     lastReservationId = null;
   }
+
+  // THEME
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    document.getElementById('theme-btn').innerHTML = isLight ? '🌙 Dark' : '☀️ Light';
+    localStorage.setItem('rp-theme', isLight ? 'light' : 'dark');
+  }
+  (function() {
+    if (localStorage.getItem('rp-theme') === 'light') {
+      document.body.classList.add('light-mode');
+      document.getElementById('theme-btn').innerHTML = '🌙 Dark';
+    } else {
+      document.getElementById('theme-btn').innerHTML = '☀️ Light';
+    }
+  })();
 
   init();
 </script>
