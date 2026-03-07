@@ -503,8 +503,8 @@ async function pickSvc(el,name,id){
 
   const{data:links}=await sb.from('staff_services').select('staff_id').eq('service_id',id);
   if(!links||!links.length){hasStaff=false;staffPool=[];renderPG(1);return;}
-  const{data:members}=await sb.from('staff').select('*').in('id',links.map(l=>l.staff_id));
-  staffPool=members||[];hasStaff=staffPool.length>0;
+  const{data:members}=await sb.from('staff').select('*').in('id',links.map(l=>l.staff_id)).eq('is_active',true);
+  staffPool=(members||[]).filter(s=>s.is_active!==false);hasStaff=staffPool.length>0;
   if(hasStaff){
     document.getElementById('staff-list').innerHTML=staffPool.map(s=>`
       <div class="srow" onclick="pickStaff(this,'${s.id}','${s.opening_time?.slice(0,5)||bizOpen||''}','${s.closing_time?.slice(0,5)||bizClose||''}')">
