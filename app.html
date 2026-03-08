@@ -55,63 +55,190 @@
 
   /* ---- AUTH PAGE ---- */
   #auth-page {
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
+    flex-direction: row;
+    min-height: 100vh;
+    padding: 0;
+  }
+  .auth-left {
+    width: 42%;
+    min-height: 100vh;
+    background: linear-gradient(145deg, #4338ca 0%, #6d28d9 55%, #5b21b6 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2.5rem 3rem;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
   }
-  #auth-page::before {
+  .auth-left::before {
     content: '';
     position: absolute;
-    top: -200px; left: 50%; transform: translateX(-50%);
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(124,106,247,0.1) 0%, transparent 70%);
+    top: -120px; right: -100px;
+    width: 380px; height: 380px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
     pointer-events: none;
   }
-
-  .auth-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 2.5rem;
-    width: 100%;
-    max-width: 420px;
-    position: relative;
-    z-index: 1;
+  .auth-left::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -70px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    pointer-events: none;
   }
-
+  .auth-left-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: #fff;
+    position: relative; z-index: 1;
+  }
+  .auth-left-body { position: relative; z-index: 1; }
+  .auth-left-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.7rem, 2.8vw, 2.5rem);
+    color: #fff;
+    line-height: 1.18;
+    margin-bottom: 1.1rem;
+  }
+  .auth-left-desc {
+    color: rgba(255,255,255,0.72);
+    font-size: 0.88rem;
+    line-height: 1.78;
+    max-width: 320px;
+  }
+  .auth-left-footer {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.4);
+    position: relative; z-index: 1;
+    display: flex;
+    justify-content: space-between;
+  }
+  .auth-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2.5rem;
+    background: var(--bg);
+    transition: background .3s;
+  }
+  .auth-box {
+    width: 100%;
+    max-width: 390px;
+  }
   .auth-logo {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     text-align: center;
     margin-bottom: 0.3rem;
+    color: var(--text);
   }
   .auth-logo span { color: var(--accent); }
-  .auth-subtitle { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
-
-  .auth-tabs {
-    display: flex;
-    background: var(--surface);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 1.8rem;
-  }
-  .auth-tab {
-    flex: 1;
-    padding: 0.55rem;
-    border: none;
-    background: none;
+  .auth-subtitle {
+    text-align: center;
     color: var(--muted);
-    font-size: 0.85rem;
-    cursor: pointer;
-    border-radius: 7px;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+  .auth-subtitle strong { color: var(--text); }
+  .auth-label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
     font-weight: 500;
   }
-  .auth-tab.active { background: var(--accent); color: white; }
+  .auth-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-size: 0.88rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+    margin-bottom: 1rem;
+  }
+  .auth-input:focus { border-color: var(--accent); }
+  .auth-input::placeholder { color: var(--muted); }
+  .auth-forgot {
+    font-size: 0.78rem;
+    color: var(--accent);
+    display: block;
+    text-align: right;
+    margin-top: -0.6rem;
+    margin-bottom: 1.3rem;
+    cursor: pointer;
+  }
+  .auth-forgot:hover { text-decoration: underline; }
+  .btn-auth {
+    width: 100%;
+    background: #2d3748;
+    color: #fff;
+    border: none;
+    padding: 0.88rem;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all .25s;
+    margin-bottom: 1.4rem;
+  }
+  .btn-auth:hover { background: #1a202c; transform: translateY(-1px); }
+  .auth-divider {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+    position: relative;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 42%;
+    height: 1px;
+    background: var(--border);
+  }
+  .auth-divider::before { left: 0; }
+  .auth-divider::after { right: 0; }
+  .auth-wa-btn {
+    width: 100%;
+    background: #25D366;
+    color: #fff;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all .25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+  }
+  .auth-wa-btn:hover { background: #1db954; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,211,102,.3); }
+  .auth-tabs { display: none; }
+  @media (max-width: 800px) {
+    #auth-page { flex-direction: column; }
+    .auth-left { width: 100%; min-height: 220px; padding: 2rem; }
+    .auth-left-title { font-size: 1.5rem; }
+    .auth-right { padding: 2rem 1.5rem; }
+  }
 
   .form-group { margin-bottom: 1.1rem; }
   .form-group label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.4rem; }
@@ -350,51 +477,66 @@
 
 <!-- ===== AUTH PAGE ===== -->
 <div id="auth-page" class="page active">
-  <div class="auth-box">
-    <div class="auth-logo">Reserva<span>Plus</span></div>
-    <div class="auth-subtitle">Gérez vos réservations facilement</div>
 
-    <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">Se connecter</button>
-      <button class="auth-tab" onclick="window.open('https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus.','_blank')">S'inscrire</button>
+  <!-- LEFT: branding panel -->
+  <div class="auth-left">
+    <div class="auth-left-logo">ReservaPlus</div>
+    <div class="auth-left-body">
+      <div class="auth-left-title">Gérez vos<br>réservations<br>en ligne.</div>
+      <div class="auth-left-desc">ReservaPlus est un système de réservation en ligne permettant aux professionnels d'avoir leur propre plateforme de réservation de services.</div>
     </div>
-
-    <div id="auth-alert"></div>
-
-    <!-- LOGIN -->
-    <div id="login-form">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="login-email" placeholder="votre@email.com">
-      </div>
-      <div class="form-group">
-        <label>Mot de passe</label>
-        <input type="password" id="login-password" placeholder="••••••••">
-      </div>
-      <button class="btn-submit" onclick="login()">Se connecter</button>
-    </div>
-
-    <!-- REGISTER -->
-    <div id="register-form" style="display:none">
-      <div class="form-group">
-        <label>Nom de votre établissement</label>
-        <input type="text" id="reg-name" placeholder="Ex: Salon Ahmed">
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="reg-email" placeholder="votre@email.com">
-      </div>
-      <div class="form-group">
-        <label>Téléphone</label>
-        <input type="tel" id="reg-phone" placeholder="+212 6XX XXX XXX">
-      </div>
-      <div class="form-group">
-        <label>Mot de passe</label>
-        <input type="password" id="reg-password" placeholder="••••••••">
-      </div>
-      <button class="btn-submit" onclick="register()">Créer mon compte</button>
+    <div class="auth-left-footer">
+      <span>© 2026 ReservaPlus</span>
+      <span>Maroc 🇲🇦</span>
     </div>
   </div>
+
+  <!-- RIGHT: login form -->
+  <div class="auth-right">
+    <div class="auth-box">
+      <div class="auth-logo">Reserva<span>Plus</span></div>
+      <div class="auth-subtitle">Connectez-vous à votre <strong>ReservaPlus</strong> Compte</div>
+
+      <div id="auth-alert"></div>
+
+      <!-- LOGIN FORM -->
+      <div id="login-form">
+        <label class="auth-label">Nom d'utilisateur</label>
+        <input type="email" class="auth-input" id="login-email" placeholder="Entrez l'e-mail ou le nom d'utilisateur">
+        <label class="auth-label">Mot de passe</label>
+        <input type="password" class="auth-input" id="login-password" placeholder="Entrer le mot de passe">
+        <span class="auth-forgot">Mot de passe oublié ?</span>
+        <button class="btn-auth" onclick="login()">S'identifier</button>
+        <div class="auth-divider">Vous n'avez pas encore de compte ?</div>
+        <a class="auth-wa-btn" href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus." target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
+          S'inscrire via WhatsApp
+        </a>
+      </div>
+
+      <!-- REGISTER FORM (hidden, kept for backward compat) -->
+      <div id="register-form" style="display:none">
+        <div class="form-group">
+          <label>Nom de votre établissement</label>
+          <input type="text" id="reg-name" placeholder="Ex: Salon Ahmed">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="votre@email.com">
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" id="reg-phone" placeholder="+212 6XX XXX XXX">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="reg-password" placeholder="••••••••">
+        </div>
+        <button class="btn-submit" onclick="register()">Créer mon compte</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- BLOCKED PAGE -->
