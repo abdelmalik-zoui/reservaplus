@@ -1114,6 +1114,62 @@
 
   checkSession();
 
+  // ---- PASSWORD RECOVERY HANDLER ----
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      // إظهار form تغيير password
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+      modal.innerHTML = `
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:380px;position:relative;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:.4rem;color:var(--text)">🔑 Nouveau mot de passe</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-bottom:1.4rem;line-height:1.6">Choisissez un nouveau mot de passe pour votre compte.</div>
+          <div id="newpwd-alert"></div>
+          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Nouveau mot de passe</label>
+          <input id="new-pwd" type="password" placeholder="Minimum 6 caractères"
+            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
+          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Confirmer mot de passe</label>
+          <input id="confirm-new-pwd" type="password" placeholder="Répétez le mot de passe"
+            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;box-sizing:border-box;">
+          <button id="newpwd-btn" onclick="saveNewPassword()"
+            style="width:100%;background:#7c6af7;color:#fff;border:none;padding:.82rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;">
+            Enregistrer le nouveau mot de passe
+          </button>
+        </div>`;
+      document.body.appendChild(modal);
+    }
+  });
+
+  async function saveNewPassword() {
+    const pwd = document.getElementById('new-pwd').value;
+    const confirm = document.getElementById('confirm-new-pwd').value;
+    const btn = document.getElementById('newpwd-btn');
+    const alertBox = document.getElementById('newpwd-alert');
+
+    if (pwd.length < 6) {
+      alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Minimum 6 caractères.</div>`;
+      return;
+    }
+    if (pwd !== confirm) {
+      alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Les mots de passe ne correspondent pas.</div>`;
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Enregistrement...';
+    const { error } = await sb.auth.updateUser({ password: pwd });
+
+    if (error) {
+      alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">${error.message}</div>`;
+      btn.disabled = false; btn.textContent = 'Enregistrer';
+    } else {
+      alertBox.innerHTML = `<div style="background:#064e3b;border:1px solid #34d399;color:#34d399;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem">✅ Mot de passe mis à jour !</div>`;
+      btn.textContent = '✓ Enregistré';
+      setTimeout(() => {
+        document.querySelectorAll('div[style*="z-index:600"]').forEach(m => m.remove());
+      }, 2000);
+    }
+  }
+
   // ---- AUTH FUNCTIONS ----
   function switchTab(tab) {
     document.querySelectorAll('.auth-tab').forEach((t, i) => {
@@ -1202,16 +1258,75 @@
     const email = document.getElementById('forgot-email').value.trim();
     if (!email) return;
     const btn = document.getElementById('forgot-btn');
+    const alertBox = document.getElementById('forgot-alert');
     btn.disabled = true; btn.textContent = 'Envoi...';
-    const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/app.html'
-    });
-    if (error) {
-      document.getElementById('forgot-alert').innerHTML = `<div style="background:var(--red-bg,#450a0a);border:1px solid var(--red);color:var(--red);padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">${error.message}</div>`;
-      btn.disabled = false; btn.textContent = 'Envoyer le lien →';
-    } else {
-      document.getElementById('forgot-alert').innerHTML = `<div style="background:#064e3b;border:1px solid #34d399;color:#34d399;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem">✅ Email envoyé ! Vérifiez votre boîte mail.</div>`;
+
+    const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo';
+    const BREVO_KEY = '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';
+
+    try {
+      // 1. توليد reset link من Supabase Admin API
+      const linkRes = await fetch('https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/generate-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SERVICE_KEY,
+          'Authorization': 'Bearer ' + SERVICE_KEY
+        },
+        body: JSON.stringify({
+          type: 'recovery',
+          email: email,
+          options: { redirectTo: 'https://reservaplus.vercel.app/app.html' }
+        })
+      });
+
+      const linkData = await linkRes.json();
+      console.log('Supabase link response:', linkData);
+
+      if (!linkData.action_link) {
+        alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">❌ Email introuvable dans notre système.</div>`;
+        btn.disabled = false; btn.textContent = 'Envoyer le lien →';
+        return;
+      }
+
+      // 2. إرسال email بـ Brevo API مع الـ reset link الحقيقي
+      const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'ReservaPlus', email: 'a45296001@smtp-brevo.com' },
+          to: [{ email: email }],
+          subject: '🔑 Réinitialisation de votre mot de passe ReservaPlus',
+          htmlContent: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#0d0c0f;padding:2.5rem;border-radius:16px">
+            <div style="font-weight:800;font-size:1.4rem;color:#7c6af7;margin-bottom:1.5rem">ReservaPlus</div>
+            <h2 style="color:#f0eef8;font-size:1.1rem;margin-bottom:1rem">Réinitialisation de mot de passe</h2>
+            <p style="color:#8884a8;line-height:1.75;margin-bottom:1.5rem">Bonjour,<br><br>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous :</p>
+            <div style="text-align:center;margin:2rem 0">
+              <a href="${linkData.action_link}" style="display:inline-block;background:#7c6af7;color:#fff;padding:.9rem 2rem;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none">
+                Réinitialiser mon mot de passe →
+              </a>
+            </div>
+            <p style="color:#8884a8;font-size:.78rem;line-height:1.6">Ce lien expire dans <strong style="color:#f0eef8">1 heure</strong>.<br>Si vous n'avez pas fait cette demande, ignorez cet email.</p>
+            <hr style="border:none;border-top:1px solid #232230;margin:1.5rem 0">
+            <p style="color:#8884a8;font-size:.72rem;text-align:center">ReservaPlus · Maroc 🇲🇦</p>
+          </div>`
+        })
+      });
+
+      const emailData = await emailRes.json();
+      console.log('Brevo response:', emailData);
+
+      alertBox.innerHTML = `<div style="background:#064e3b;border:1px solid #34d399;color:#34d399;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem">✅ Email envoyé ! Vérifiez votre boîte mail (et les spams).</div>`;
       btn.textContent = 'Email envoyé ✓';
+
+    } catch(e) {
+      console.error('Reset error:', e);
+      alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">❌ Erreur. Réessayez.</div>`;
+      btn.disabled = false; btn.textContent = 'Envoyer le lien →';
     }
   }
 
