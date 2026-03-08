@@ -505,13 +505,15 @@
         <input type="email" class="auth-input" id="login-email" placeholder="Entrez l'e-mail ou le nom d'utilisateur">
         <label class="auth-label">Mot de passe</label>
         <input type="password" class="auth-input" id="login-password" placeholder="Entrer le mot de passe">
-        <span class="auth-forgot">Mot de passe oublié ?</span>
-        <button class="btn-auth" onclick="login()">S'identifier</button>
+        <span class="auth-forgot" onclick="showForgotPassword()">Mot de passe oublié ?</span>
+        <button class="btn-auth" id="btn-login" onclick="login()">S'identifier</button>
         <div class="auth-divider">Vous n'avez pas encore de compte ?</div>
-        <a class="auth-wa-btn" href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus." target="_blank">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
-          S'inscrire via WhatsApp
-        </a>
+        <button class="auth-wa-btn" onclick="showInscription()">
+          ✨ Créer un compte gratuit
+        </button>
+        <div style="text-align:center;margin-top:.9rem">
+          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus." target="_blank" style="font-size:.75rem;color:var(--muted);text-decoration:none">ou s'inscrire via WhatsApp 💬</a>
+        </div>
       </div>
 
       <!-- REGISTER FORM (hidden, kept for backward compat) -->
@@ -540,17 +542,76 @@
 </div>
 
 <!-- BLOCKED PAGE -->
-<div id="blocked-page" class="page" style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;">
-  <div style="text-align:center;max-width:440px;">
-    <div style="font-size:3.5rem;margin-bottom:1.5rem;">🔒</div>
-    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;letter-spacing:-0.03em;margin-bottom:0.8rem;">Période d'essai terminée</div>
-    <div style="color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:2rem;">Votre période d'essai gratuite de 14 jours est terminée. Contactez-nous pour continuer à utiliser ReservaPlus.</div>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20mon%20abonnement%20ReservaPlus." target="_blank" style="background:#4ade80;color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;">💬 WhatsApp</a>
-      <a onclick="window.location='mai'+'lto:abdlmalkezouiten79@gma'+'il.com?subject=Activation%20abonnement%20ReservaPlus'" style="background:var(--accent);color:white;padding:0.85rem 1.8rem;border-radius:10px;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-block;cursor:pointer;">✉️ <span class="__cf_email__" data-cfemail="cdacafa9a1a0aca1a6a8b7a2b8a4b9a8a3faf48daaa0aca4a1e3aea2a0">[email&#160;protected]</span></a>
+<div id="blocked-page" class="page" style="display:none;flex-direction:row;min-height:100vh;">
+  <!-- Left purple panel -->
+  <div class="auth-left" style="display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="auth-left-logo">ReservaPlus</div>
+    <div class="auth-left-body">
+      <div style="font-size:3rem;margin-bottom:1.2rem;">🔒</div>
+      <div class="auth-left-title" style="font-size:clamp(1.5rem,2.5vw,2.2rem)">Période<br>d'essai<br>terminée.</div>
+      <div class="auth-left-desc" style="margin-top:1rem">Vos 14 jours gratuits sont écoulés. Choisissez un plan pour continuer à recevoir des réservations.</div>
     </div>
-    <div style="margin-top:1.5rem;">
-      <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:0.83rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Se déconnecter</button>
+    <div class="auth-left-footer">
+      <span>© 2026 ReservaPlus</span><span>Maroc 🇲🇦</span>
+    </div>
+  </div>
+
+  <!-- Right: pricing -->
+  <div class="auth-right" style="overflow-y:auto;padding:2.5rem 2rem;align-items:flex-start;justify-content:flex-start;flex-direction:column;gap:0">
+    <div style="width:100%;max-width:640px;margin:0 auto;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:.4rem;color:var(--text)">Choisissez votre plan</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-bottom:2rem">Continuez à gérer vos réservations sans interruption.</div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+
+        <!-- Starter -->
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:1.5rem;transition:all .2s;cursor:pointer" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">STARTER</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">0 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Pour démarrer</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>30 réservations/mois</li>
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>3 services max</li>
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Lien de réservation</li>
+            <li style="font-size:.78rem;color:var(--muted);opacity:.45;display:flex;gap:.4rem"><span>–</span>Staff illimité</li>
+          </ul>
+          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20le%20plan%20Starter%20ReservaPlus." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;border:1.5px solid var(--border2);color:var(--text);font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">Choisir Starter</a>
+        </div>
+
+        <!-- Pro (popular) -->
+        <div style="background:var(--accent-bg,#1e1a3d);border:1.5px solid var(--accent);border-radius:18px;padding:1.5rem;position:relative">
+          <div style="position:absolute;top:-1px;right:1.2rem;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;padding:.2rem .6rem;border-radius:0 0 7px 7px;letter-spacing:.04em">POPULAIRE</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">PRO</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">199 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Pour les pros sérieux</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Réservations illimitées</li>
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Services illimités</li>
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Staff illimité</li>
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Stats &amp; Calendrier</li>
+          </ul>
+          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20le%20plan%20Pro%20ReservaPlus." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;background:var(--accent);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.background='#5a4bd1'" onmouseleave="this.style.background='var(--accent)'">Choisir Pro →</a>
+        </div>
+
+        <!-- Entreprise -->
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:1.5rem;transition:all .2s;cursor:pointer" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">ENTREPRISE</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">Sur <span style="font-size:.85rem;font-weight:400;color:var(--muted)">devis</span></div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Chaînes &amp; franchises</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Multi-établissements</li>
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Dashboard centralisé</li>
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Support 24/7</li>
+            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Onboarding dédié</li>
+          </ul>
+          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20un%20devis%20ReservaPlus%20Entreprise." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;border:1.5px solid var(--border2);color:var(--text);font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">Nous contacter</a>
+        </div>
+
+      </div>
+
+      <div style="text-align:center;margin-top:.5rem">
+        <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">Se déconnecter</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1096,23 +1157,164 @@
 
     if (!email || !password) return showAlert('auth-alert', 'Veuillez remplir tous les champs.', 'error');
 
-    const btn = document.querySelector('#login-form .btn-submit');
+    const btn = document.getElementById('btn-login');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Connexion...';
+    btn.innerHTML = '<span class="spinner"></span> Connexion...';
 
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       showAlert('auth-alert', 'Email ou mot de passe incorrect.', 'error');
-      btn.disabled = false; btn.textContent = "Se connecter";
+      btn.disabled = false; btn.textContent = "S'identifier";
       return;
     }
 
     currentUser = data.user;
     await loadBusiness();
     if (!currentBusiness) {
-      if (btn) { btn.disabled = false; btn.textContent = 'Se connecter'; }
+      btn.disabled = false; btn.textContent = "S'identifier";
       return;
     }
+    showDashboard();
+  }
+
+  // ---- FORGOT PASSWORD ----
+  function showForgotPassword() {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+    modal.innerHTML = `
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:380px;position:relative;">
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:.4rem;color:var(--text)">Mot de passe oublié</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:1.4rem;line-height:1.6">Entrez votre adresse e-mail. Vous recevrez un lien pour réinitialiser votre mot de passe.</div>
+        <div id="forgot-alert"></div>
+        <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Adresse e-mail</label>
+        <input id="forgot-email" type="email" placeholder="votre@email.com"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;box-sizing:border-box;">
+        <button id="forgot-btn" onclick="sendResetEmail()"
+          style="width:100%;background:#2d3748;color:#fff;border:none;padding:.82rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;">
+          Envoyer le lien →
+        </button>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+
+  async function sendResetEmail() {
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email) return;
+    const btn = document.getElementById('forgot-btn');
+    btn.disabled = true; btn.textContent = 'Envoi...';
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/app.html'
+    });
+    if (error) {
+      document.getElementById('forgot-alert').innerHTML = `<div style="background:var(--red-bg,#450a0a);border:1px solid var(--red);color:var(--red);padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">${error.message}</div>`;
+      btn.disabled = false; btn.textContent = 'Envoyer le lien →';
+    } else {
+      document.getElementById('forgot-alert').innerHTML = `<div style="background:#064e3b;border:1px solid #34d399;color:#34d399;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem">✅ Email envoyé ! Vérifiez votre boîte mail.</div>`;
+      btn.textContent = 'Email envoyé ✓';
+    }
+  }
+
+  // ---- INSCRIPTION (S'inscrire sans WhatsApp) ----
+  function showInscription() {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;';
+    modal.innerHTML = `
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:22px;padding:2rem;width:100%;max-width:420px;position:relative;">
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:.3rem;color:var(--text)">Créer un compte</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:1.5rem">14 jours gratuits, sans carte bancaire.</div>
+        <div id="inscr-alert"></div>
+
+        <label style="display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem">Nom de votre établissement *</label>
+        <input id="inscr-name" type="text" placeholder="Ex: Salon Ahmed"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.68rem 1rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
+
+        <label style="display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem">Adresse e-mail *</label>
+        <input id="inscr-email" type="email" placeholder="votre@email.com"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.68rem 1rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
+
+        <label style="display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem">Téléphone</label>
+        <input id="inscr-phone" type="tel" placeholder="+212 6XX XXX XXX"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.68rem 1rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
+
+        <label style="display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem">Mot de passe *</label>
+        <input id="inscr-pwd" type="password" placeholder="Minimum 6 caractères"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.68rem 1rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1.2rem;box-sizing:border-box;">
+
+        <div style="font-size:.73rem;color:var(--muted);margin-bottom:1rem">Choisissez votre plan de départ :</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.2rem" id="plan-selector">
+          <div onclick="selectPlanInscr(this,'starter')" data-plan="starter"
+            style="border:1.5px solid var(--border);border-radius:10px;padding:.7rem;cursor:pointer;text-align:center;transition:all .2s">
+            <div style="font-weight:700;font-size:.82rem;margin-bottom:.2rem">Starter</div>
+            <div style="font-size:.7rem;color:var(--muted)">Gratuit · 30 RDV/mois</div>
+          </div>
+          <div onclick="selectPlanInscr(this,'pro')" data-plan="pro"
+            style="border:1.5px solid var(--accent);background:var(--accent-bg,rgba(124,106,247,.1));border-radius:10px;padding:.7rem;cursor:pointer;text-align:center;transition:all .2s">
+            <div style="font-weight:700;font-size:.82rem;margin-bottom:.2rem;color:var(--accent)">Pro ⭐</div>
+            <div style="font-size:.7rem;color:var(--muted)">199 MAD/mois · Illimité</div>
+          </div>
+        </div>
+        <input type="hidden" id="inscr-plan" value="pro">
+
+        <button id="inscr-btn" onclick="doInscription()"
+          style="width:100%;background:#2d3748;color:#fff;border:none;padding:.85rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;margin-bottom:.7rem;">
+          Créer mon compte →
+        </button>
+        <div style="text-align:center;font-size:.72rem;color:var(--muted)">Déjà un compte ? <span onclick="this.closest('div[style*=fixed]').remove()" style="color:var(--accent);cursor:pointer">Se connecter</span></div>
+      </div>`;
+    document.body.appendChild(modal);
+    // Pre-select pro
+    const pro = modal.querySelector('[data-plan="pro"]');
+    if(pro) pro.style.borderColor = 'var(--accent)';
+  }
+
+  function selectPlanInscr(el, plan) {
+    document.querySelectorAll('#plan-selector > div').forEach(d => {
+      d.style.borderColor = 'var(--border)';
+      d.style.background = 'transparent';
+    });
+    el.style.borderColor = 'var(--accent)';
+    el.style.background = 'var(--accent-bg, rgba(124,106,247,.1))';
+    document.getElementById('inscr-plan').value = plan;
+  }
+
+  async function doInscription() {
+    const name = document.getElementById('inscr-name').value.trim();
+    const email = document.getElementById('inscr-email').value.trim();
+    const phone = document.getElementById('inscr-phone').value.trim();
+    const pwd = document.getElementById('inscr-pwd').value;
+    const plan = document.getElementById('inscr-plan').value;
+
+    if (!name || !email || !pwd) {
+      document.getElementById('inscr-alert').innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Veuillez remplir les champs obligatoires.</div>';
+      return;
+    }
+    const btn = document.getElementById('inscr-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Création...';
+
+    const { data, error } = await sb.auth.signUp({ email, password: pwd });
+    if (error) {
+      document.getElementById('inscr-alert').innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">${error.message}</div>`;
+      btn.disabled = false; btn.textContent = 'Créer mon compte →';
+      return;
+    }
+
+    currentUser = data.user;
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + 14);
+
+    await sb.from('businesses').insert({
+      name, email, phone,
+      user_id: currentUser.id,
+      plan: plan,
+      is_active: true,
+      trial_end: trialEnd.toISOString().split('T')[0]
+    });
+
+    await loadBusiness();
+    // Close modal
+    document.querySelectorAll('div[style*="fixed"]').forEach(m => { if(m.id !== 'blocked-page' && m.id !== 'auth-page') m.remove(); });
     showDashboard();
   }
 
