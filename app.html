@@ -935,6 +935,22 @@
 
       <!-- STAFF VIEW -->
       <div id="view-staff" class="view">
+        <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:1rem;">
+          <button id="staff-tab-list" onclick="switchStaffTab('list')" style="background:var(--accent);color:#fff;border:none;padding:0.5rem 1.2rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">👥 Mon staff</button>
+          <button id="staff-tab-planning" onclick="switchStaffTab('planning')" style="background:var(--surface);color:var(--muted);border:1px solid var(--border);padding:0.5rem 1.2rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">📅 Planning & RDV</button>
+        </div>
+
+        <!-- TAB: PLANNING -->
+        <div id="staff-panel-planning" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <div class="view-title" style="margin-bottom:0;">📅 Planning du jour</div>
+            <input type="date" id="planning-date" onchange="loadPlanning()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.5rem 0.8rem;border-radius:8px;font-size:0.83rem;font-family:'DM Sans',sans-serif;">
+          </div>
+          <div id="planning-list"></div>
+        </div>
+
+        <!-- TAB: STAFF LIST -->
+        <div id="staff-panel-list">
         <div class="view-title">👥 Mon staff</div>
 
         <!-- ADD STAFF FORM -->
@@ -990,6 +1006,7 @@
 
         <!-- STAFF LIST -->
         <div id="staff-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;"></div>
+        </div><!-- end staff-panel-list -->
       </div>
 
       <!-- CHANGE PASSWORD -->
@@ -2210,6 +2227,115 @@
 
   // ---- LINK ----
   // ---- STAFF ----
+  // ---- STAFF TABS ----
+  function switchStaffTab(tab) {
+    const isList = tab === 'list';
+    document.getElementById('staff-panel-list').style.display = isList ? 'block' : 'none';
+    document.getElementById('staff-panel-planning').style.display = isList ? 'none' : 'block';
+    const tabList = document.getElementById('staff-tab-list');
+    const tabPlan = document.getElementById('staff-tab-planning');
+    tabList.style.background = isList ? 'var(--accent)' : 'var(--surface)';
+    tabList.style.color = isList ? '#fff' : 'var(--muted)';
+    tabList.style.border = isList ? 'none' : '1px solid var(--border)';
+    tabPlan.style.background = isList ? 'var(--surface)' : 'var(--accent)';
+    tabPlan.style.color = isList ? 'var(--muted)' : '#fff';
+    tabPlan.style.border = isList ? '1px solid var(--border)' : 'none';
+    if (!isList) {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('planning-date').value = today;
+      loadPlanning();
+    }
+  }
+
+  async function loadPlanning() {
+    const date = document.getElementById('planning-date').value;
+    if (!date || !currentBusiness) return;
+
+    const container = document.getElementById('planning-list');
+    container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:1rem;">Chargement...</div>';
+
+    // جيب كل staff
+    const { data: staffList } = await sb.from('staff').select('*').eq('business_id', currentBusiness.id).eq('is_active', true).order('created_at');
+    // جيب حجوزات اليوم
+    const { data: rdvs } = await sb.from('reservations').select('*').eq('business_id', currentBusiness.id).eq('date', date).neq('statut', 'annule').order('time');
+
+    if (!staffList?.length) {
+      container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:1rem;">Aucun staff actif.</div>';
+      return;
+    }
+
+    // جيب كل staff للـ reassign select
+    const staffOptions = (staffList || []).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+    container.innerHTML = staffList.map(staff => {
+      const myRdvs = (rdvs || []).filter(r => r.staff_id === staff.id);
+      const unassigned = (rdvs || []).filter(r => !r.staff_id);
+
+      return `
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
+            <div>
+              <div style="font-weight:700;font-size:0.95rem;">${staff.name}</div>
+              ${staff.specialty ? `<div style="font-size:0.75rem;color:var(--muted)">${staff.specialty}</div>` : ''}
+            </div>
+            <div style="background:rgba(124,106,247,0.12);color:var(--accent);font-size:0.75rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:100px;">
+              ${myRdvs.length} RDV
+            </div>
+          </div>
+          ${myRdvs.length === 0
+            ? '<div style="color:var(--muted);font-size:0.8rem;padding:0.5rem 0;">Aucun RDV ce jour</div>'
+            : myRdvs.map(r => `
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.8rem;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                <div>
+                  <div style="font-weight:600;font-size:0.85rem;">${r.client_name}</div>
+                  <div style="font-size:0.75rem;color:var(--muted)">${r.service || ''} · ${r.time || ''}</div>
+                  <div style="font-size:0.72rem;color:var(--muted)">${r.client_phone || ''}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                  <select onchange="reassignRdv('${r.id}', this.value, this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.3rem 0.5rem;border-radius:7px;font-size:0.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;">
+                    <option value="">Transférer à...</option>
+                    ${staffList.filter(s => s.id !== staff.id).map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                  </select>
+                </div>
+              </div>`).join('')
+          }
+        </div>`;
+    }).join('');
+
+    // RDV sans staff
+    const noStaffRdvs = (rdvs || []).filter(r => !r.staff_id);
+    if (noStaffRdvs.length > 0) {
+      container.innerHTML += `
+        <div style="background:var(--card);border:1.5px dashed var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1rem;">
+          <div style="font-weight:700;font-size:0.88rem;margin-bottom:0.8rem;color:var(--muted)">⚠️ RDV sans staff assigné (${noStaffRdvs.length})</div>
+          ${noStaffRdvs.map(r => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.8rem;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+              <div>
+                <div style="font-weight:600;font-size:0.85rem;">${r.client_name}</div>
+                <div style="font-size:0.75rem;color:var(--muted)">${r.service || ''} · ${r.time || ''}</div>
+              </div>
+              <select onchange="reassignRdv('${r.id}', this.value, this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.3rem 0.5rem;border-radius:7px;font-size:0.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;">
+                <option value="">Assigner à...</option>
+                ${staffList.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+              </select>
+            </div>`).join('')}
+        </div>`;
+    }
+  }
+
+  async function reassignRdv(rdvId, newStaffId, selectEl) {
+    if (!newStaffId) return;
+    selectEl.disabled = true;
+    const { error } = await sb.from('reservations').update({ staff_id: newStaffId }).eq('id', rdvId);
+    if (error) {
+      showToast('Erreur lors du transfert');
+      selectEl.disabled = false;
+    } else {
+      showToast('✅ RDV transféré !');
+      setTimeout(() => loadPlanning(), 500);
+    }
+  }
+
   async function loadStaff() {
     if (!currentBusiness) return;
 
