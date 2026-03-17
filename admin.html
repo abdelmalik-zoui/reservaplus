@@ -264,7 +264,8 @@
       <div class="table-head">
         <span>ÉTABLISSEMENT</span>
         <span>EMAIL</span>
-        <span>TRIAL FIN</span>
+        <span>CRÉÉ LE</span>
+        <span>FIN ABONNEMENT</span>
         <span>PLAN</span>
         <span>STATUT</span>
         <span>ACTIONS</span>
@@ -466,15 +467,31 @@
       return;
     }
     wrap.innerHTML = clients.map(c => {
-      const trialEnd = new Date(c.trial_end);
+      const trialEnd = new Date(c.trial_end + 'T00:00:00');
+      const createdAt = c.created_at ? new Date(c.created_at) : null;
       const isExpired = trialEnd < today;
       const daysLeft = Math.ceil((trialEnd - today) / (1000*60*60*24));
       const planColor = c.plan === 'business' ? '#f7706a' : c.plan === 'pro' ? '#7c6af7' : '#7070a0';
+      const isStarter = !c.plan || c.plan === 'starter';
 
+      // Format dates
+      const fmtDate = d => d ? d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'}) : '—';
+      const createdStr = createdAt ? fmtDate(createdAt) : '—';
+      const endStr = isStarter ? '<span style="color:var(--muted);font-size:0.75rem">Gratuit ∞</span>' : fmtDate(trialEnd);
+
+      // Status badge
       let statusBadge = '';
-      if (!c.is_active) statusBadge = '<span class="badge badge-red">Bloqué</span>';
-      else if (isExpired) statusBadge = '<span class="badge badge-yellow">Expiré</span>';
-      else statusBadge = `<span class="badge badge-green">${daysLeft}j restants</span>`;
+      if (!c.is_active) {
+        statusBadge = '<span class="badge badge-red">🔒 Bloqué</span>';
+      } else if (isStarter) {
+        statusBadge = '<span class="badge badge-green">✓ Gratuit</span>';
+      } else if (isExpired) {
+        statusBadge = '<span class="badge badge-yellow">⚠️ Expiré</span>';
+      } else if (daysLeft <= 5) {
+        statusBadge = `<span class="badge badge-yellow">⏳ ${daysLeft}j restants</span>`;
+      } else {
+        statusBadge = `<span class="badge badge-green">✓ ${daysLeft}j restants</span>`;
+      }
 
       return `<div class="table-row">
         <span style="font-weight:500;">${c.name}<br>
@@ -482,7 +499,8 @@
           ${c.secteur ? `<span style="background:rgba(124,106,247,0.1);color:var(--accent);font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:4px;">${c.secteur}</span>` : ''}
         </span>
         <span style="color:var(--muted);font-size:0.78rem;">${c.email}</span>
-        <span style="font-size:0.78rem;">${c.trial_end || '—'}</span>
+        <span style="font-size:0.78rem;color:var(--muted)">${createdStr}</span>
+        <span style="font-size:0.78rem;">${endStr}</span>
         <span><span class="badge" style="background:rgba(124,106,247,0.1);color:${planColor}">${(c.plan || 'starter').toUpperCase()}</span></span>
         <span>${statusBadge}</span>
         <span>
