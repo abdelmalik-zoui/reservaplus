@@ -112,6 +112,7 @@ body{
 }
 .pill-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:blink 1.6s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
 
 h1{
   font-family:'Syne',sans-serif;font-weight:800;
@@ -485,6 +486,13 @@ footer a:hover{color:var(--accent)}
 
   <!-- PHONE SIMULATION -->
   <div class="phone-wrap" id="demo">
+
+    <!-- DEMO BADGE -->
+    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:0.4rem;background:linear-gradient(135deg,#7c6af7,#a78bfa);color:#fff;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;padding:0.3rem 0.9rem;border-radius:100px;box-shadow:0 4px 15px rgba(124,106,247,0.5);white-space:nowrap;">
+      <span style="width:6px;height:6px;background:#fff;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite"></span>
+      DÉMO INTERACTIVE — Essayez !
+    </div>
+
     <div class="notif1">
       <div class="notif1-t">🔔 Nouvelle réservation</div>
       <div class="notif1-s">Youssef · Coupe + Barbe · 14h30</div>
@@ -493,6 +501,9 @@ footer a:hover{color:var(--accent)}
 
     <div class="phone">
       <div class="phone-bar"></div>
+
+      <!-- DEMO WATERMARK inside phone -->
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:2.5rem;font-weight:900;color:rgba(124,106,247,0.06);pointer-events:none;white-space:nowrap;z-index:0;letter-spacing:.1em">DÉMO</div>
 
       <div class="progress" id="prog">
         <div class="pg" id="pg1"></div>
