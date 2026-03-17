@@ -394,7 +394,7 @@ const sb=createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
 );
 
-let bizId=null,bizOpen=null,bizClose=null,bizDur=30;
+let bizId=null,bizOpen=null,bizClose=null,bizDur=30,currentBiz=null;
 let selSvc=null,selSvcId=null;
 let selStaffId=null,selStaffOpen=null,selStaffClose=null;
 let selTime=null,curStep=1,hasStaff=false;
@@ -476,6 +476,7 @@ async function init(){
   const{data:biz}=await sb.from('businesses').select('*').eq('id',bizId).single();
   document.getElementById('loading').style.display='none';
   if(!biz){document.getElementById('nf').style.display='block';return;}
+  currentBiz=biz;
   document.getElementById('biz-name').textContent=biz.name;
   document.title=biz.name+' — Réservation';
   if(biz.opening_time)bizOpen=biz.opening_time.slice(0,5);
@@ -589,6 +590,25 @@ async function confirmBooking(){
   document.getElementById('success-screen').style.display='block';
   document.getElementById('ok-sub').innerHTML=`Merci <strong>${name}</strong> ! Votre RDV pour <strong>${selSvc}</strong><br>le <strong>${date}</strong> à <strong>${selTime}</strong> est confirmé.`;
   document.getElementById('ok-code').textContent=code;
+
+  // WhatsApp confirmation button
+  const waMsg = encodeURIComponent(
+    'Bonjour ! Votre RDV est confirmé ✅\n' +
+    '📅 Date : ' + date + '\n' +
+    '🕐 Heure : ' + selTime + '\n' +
+    '✂️ Service : ' + selSvc + '\n' +
+    '🔖 Code : ' + code + '\n\n' +
+    'Gardez ce code pour modifier ou annuler votre RDV.'
+  );
+  const bizPhone = (currentBiz?.phone||'').replace(/[^0-9]/g,'');
+  if(bizPhone){
+    const waBtn = document.createElement('a');
+    waBtn.href = 'https://wa.me/' + bizPhone + '?text=' + waMsg;
+    waBtn.target = '_blank';
+    waBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:0.5rem;background:#25D366;color:#fff;padding:0.85rem 1.5rem;border-radius:12px;font-weight:600;font-size:0.9rem;text-decoration:none;margin-top:1rem;width:100%;box-sizing:border-box;';
+    waBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg> Confirmer via WhatsApp';
+    document.getElementById('success-screen').appendChild(waBtn);
+  }
 }
 
 function showAlert(msg){
