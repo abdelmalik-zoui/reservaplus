@@ -3,2771 +3,730 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ReservaPlus</title>
+<title>ReservaPlus — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --border: #1e1e2e;
-    --accent: #7c6af7;
-    --text: #f0f0f5;
-    --muted: #7070a0;
-    --card: #13131c;
-    --green: #4ade80;
-    --red: #f87171;
-    --yellow: #fbbf24;
+    --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e;
+    --accent: #7c6af7; --text: #f0f0f5; --muted: #7070a0;
+    --card: #13131c; --green: #4ade80; --yellow: #fbbf24;
+    --red: #f87171; --purple: #a78bfa;
   }
-  body.light-mode {
-    --bg: #f4f4f8;
-    --surface: #ffffff;
-    --border: #e0e0ec;
-    --accent: #7c6af7;
-    --text: #1a1a2e;
-    --muted: #8888aa;
-    --card: #ffffff;
-    --green: #16a34a;
-    --red: #dc2626;
-    --yellow: #d97706;
-  }
-  .theme-toggle {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 0.35rem 0.8rem;
-    cursor: pointer;
-    font-size: 0.78rem;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    transition: all 0.2s;
-  }
-  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-  /* ---- PAGES ---- */
-  .page { display: none; min-height: 100vh; }
-  .page.active { display: flex; }
+  /* LOGIN */
+  .login-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:1rem; }
+  .login-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2.5rem; width:100%; max-width:380px; text-align:center; }
+  .login-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; margin-bottom:0.3rem; }
+  .login-logo span { color:var(--accent); }
+  .login-sub { color:var(--muted); font-size:0.82rem; margin-bottom:2rem; }
+  .login-input { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.75rem 1rem; border-radius:9px; font-size:0.88rem; font-family:'DM Sans',sans-serif; margin-bottom:0.8rem; }
+  .login-input:focus { outline:none; border-color:var(--accent); }
+  .btn-login { width:100%; background:var(--accent); border:none; color:white; padding:0.85rem; border-radius:9px; font-size:0.92rem; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+  .btn-login:hover { background:#6a58e5; }
+  .login-error { color:var(--red); font-size:0.82rem; margin-bottom:0.8rem; display:none; }
 
-  /* ---- AUTH PAGE ---- */
-  #auth-page {
-    flex-direction: row;
-    min-height: 100vh;
-    padding: 0;
-  }
-  .auth-left {
-    width: 42%;
-    min-height: 100vh;
-    background: linear-gradient(145deg, #4338ca 0%, #6d28d9 55%, #5b21b6 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 2.5rem 3rem;
-    position: relative;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .auth-left::before {
-    content: '';
-    position: absolute;
-    top: -120px; right: -100px;
-    width: 380px; height: 380px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.07);
-    pointer-events: none;
-  }
-  .auth-left::after {
-    content: '';
-    position: absolute;
-    bottom: -100px; left: -70px;
-    width: 300px; height: 300px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.05);
-    pointer-events: none;
-  }
-  .auth-left-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.4rem;
-    color: #fff;
-    position: relative; z-index: 1;
-  }
-  .auth-left-body { position: relative; z-index: 1; }
-  .auth-left-title {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(1.7rem, 2.8vw, 2.5rem);
-    color: #fff;
-    line-height: 1.18;
-    margin-bottom: 1.1rem;
-  }
-  .auth-left-desc {
-    color: rgba(255,255,255,0.72);
-    font-size: 0.88rem;
-    line-height: 1.78;
-    max-width: 320px;
-  }
-  .auth-left-footer {
-    font-size: 0.7rem;
-    color: rgba(255,255,255,0.4);
-    position: relative; z-index: 1;
-    display: flex;
-    justify-content: space-between;
-  }
-  .auth-right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 2.5rem;
-    background: var(--bg);
-    transition: background .3s;
-  }
-  .auth-box {
-    width: 100%;
-    max-width: 390px;
-  }
-  .auth-logo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.5rem;
-    text-align: center;
-    margin-bottom: 0.3rem;
-    color: var(--text);
-  }
-  .auth-logo span { color: var(--accent); }
-  .auth-subtitle {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.82rem;
-    margin-bottom: 2rem;
-    line-height: 1.5;
-  }
-  .auth-subtitle strong { color: var(--text); }
-  .auth-label {
-    display: block;
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-bottom: 0.4rem;
-    font-weight: 500;
-  }
-  .auth-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 0.75rem 1rem;
-    color: var(--text);
-    font-size: 0.88rem;
-    font-family: 'DM Sans', sans-serif;
-    outline: none;
-    transition: border-color .2s;
-    margin-bottom: 1rem;
-  }
-  .auth-input:focus { border-color: var(--accent); }
-  .auth-input::placeholder { color: var(--muted); }
-  .auth-forgot {
-    font-size: 0.78rem;
-    color: var(--accent);
-    display: block;
-    text-align: right;
-    margin-top: -0.6rem;
-    margin-bottom: 1.3rem;
-    cursor: pointer;
-  }
-  .auth-forgot:hover { text-decoration: underline; }
-  .btn-auth {
-    width: 100%;
-    background: #2d3748;
-    color: #fff;
-    border: none;
-    padding: 0.88rem;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all .25s;
-    margin-bottom: 1.4rem;
-  }
-  .btn-auth:hover { background: #1a202c; transform: translateY(-1px); }
-  .auth-divider {
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-bottom: 1.2rem;
-    position: relative;
-  }
-  .auth-divider::before, .auth-divider::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 42%;
-    height: 1px;
-    background: var(--border);
-  }
-  .auth-divider::before { left: 0; }
-  .auth-divider::after { right: 0; }
-  .auth-wa-btn {
-    width: 100%;
-    background: #25D366;
-    color: #fff;
-    border: none;
-    padding: 0.85rem;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 600;
-    font-size: 0.88rem;
-    cursor: pointer;
-    transition: all .25s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    text-decoration: none;
-  }
-  .auth-wa-btn:hover { background: #1db954; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(37,211,102,.3); }
-  .auth-tabs { display: none; }
-  @media (max-width: 800px) {
-    #auth-page { flex-direction: column; }
-    .auth-left { width: 100%; min-height: 220px; padding: 2rem; }
-    .auth-left-title { font-size: 1.5rem; }
-    .auth-right { padding: 2rem 1.5rem; }
-  }
+  /* ADMIN LAYOUT */
+  #admin-page { display:none; }
+  .admin-nav { display:flex; justify-content:space-between; align-items:center; padding:1rem 2rem; border-bottom:1px solid var(--border); background:var(--surface); }
+  .admin-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; }
+  .admin-logo span { color:var(--accent); }
+  .admin-badge { background:rgba(247,112,106,0.1); border:1px solid rgba(247,112,106,0.3); color:#f7706a; padding:0.2rem 0.8rem; border-radius:100px; font-size:0.72rem; font-weight:600; margin-left:0.5rem; }
+  .btn-logout { background:none; border:1px solid var(--border); color:var(--muted); padding:0.4rem 0.9rem; border-radius:7px; cursor:pointer; font-size:0.78rem; font-family:'DM Sans',sans-serif; }
 
-  .form-group { margin-bottom: 1.1rem; }
-  .form-group label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.4rem; }
-  .form-group input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 0.7rem 1rem;
-    border-radius: 9px;
-    font-size: 0.88rem;
-    font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.2s;
-  }
-  .form-group input:focus { outline: none; border-color: var(--accent); }
+  .admin-content { padding:2rem; max-width:1200px; margin:0 auto; }
 
-  .btn-submit {
-    width: 100%;
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 0.85rem;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-    margin-top: 0.5rem;
-  }
-  .btn-submit:hover { background: #6a58e5; transform: translateY(-1px); }
-  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  /* KPIs */
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.2rem; }
+  .kpi-label { color:var(--muted); font-size:0.75rem; margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.05em; }
+  .kpi-val { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; }
 
-  .alert {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-size: 0.83rem;
-    margin-bottom: 1rem;
-    display: none;
-  }
-  .alert.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--red); display: block; }
-  .alert.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); display: block; }
+  /* ADD CLIENT */
+  .section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; margin-bottom:1rem; }
+  .add-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:2rem; }
+  .form-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0.8rem; margin-bottom:0.8rem; }
+  .form-group label { display:block; font-size:0.78rem; color:var(--muted); margin-bottom:0.35rem; }
+  .form-group input, .form-group select { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.65rem 0.9rem; border-radius:8px; font-size:0.85rem; font-family:'DM Sans',sans-serif; }
+  .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--accent); }
+  .btn-add { background:var(--accent); border:none; color:white; padding:0.65rem 1.5rem; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+  .btn-add:hover { background:#6a58e5; }
+  #add-alert { margin-bottom:0.8rem; }
+  .alert { padding:0.7rem 1rem; border-radius:8px; font-size:0.83rem; }
+  .alert.success { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); color:var(--green); }
+  .alert.error { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:var(--red); }
 
-  /* ---- DASHBOARD ---- */
-  #dashboard-page { flex-direction: column; }
+  /* CLIENTS TABLE */
+  .clients-card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .table-head { display:grid; grid-template-columns:2fr 2fr 1.5fr 1fr 1fr 1.5fr; padding:0.7rem 1.2rem; font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border); background:var(--surface); }
+  .table-row { display:grid; grid-template-columns:2fr 2fr 1.5fr 1fr 1fr 1.5fr; padding:0.9rem 1.2rem; font-size:0.82rem; border-bottom:1px solid rgba(30,30,46,0.5); align-items:center; transition:background 0.15s; }
+  .table-row:hover { background:rgba(124,106,247,0.04); }
+  .table-row:last-child { border-bottom:none; }
+  .badge { padding:0.2rem 0.65rem; border-radius:100px; font-size:0.7rem; font-weight:500; }
+  .badge-green { background:rgba(74,222,128,0.1); color:var(--green); }
+  .badge-red { background:rgba(248,113,113,0.1); color:var(--red); }
+  .badge-yellow { background:rgba(251,191,36,0.1); color:var(--yellow); }
+  .badge-purple { background:rgba(167,139,250,0.1); color:var(--purple); }
 
-  /* NAV */
-  .dash-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    position: sticky; top: 0; z-index: 50;
-  }
-  .dash-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; }
-  .dash-logo span { color: var(--accent); }
-  .dash-user { display: flex; align-items: center; gap: 1rem; }
-  .user-email { color: var(--muted); font-size: 0.82rem; }
-  .btn-logout {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 0.4rem 1rem;
-    border-radius: 7px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+  .action-btn { background:none; border:1px solid var(--border); color:var(--muted); padding:0.22rem 0.55rem; border-radius:5px; font-size:0.72rem; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; margin-left:3px; }
+  .action-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .action-btn.red:hover { border-color:var(--red); color:var(--red); }
+  .action-btn.green:hover { border-color:var(--green); color:var(--green); }
 
-  /* DASH CONTENT */
-  .dash-content { display: flex; flex: 1; }
+  .search-bar { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.6rem 1rem; border-radius:8px; font-size:0.85rem; font-family:'DM Sans',sans-serif; width:100%; max-width:280px; margin-bottom:1rem; }
+  .search-bar:focus { outline:none; border-color:var(--accent); }
 
-  .sidebar {
-    width: 220px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 1.5rem 1rem;
-    flex-shrink: 0;
-  }
+  /* EXTEND MODAL */
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; align-items:center; justify-content:center; padding:1rem; }
+  .modal.open { display:flex; }
+  .modal-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; width:100%; max-width:380px; position:relative; }
+  .modal-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; margin-bottom:1.2rem; }
+  .modal-close { position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; }
 
-  .nav-item {
-    display: flex; align-items: center; gap: 0.7rem;
-    padding: 0.65rem 0.9rem;
-    border-radius: 8px;
-    font-size: 0.83rem;
-    color: var(--muted);
-    margin-bottom: 0.3rem;
-    cursor: pointer;
-    transition: all 0.15s;
-    border: none; background: none; width: 100%; text-align: left;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .nav-item:hover { background: rgba(124,106,247,0.08); color: var(--text); }
-  .nav-item.active { background: rgba(124,106,247,0.12); color: var(--accent); }
+  @media (max-width:768px) {
+    /* NAV */
+    .admin-nav { padding:0.8rem 4%; flex-wrap:wrap; gap:0.5rem; }
+    .admin-logo { font-size:1.1rem; }
+    .admin-badge { font-size:0.55rem; padding:0.15rem 0.4rem; }
+    .btn-logout { padding:0.4rem 0.7rem; font-size:0.72rem; }
 
-  .main-area { flex: 1; padding: 2rem; overflow-y: auto; }
+    /* KPIs */
+    .stats-grid { grid-template-columns:1fr 1fr; gap:0.6rem; padding:0 4% 0.5rem; }
+    .stat-card { padding:1rem 0.8rem; }
+    .stat-val { font-size:1.5rem; }
+    .stat-label { font-size:0.7rem; }
 
-  /* VIEWS */
-  .view { display: none; }
-  .view.active { display: block; }
+    /* FILTERS */
+    .filters { padding:0.8rem 4%; flex-wrap:wrap; gap:0.5rem; }
+    .filter-btn { padding:0.4rem 0.8rem; font-size:0.75rem; }
+    .search-wrap { width:100%; }
+    .search-wrap input { width:100%; }
 
-  .view-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
+    /* TABLE -> CARDS on mobile */
+    .table-wrap { padding:0 4% 1rem; }
+    .table-head { display:none; }
+    .table-row {
+      display:flex; flex-direction:column; gap:0.4rem;
+      padding:1rem; border-radius:10px;
+      border:1px solid var(--border); margin-bottom:0.5rem;
+      background:var(--card);
+    }
+    .table-row span { font-size:0.82rem; }
+    .table-row span:before { color:var(--muted); font-size:0.65rem; font-weight:600; display:block; margin-bottom:0.1rem; text-transform:uppercase; letter-spacing:0.06em; }
+    .table-row span:nth-child(1):before { content:'Client'; }
+    .table-row span:nth-child(2):before { content:'Service'; }
+    .table-row span:nth-child(3):before { content:'Staff'; }
+    .table-row span:nth-child(4):before { content:'Date'; }
+    .table-row span:nth-child(5):before { content:'Heure'; }
+    .table-row span:nth-child(6):before { content:'Statut'; }
+    .table-row span:nth-child(7) { display:flex; gap:0.4rem; flex-wrap:wrap; }
 
-  /* KPI GRID */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-  .kpi {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.2rem;
-  }
-  .kpi-label { color: var(--muted); font-size: 0.75rem; margin-bottom: 0.5rem; }
-  .kpi-val { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 700; }
-  .kpi-sub { font-size: 0.72rem; color: var(--green); margin-top: 0.2rem; }
+    /* SECTION HEADER */
+    .section-header { padding:1rem 4% 0.5rem; flex-wrap:wrap; gap:0.5rem; }
+    .section-header h2 { font-size:1rem; }
 
-  /* TABLE */
-  .table-wrap {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  .table-head {
-    display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 120px;
-    padding: 0.7rem 1.2rem;
-    background: var(--surface);
-    font-size: 0.72rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--border);
-  }
-  .table-row {
-    display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 120px;
-    padding: 0.85rem 1.2rem;
-    font-size: 0.83rem;
-    border-bottom: 1px solid rgba(30,30,46,0.5);
-    align-items: center;
-    transition: background 0.15s;
-  }
-  .table-row:hover { background: rgba(124,106,247,0.04); }
-  .table-row:last-child { border-bottom: none; }
-  .table-empty { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+    /* MODALS */
+    .modal-box { padding:1.5rem; margin:1rem; width:calc(100% - 2rem); max-width:100%; }
 
-  .badge { padding: 0.22rem 0.65rem; border-radius: 100px; font-size: 0.7rem; font-weight: 500; }
-  .badge-green { background: rgba(74,222,128,0.1); color: var(--green); }
-  .badge-yellow { background: rgba(251,191,36,0.1); color: var(--yellow); }
-  .badge-red { background: rgba(248,113,113,0.1); color: var(--red); }
-  .badge-done { background: rgba(139,92,246,0.1); color: #a78bfa; }
-
-  /* BOOKING FORM */
-  .booking-form-wrap {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.8rem;
-    max-width: 500px;
-  }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
-  .btn-add {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 0.7rem 1.5rem;
-    border-radius: 9px;
-    font-size: 0.88rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-    margin-top: 0.5rem;
-  }
-  .btn-add:hover { background: #6a58e5; }
-
-  /* LINK PAGE */
-  .link-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    max-width: 500px;
-  }
-  .link-url {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.8rem 1rem;
-    font-size: 0.83rem;
-    color: var(--accent);
-    word-break: break-all;
-    margin: 1rem 0;
-  }
-  .btn-copy {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    font-size: 0.83rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .btn-copy:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* LOADING */
-  .spinner {
-    display: inline-block;
-    width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    margin-right: 0.5rem;
-    vertical-align: middle;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  @media (max-width: 768px) {
-    .sidebar { display: none; }
-    .table-head, .table-row { grid-template-columns: 2fr 1fr 100px; }
-    .table-head > *:nth-child(2), .table-row > *:nth-child(2),
-    .table-head > *:nth-child(4), .table-row > *:nth-child(4) { display: none; }
-    .form-row { grid-template-columns: 1fr; }
-  }
-  @keyframes bellShake {
-    0%,100% { transform: rotate(0); }
-    20% { transform: rotate(-15deg); }
-    40% { transform: rotate(15deg); }
-    60% { transform: rotate(-10deg); }
-    80% { transform: rotate(10deg); }
+    /* BOTTOM NAV */
+    .admin-bottom-nav { display:flex; }
+    body { padding-bottom:70px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ===== AUTH PAGE ===== -->
-<div id="auth-page" class="page active">
-
-  <!-- LEFT: branding panel -->
-  <div class="auth-left">
-    <div class="auth-left-logo">ReservaPlus</div>
-    <div class="auth-left-body">
-      <div class="auth-left-title">Gérez vos<br>réservations<br>en ligne.</div>
-      <div class="auth-left-desc">ReservaPlus est un système de réservation en ligne permettant aux professionnels d'avoir leur propre plateforme de réservation de services.</div>
-    </div>
-    <div class="auth-left-footer">
-      <span>© 2026 ReservaPlus</span>
-      <span>Maroc 🇲🇦</span>
-    </div>
-  </div>
-
-  <!-- RIGHT: login form -->
-  <div class="auth-right">
-    <div class="auth-box">
-      <div class="auth-logo">Reserva<span>Plus</span></div>
-      <div class="auth-subtitle">Connectez-vous à votre <strong>ReservaPlus</strong> Compte</div>
-
-      <div id="auth-alert"></div>
-
-      <!-- LOGIN FORM -->
-      <div id="login-form">
-        <label class="auth-label">Nom d'utilisateur</label>
-        <input type="email" class="auth-input" id="login-email" placeholder="Entrez l'e-mail ou le nom d'utilisateur">
-        <label class="auth-label">Mot de passe</label>
-        <input type="password" class="auth-input" id="login-password" placeholder="Entrer le mot de passe">
-        <span class="auth-forgot" onclick="showForgotPassword()">Mot de passe oublié ?</span>
-        <button class="btn-auth" id="btn-login" onclick="login()">S'identifier</button>
-        <div class="auth-divider">Vous n'avez pas encore de compte ?</div>
-        <button class="auth-wa-btn" onclick="showInscription()">
-          ✨ Créer un compte gratuit
-        </button>
-        <div style="text-align:center;margin-top:.9rem">
-          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus." target="_blank" style="font-size:.75rem;color:var(--muted);text-decoration:none">ou s'inscrire via WhatsApp 💬</a>
-        </div>
-      </div>
-
-      <!-- REGISTER FORM (hidden, kept for backward compat) -->
-      <div id="register-form" style="display:none">
-        <div class="form-group">
-          <label>Nom de votre établissement</label>
-          <input type="text" id="reg-name" placeholder="Ex: Salon Ahmed">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="reg-email" placeholder="votre@email.com">
-        </div>
-        <div class="form-group">
-          <label>Téléphone</label>
-          <input type="tel" id="reg-phone" placeholder="+212 6XX XXX XXX">
-        </div>
-        <div class="form-group">
-          <label>Mot de passe</label>
-          <input type="password" id="reg-password" placeholder="••••••••">
-        </div>
-        <button class="btn-submit" onclick="register()">Créer mon compte</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- REGISTER PAGE -->
-<div id="register-page" class="page" style="display:none;flex-direction:row;min-height:100vh;">
-
-  <!-- LEFT panel -->
-  <div class="auth-left" style="display:flex;flex-direction:column;justify-content:space-between;">
-    <div class="auth-left-logo">ReservaPlus</div>
-    <div class="auth-left-body">
-      <div class="auth-left-title" style="font-size:clamp(1.4rem,2.5vw,2rem)">Lancez votre<br>espace de<br>réservation.</div>
-      <div class="auth-left-desc" style="margin-top:1rem;line-height:1.8">
-        Rejoignez des dizaines de professionnels au Maroc qui gèrent leurs RDV avec ReservaPlus.
-      </div>
-      <!-- Testimonial -->
-      <div style="margin-top:2rem;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:1.2rem">
-        <div style="color:#f59e0b;font-size:.85rem;margin-bottom:.5rem">★★★★★</div>
-        <div style="color:rgba(255,255,255,0.85);font-size:.82rem;line-height:1.7;font-style:italic">"Mes clients réservent seuls maintenant. Je perds plus de RDV."</div>
-        <div style="color:rgba(255,255,255,0.5);font-size:.75rem;margin-top:.6rem">— Youssef B., Salon de coiffure · Casablanca</div>
-      </div>
-    </div>
-    <div class="auth-left-footer">
-      <span>© 2026 ReservaPlus</span><span>Maroc 🇲🇦</span>
-    </div>
-  </div>
-
-  <!-- RIGHT: register form -->
-  <div class="auth-right" style="overflow-y:auto;padding:2.5rem 2rem;align-items:flex-start;justify-content:flex-start;flex-direction:column;">
-    <div style="width:100%;max-width:560px;margin:0 auto;">
-
-      <div style="margin-bottom:2rem">
-        <div class="auth-logo" style="margin-bottom:.5rem">Reserva<span>Plus</span></div>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--text);margin-bottom:.3rem">Créez votre compte</div>
-        <div style="font-size:.85rem;color:var(--muted)">Gratuit pour démarrer · Sans carte bancaire</div>
-      </div>
-
-      <div id="reg-page-alert"></div>
-
-      <!-- Step indicator -->
-      <div style="display:flex;gap:.5rem;margin-bottom:2rem">
-        <div style="flex:1;height:3px;border-radius:2px;background:var(--accent)"></div>
-        <div style="flex:1;height:3px;border-radius:2px;background:var(--accent)" id="reg-step2-bar" style="background:var(--border)"></div>
-      </div>
-
-      <!-- Info fields -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div style="grid-column:1/-1">
-          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500">Nom de votre établissement *</label>
-          <input id="rp-name" type="text" placeholder="Ex: Salon Ahmed, Cabinet Dr. Alami..."
-            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.78rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-        </div>
-        <div>
-          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500">Adresse e-mail *</label>
-          <input id="rp-email" type="email" placeholder="votre@email.com"
-            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.78rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-        </div>
-        <div>
-          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500">Téléphone</label>
-          <input id="rp-phone" type="tel" placeholder="+212 6XX XXX XXX"
-            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.78rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-        </div>
-        <div>
-          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500">Mot de passe *</label>
-          <input id="rp-pwd" type="password" placeholder="Minimum 6 caractères"
-            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.78rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-        </div>
-      </div>
-
-      <!-- Secteur -->
-      <div style="margin-bottom:1.5rem">
-        <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.5rem;font-weight:500">Votre secteur d'activité</label>
-        <div style="display:flex;flex-wrap:wrap;gap:.5rem" id="secteur-btns">
-          <button onclick="pickSecteur(this,'💈 Coiffure')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">💈 Coiffure</button>
-          <button onclick="pickSecteur(this,'💅 Beauté')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">💅 Beauté</button>
-          <button onclick="pickSecteur(this,'🏋️ Sport & Fitness')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🏋️ Sport</button>
-          <button onclick="pickSecteur(this,'🩺 Santé')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🩺 Santé</button>
-          <button onclick="pickSecteur(this,'🦷 Dentistes')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🦷 Dentistes</button>
-          <button onclick="pickSecteur(this,'🧖 Spas & Hammams')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🧖 Spas & Hammams</button>
-          <button onclick="pickSecteur(this,'📸 Photographes')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">📸 Photographes</button>
-          <button onclick="pickSecteur(this,'🐾 Vétérinaire')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🐾 Vétérinaire</button>
-          <button onclick="pickSecteur(this,'📚 Formation')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">📚 Formation</button>
-          <button onclick="pickSecteur(this,'🔧 Artisan')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🔧 Artisan</button>
-          <button onclick="pickSecteurAutre(this)" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">✏️ Autre</button>
-        </div>
-        <input type="hidden" id="rp-secteur" value="">
-        <input type="text" id="rp-secteur-autre" placeholder="Précisez votre secteur..."
-          style="display:none;width:100%;background:var(--surface);border:1.5px solid var(--accent);border-radius:9px;padding:.6rem 1rem;color:var(--text);font-size:.82rem;font-family:'DM Sans',sans-serif;outline:none;margin-top:.5rem;box-sizing:border-box;"
-          oninput="document.getElementById('rp-secteur').value=this.value">
-      </div>
-
-      <!-- Plan selection -->
-      <div style="margin-bottom:1.5rem">
-        <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.6rem;font-weight:500">Choisissez votre plan</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
-
-          <!-- Starter -->
-          <div onclick="pickPlanReg(this,'starter')" data-plan="starter"
-            style="border:1.5px solid var(--border);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;background:var(--surface)">
-            <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.1em;margin-bottom:.5rem">STARTER</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text)">Gratuit</div>
-            <div style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .8rem">Pour démarrer</div>
-            <div style="display:flex;flex-direction:column;gap:.3rem">
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>30 RDV/mois</div>
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>3 services</div>
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Lien de réservation</div>
-              <div style="font-size:.75rem;opacity:.4;display:flex;gap:.4rem"><span>–</span>Staff illimité</div>
-            </div>
-          </div>
-
-          <!-- Pro -->
-          <div onclick="pickPlanReg(this,'pro')" data-plan="pro"
-            style="border:1.5px solid var(--accent);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;background:rgba(124,106,247,0.08);position:relative">
-            <div style="position:absolute;top:-1px;right:1rem;background:var(--accent);color:#fff;font-size:.58rem;font-weight:700;padding:.15rem .5rem;border-radius:0 0 6px 6px;letter-spacing:.05em">RECOMMANDÉ</div>
-            <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.5rem">PRO</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text)">199 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
-            <div style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .8rem">Pour les pros sérieux</div>
-            <div style="display:flex;flex-direction:column;gap:.3rem">
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>RDV illimités</div>
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Services illimités</div>
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Staff illimité</div>
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Stats & Calendrier</div>
-            </div>
-          </div>
-
-        </div>
-        <input type="hidden" id="rp-plan" value="pro">
-      </div>
-
-      <button id="rp-btn" onclick="doRegisterPage()"
-        style="width:100%;background:var(--accent);color:#fff;border:none;padding:.9rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;margin-bottom:.8rem"
-        onmouseenter="this.style.background='#5a4bd1'" onmouseleave="this.style.background='var(--accent)'">
-        Créer mon compte →
-      </button>
-
-      <div style="text-align:center;font-size:.78rem;color:var(--muted)">
-        Déjà un compte ?
-        <span onclick="showAuthPage()" style="color:var(--accent);cursor:pointer;font-weight:600"> Se connecter</span>
-      </div>
-
-      <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:.5rem">
-        <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus." target="_blank"
-          style="display:flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.78rem;text-decoration:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
-          Ou s'inscrire via WhatsApp
-        </a>
-      </div>
-
-    </div>
+<!-- LOGIN -->
+<div id="login-page" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">Reserva<span>Plus</span></div>
+    <div class="login-sub">🔐 Espace Administrateur</div>
+    <div class="login-error" id="login-error">Mot de passe incorrect</div>
+    <input type="password" class="login-input" id="admin-password" placeholder="Mot de passe admin" onkeydown="if(event.key==='Enter')checkPassword()">
+    <button class="btn-login" onclick="checkPassword()">Accéder</button>
+    <div style="margin-top:1rem;font-size:0.75rem;color:var(--muted);cursor:pointer;" onclick="resetAdminPwd()">Mot de passe oublié?</div>
   </div>
 </div>
 
-<!-- BLOCKED PAGE -->
-<div id="blocked-page" class="page" style="display:none;flex-direction:row;min-height:100vh;">
-  <!-- Left purple panel -->
-  <div class="auth-left" style="display:flex;flex-direction:column;justify-content:space-between;">
-    <div class="auth-left-logo">ReservaPlus</div>
-    <div class="auth-left-body">
-      <div style="font-size:3rem;margin-bottom:1.2rem;">🔒</div>
-      <div class="auth-left-title" style="font-size:clamp(1.5rem,2.5vw,2.2rem)" id="blocked-title">Abonnement<br>terminé.</div>
-      <div class="auth-left-desc" style="margin-top:1rem" id="blocked-desc">Votre abonnement est terminé. Choisissez un plan pour continuer à recevoir des réservations.</div>
+<!-- ADMIN PAGE -->
+<div id="admin-page">
+  <nav class="admin-nav">
+    <div>
+      <span class="admin-logo">Reserva<span>Plus</span></span>
+      <span class="admin-badge">ADMIN</span>
     </div>
-    <div class="auth-left-footer">
-      <span>© 2026 ReservaPlus</span><span>Maroc 🇲🇦</span>
-    </div>
-  </div>
-
-  <!-- Right: pricing -->
-  <div class="auth-right" style="overflow-y:auto;padding:2.5rem 2rem;align-items:flex-start;justify-content:flex-start;flex-direction:column;gap:0">
-    <div style="width:100%;max-width:640px;margin:0 auto;">
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:.4rem;color:var(--text)">Choisissez votre plan</div>
-      <div style="font-size:.85rem;color:var(--muted);margin-bottom:2rem">Continuez à gérer vos réservations sans interruption.</div>
-
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
-
-        <!-- Starter -->
-        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:1.5rem;transition:all .2s;cursor:pointer" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">STARTER</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">0 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
-          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Pour démarrer</div>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>30 réservations/mois</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>3 services max</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Lien de réservation</li>
-            <li style="font-size:.78rem;color:var(--muted);opacity:.45;display:flex;gap:.4rem"><span>–</span>Staff illimité</li>
-          </ul>
-          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20le%20plan%20Starter%20ReservaPlus." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;border:1.5px solid var(--border2);color:var(--text);font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">Choisir Starter</a>
-        </div>
-
-        <!-- Pro (popular) -->
-        <div style="background:var(--accent-bg,#1e1a3d);border:1.5px solid var(--accent);border-radius:18px;padding:1.5rem;position:relative">
-          <div style="position:absolute;top:-1px;right:1.2rem;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;padding:.2rem .6rem;border-radius:0 0 7px 7px;letter-spacing:.04em">POPULAIRE</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">PRO</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">199 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
-          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Pour les pros sérieux</div>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Réservations illimitées</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Services illimités</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Staff illimité</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Stats &amp; Calendrier</li>
-          </ul>
-          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20le%20plan%20Pro%20ReservaPlus." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;background:var(--accent);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.background='#5a4bd1'" onmouseleave="this.style.background='var(--accent)'">Choisir Pro →</a>
-        </div>
-
-        <!-- Entreprise -->
-        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:1.5rem;transition:all .2s;cursor:pointer" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">ENTREPRISE</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">Sur <span style="font-size:.85rem;font-weight:400;color:var(--muted)">devis</span></div>
-          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Chaînes &amp; franchises</div>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Multi-établissements</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Dashboard centralisé</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Support 24/7</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Onboarding dédié</li>
-          </ul>
-          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20un%20devis%20ReservaPlus%20Entreprise." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;border:1.5px solid var(--border2);color:var(--text);font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">Nous contacter</a>
-        </div>
-
-      </div>
-
-      <div style="text-align:center;margin-top:.5rem">
-        <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">Se déconnecter</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- DASHBOARD PAGE -->
-<div id="dashboard-page" class="page">
-  <nav class="dash-nav">
-    <div class="dash-logo">Reserva<span>Plus</span></div>
-    <div class="dash-user">
-      <span id="plan-badge" style="font-size:0.72rem;font-weight:600;border:1px solid;padding:0.2rem 0.7rem;border-radius:100px;margin-right:0.5rem;">Starter</span>
-      <span class="user-email" id="user-email-display"></span>
-
-      <!-- NOTIFICATION BELL -->
-      <div style="position:relative;display:inline-block">
-        <button id="notif-bell" onclick="toggleNotifPanel()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;padding:0.3rem 0.5rem;border-radius:8px;position:relative;transition:background .2s" onmouseenter="this.style.background='var(--surface)'" onmouseleave="this.style.background='none'">
-          🔔
-          <span id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#f87171;color:#fff;font-size:0.55rem;font-weight:700;padding:0.1rem 0.35rem;border-radius:100px;min-width:14px;text-align:center">0</span>
-        </button>
-        <div id="notif-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:300px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:200;overflow:hidden">
-          <div style="padding:0.9rem 1.1rem;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;display:flex;justify-content:space-between;align-items:center">
-            🔔 Rappels
-            <span id="notif-count" style="font-size:0.72rem;color:var(--muted);font-weight:400"></span>
-          </div>
-          <div id="notif-list" style="max-height:340px;overflow-y:auto;padding:0.5rem"></div>
-        </div>
-      </div>
-
-      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">☀️ Light</button>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button class="btn-logout" onclick="openChangePwd()" style="color:var(--accent);border-color:var(--accent);">🔑 Changer mot de passe</button>
       <button class="btn-logout" onclick="logout()">Déconnexion</button>
     </div>
   </nav>
 
-  <div class="dash-content">
-    <div class="sidebar">
-      <button class="nav-item active" onclick="showView('overview', this)">📊 &nbsp;Vue générale</button>
-      <button class="nav-item" onclick="if(checkAccess('hasStats')){showView('stats', this); loadStats()}">📈 &nbsp;Statistiques</button>
-      <button class="nav-item" onclick="if(checkAccess('hasCalendar')){showView('calendrier', this); renderCalendar()}">📅 &nbsp;Calendrier</button>
-      <button class="nav-item" onclick="showView('reservations', this)">📋 &nbsp;Réservations</button>
-      <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
-      <button class="nav-item" onclick="showView('services', this); loadServices()">⚙️ &nbsp;Mes services</button>
-      <button class="nav-item" onclick="showView('staff', this); loadStaff()">👥 &nbsp;Mon staff</button>
-      <button class="nav-item" onclick="showView('my-link', this)">🔗 &nbsp;Mon lien</button>
-      <button class="nav-item" onclick="showView('change-pwd', this)">🔑 &nbsp;Changer mot de passe</button>
-      <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border);margin-top:2rem;">
-        <a href="https://wa.me/212632506969?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20avec%20ReservaPlus." target="_blank" style="display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.9rem;border-radius:8px;font-size:0.83rem;color:#4ade80;text-decoration:none;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);">
-          💬 &nbsp;Support WhatsApp
-        </a>
+  <div class="admin-content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid" style="margin-top:1.5rem;">
+      <div class="kpi">
+        <div class="kpi-label">Total clients</div>
+        <div class="kpi-val" id="kpi-total">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Actifs</div>
+        <div class="kpi-val" id="kpi-active" style="color:var(--green)">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Expirés</div>
+        <div class="kpi-val" id="kpi-expired" style="color:var(--red)">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Bloqués</div>
+        <div class="kpi-val" id="kpi-blocked" style="color:var(--yellow)">—</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(248,113,113,0.3);">
+        <div class="kpi-label">⚠️ Expire bientôt</div>
+        <div class="kpi-val" id="kpi-expiring" style="color:var(--red)">—</div>
       </div>
     </div>
 
-    <div class="main-area">
-
-      <!-- OVERVIEW -->
-      <div id="view-overview" class="view active">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-          <div class="view-title" style="margin-bottom:0;">Tableau de bord</div>
-          <div style="color:var(--muted);font-size:0.82rem;" id="dash-date"></div>
-        </div>
-        <div class="kpi-grid">
-          <div class="kpi">
-            <div class="kpi-label">Total</div>
-            <div class="kpi-val" id="kpi-total">—</div>
-            <div class="kpi-sub">Toutes réservations</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Confirmées</div>
-            <div class="kpi-val" id="kpi-confirmed" style="color:var(--green)">—</div>
-            <div class="kpi-sub" style="color:var(--green);">✓ Confirmées</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">En attente</div>
-            <div class="kpi-val" id="kpi-pending" style="color:var(--yellow)">—</div>
-            <div class="kpi-sub" style="color:var(--yellow);">⏳ En attente</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Annulées</div>
-            <div class="kpi-val" id="kpi-annule" style="color:var(--red)">—</div>
-            <div class="kpi-sub" style="color:var(--red);">✗ Annulées</div>
-          </div>
-        </div>
-        <div class="view-title" style="font-size:1rem;">Dernières réservations</div>
-        <div class="table-wrap" id="overview-table">
-          <div class="table-head">
-            <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
-          </div>
-          <div class="table-empty">Chargement...</div>
-        </div>
-      </div>
-
-      <!-- STATS -->
-      <div id="view-stats" class="view">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
-          <div class="view-title" style="margin-bottom:0;">📈 Statistiques</div>
-          <div style="display:flex;gap:0.5rem;">
-            <button onclick="setStatsPeriod(7,this)" class="stat-period-btn active-period" style="background:var(--accent);border:1px solid var(--accent);color:white;padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">7 jours</button>
-            <button onclick="setStatsPeriod(30,this)" class="stat-period-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">30 jours</button>
-            <button onclick="setStatsPeriod(90,this)" class="stat-period-btn" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.9rem;border-radius:7px;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">90 jours</button>
-          </div>
-        </div>
-
-        <!-- KPIs période -->
-        <div class="kpi-grid" style="margin-bottom:2rem;">
-          <div class="kpi">
-            <div class="kpi-label">Total période</div>
-            <div class="kpi-val" id="stat-total">—</div>
-            <div class="kpi-sub">Réservations reçues</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Confirmées</div>
-            <div class="kpi-val" id="stat-confirmed" style="color:var(--green)">—</div>
-            <div class="kpi-sub" id="stat-confirmed-pct" style="color:var(--green);">—</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">En attente</div>
-            <div class="kpi-val" id="stat-pending" style="color:var(--yellow)">—</div>
-            <div class="kpi-sub" style="color:var(--yellow);">En attente</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Annulées</div>
-            <div class="kpi-val" id="stat-annule" style="color:var(--red)">—</div>
-            <div class="kpi-sub" id="stat-annule-pct" style="color:var(--red);">—</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Terminées</div>
-            <div class="kpi-val" id="stat-done" style="color:#a78bfa">—</div>
-            <div class="kpi-sub" id="stat-done-pct" style="color:#a78bfa;">—</div>
-          </div>
-        </div>
-
-        <!-- GRAPHIQUE PAR JOUR -->
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:1.2rem;">Réservations par jour</div>
-          <div id="bar-chart" style="display:flex;align-items:flex-end;gap:4px;height:120px;overflow-x:auto;padding-bottom:0.5rem;"></div>
-          <div id="bar-labels" style="display:flex;gap:4px;margin-top:0.3rem;overflow-x:auto;"></div>
-        </div>
-
-        <!-- TABLEAU PAR JOUR -->
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-          <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:0.92rem;">Détail par jour</div>
-          <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;padding:0.6rem 1.2rem;font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border);">
-            <span>DATE</span><span>TOTAL</span><span style="color:var(--green)">CONFIRMÉES</span><span style="color:var(--yellow)">EN ATTENTE</span><span style="color:var(--red)">ANNULÉES</span><span style="color:#a78bfa">TERMINÉES</span>
-          </div>
-          <div id="stats-table-body"></div>
-        </div>
-      </div>
-
-      <!-- CALENDRIER -->
-      <div id="view-calendrier" class="view">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-          <div class="view-title" style="margin-bottom:0;">Calendrier</div>
-          <div style="display:flex;gap:0.5rem;align-items:center;">
-            <button onclick="changeMonth(-1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:7px;cursor:pointer;font-size:1rem;">‹</button>
-            <span id="cal-month-label" style="font-family:'Syne',sans-serif;font-weight:700;min-width:140px;text-align:center;"></span>
-            <button onclick="changeMonth(1)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.4rem 0.8rem;border-radius:7px;cursor:pointer;font-size:1rem;">›</button>
-          </div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);">
-            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Lun</div>
-            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Mar</div>
-            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Mer</div>
-            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Jeu</div>
-            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Ven</div>
-            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Sam</div>
-            <div style="padding:0.6rem;text-align:center;font-size:0.72rem;color:var(--muted);font-weight:600;">Dim</div>
-          </div>
-          <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);"></div>
-        </div>
-        <!-- RDV du jour sélectionné -->
-        <div id="cal-day-reservations" style="margin-top:1.5rem;display:none;">
-          <div class="view-title" style="font-size:1rem;" id="cal-day-title"></div>
-          <div class="table-wrap" id="cal-day-table">
-            <div class="table-head"><span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RESERVATIONS -->
-      <div id="view-reservations" class="view">
-        <div class="view-title">Toutes les réservations</div>
-        <div class="table-wrap" id="all-reservations-table">
-          <div class="table-head">
-            <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
-          </div>
-          <div class="table-empty">Chargement...</div>
-        </div>
-      </div>
-
-      <!-- NEW RESERVATION -->
-      <div id="view-new-reservation" class="view">
-        <div class="view-title">Nouveau rendez-vous</div>
-        <div class="booking-form-wrap">
-          <div id="booking-alert"></div>
-          <div class="form-group">
-            <label>Nom du client</label>
-            <input type="text" id="b-name" placeholder="Ex: Youssef Alami">
-          </div>
-          <div class="form-group">
-            <label>Téléphone</label>
-            <input type="tel" id="b-phone" placeholder="+212 6XX XXX XXX">
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Service</label>
-              <input type="text" id="b-service" placeholder="Ex: Coupe homme">
-            </div>
-            <div class="form-group">
-              <label>Statut</label>
-              <select id="b-status" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-                <option value="en_attente">En attente</option>
-                <option value="confirme">Confirmé</option>
-                <option value="annule">Annulé</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Date</label>
-              <input type="date" id="b-date">
-            </div>
-            <div class="form-group">
-              <label>Heure</label>
-              <input type="time" id="b-time">
-            </div>
-          </div>
-          <button class="btn-add" onclick="addReservation()">Ajouter le rendez-vous</button>
-        </div>
-      </div>
-
-      <!-- SERVICES -->
-      <div id="view-services" class="view">
-        <div class="view-title">Mes services & Horaires</div>
-
-        <!-- HORAIRES -->
-        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
-          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:0.3rem;">🕐 Horaires de travail</div>
-          <div style="color:var(--muted);font-size:0.8rem;margin-bottom:1.2rem;">Les clients verront uniquement les créneaux dans cet intervalle</div>
-          <div id="hours-alert"></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Heure d'ouverture</label>
-              <div style="display:flex;gap:0.5rem;">
-                <select id="biz-opening-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
-                </select>
-                <select id="biz-opening-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-                  <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
-                </select>
-                <select id="biz-opening-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-                  <option value="AM">AM</option><option value="PM">PM</option>
-                </select>
-              </div>
-              <input type="hidden" id="biz-opening">
-            </div>
-            <div class="form-group">
-              <label>Heure de fermeture</label>
-              <div style="display:flex;gap:0.5rem;">
-                <select id="biz-closing-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
-                </select>
-                <select id="biz-closing-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-                  <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
-                </select>
-                <select id="biz-closing-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-                  <option value="AM">AM</option><option value="PM">PM</option>
-                </select>
-              </div>
-              <input type="hidden" id="biz-closing">
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Durée d'un créneau (minutes)</label>
-            <select id="biz-slot-duration" style="width:100%;max-width:200px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-              <option value="15">15 min</option>
-              <option value="20">20 min</option>
-              <option value="30" selected>30 min</option>
-              <option value="45">45 min</option>
-              <option value="60">60 min</option>
-            </select>
-          </div>
-          <button id="save-hours-btn" class="btn-add" onclick="saveHours()">💾 Enregistrer les horaires</button>
-        </div>
-
-        <!-- SERVICES -->
-        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
-          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:1rem;">➕ Ajouter un service</div>
-          <div id="service-alert"></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nom du service</label>
-              <input type="text" id="svc-name" placeholder="Ex: Coupe homme">
-            </div>
-            <div class="form-group">
-              <label>Durée (minutes)</label>
-              <input type="number" id="svc-duration" placeholder="Ex: 30" min="5">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Prix (MAD)</label>
-              <input type="number" id="svc-price" placeholder="Ex: 50" min="0">
-            </div>
-            <div class="form-group">
-              <label>Description (optionnel)</label>
-              <input type="text" id="svc-desc" placeholder="Ex: Coupe + finition">
-            </div>
-          </div>
-          <button class="btn-add" onclick="addService()">Ajouter le service</button>
-        </div>
-
-        <div class="view-title" style="font-size:1rem;">Services actuels</div>
-        <div id="services-list-dash" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;"></div>
-      </div>
-
-      <!-- STAFF VIEW -->
-      <div id="view-staff" class="view">
-        <div style="display:flex;gap:0.8rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:1rem;">
-          <button id="staff-tab-list" onclick="switchStaffTab('list')" style="background:var(--accent);color:#fff;border:none;padding:0.5rem 1.2rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">👥 Mon staff</button>
-          <button id="staff-tab-planning" onclick="switchStaffTab('planning')" style="background:var(--surface);color:var(--muted);border:1px solid var(--border);padding:0.5rem 1.2rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;">📅 Planning & RDV</button>
-        </div>
-
-        <!-- TAB: PLANNING -->
-        <div id="staff-panel-planning" style="display:none;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-            <div class="view-title" style="margin-bottom:0;">📅 Planning du jour</div>
-            <input type="date" id="planning-date" onchange="loadPlanning()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.5rem 0.8rem;border-radius:8px;font-size:0.83rem;font-family:'DM Sans',sans-serif;">
-          </div>
-          <div id="planning-list"></div>
-        </div>
-
-        <!-- TAB: STAFF LIST -->
-        <div id="staff-panel-list">
-        <div class="view-title">👥 Mon staff</div>
-
-        <!-- ADD STAFF FORM -->
-        <div class="booking-form-wrap" style="margin-bottom:1.5rem;">
-          <div style="font-size:0.95rem;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:1rem;">➕ Ajouter un membre</div>
-          <div id="staff-alert"></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nom</label>
-              <input type="text" id="staff-name" placeholder="Ex: Ahmed">
-            </div>
-            <div class="form-group">
-              <label>Spécialité (optionnel)</label>
-              <input type="text" id="staff-specialty" placeholder="Ex: Coupe homme">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Heure d'ouverture</label>
-              <div style="display:flex;gap:0.5rem;">
-                <select id="staff-opening-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08" selected>8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
-                </select>
-                <select id="staff-opening-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-                  <option value="00" selected>00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
-                </select>
-                <select id="staff-opening-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-                  <option value="AM" selected>AM</option><option value="PM">PM</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Heure de fermeture</label>
-              <div style="display:flex;gap:0.5rem;">
-                <select id="staff-closing-h" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-                  <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12" selected>12</option>
-                </select>
-                <select id="staff-closing-m" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-                  <option value="00" selected>00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
-                </select>
-                <select id="staff-closing-ampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-                  <option value="AM">AM</option><option value="PM" selected>PM</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:1rem;">
-            <label>Services assignés</label>
-            <div id="staff-services-check" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.3rem;"></div>
-          </div>
-          <button class="btn-add" onclick="addStaff()">➕ Ajouter</button>
-        </div>
-
-        <!-- STAFF LIST -->
-        <div id="staff-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;"></div>
-        </div><!-- end staff-panel-list -->
-      </div>
-
-      <!-- CHANGE PASSWORD -->
-      <div id="view-change-pwd" class="view">
-        <div class="view-title">🔑 Changer mot de passe</div>
-        <div class="booking-form-wrap" style="max-width:420px;">
-          <div id="pwd-alert"></div>
-          <div class="form-group" style="margin-bottom:0.8rem;">
-            <label>Nouveau mot de passe</label>
-            <input type="password" id="new-pwd" placeholder="Minimum 6 caractères" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-          </div>
-          <div class="form-group" style="margin-bottom:1.2rem;">
-            <label>Confirmer mot de passe</label>
-            <input type="password" id="confirm-pwd" placeholder="Répétez le mot de passe" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-          </div>
-          <button class="btn-add" onclick="changePassword()">Enregistrer</button>
-        </div>
-
-        <!-- DANGER ZONE -->
-        <div style="margin-top:3rem;max-width:420px;border:1.5px solid rgba(248,113,113,0.3);border-radius:14px;padding:1.5rem;background:rgba(248,113,113,0.04)">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:#f87171;margin-bottom:.4rem">⚠️ Zone dangereuse</div>
-          <div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem">La suppression de votre compte est <strong>irréversible</strong>. Toutes vos données (réservations, services, staff) seront définitivement supprimées.</div>
-          <button onclick="confirmDeleteAccount()" style="background:rgba(248,113,113,0.1);border:1.5px solid rgba(248,113,113,0.4);color:#f87171;padding:.65rem 1.3rem;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s" onmouseenter="this.style.background='rgba(248,113,113,0.2)'" onmouseleave="this.style.background='rgba(248,113,113,0.1)'">
-            🗑️ Supprimer mon compte
-          </button>
-        </div>
-      </div>
-
-      <!-- MY LINK -->
-      <div id="view-my-link" class="view">
-        <div class="view-title">Mon lien de réservation</div>
-        <div class="link-box">
-          <p style="color:var(--muted);font-size:0.88rem;margin-bottom:0.5rem;">Partagez ce lien à vos clients pour qu'ils puissent réserver en ligne.</p>
-          <div class="link-url" id="my-link-url">Chargement...</div>
-          <button class="btn-copy" onclick="copyLink()">📋 Copier le lien</button>
-          <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
-            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;">Partagez aussi via:</div>
-            <button class="btn-copy" onclick="shareWhatsApp()" style="margin-right:0.5rem;">💬 WhatsApp</button>
-          </div>
-        </div>
-      </div>
-
+    <!-- ALERT 2 JOURS -->
+    <div id="expiring-alert" style="display:none;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.5rem;">
+      <div style="font-weight:600;color:var(--red);margin-bottom:0.5rem;">⚠️ Clients dont l'abonnement expire dans 2 jours:</div>
+      <div id="expiring-list" style="font-size:0.85rem;color:var(--text);"></div>
     </div>
+
+    <!-- ADD CLIENT -->
+    <div class="section-title">➕ Créer un compte client</div>
+    <div class="add-card">
+      <div id="add-alert"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom de l'établissement</label>
+          <input type="text" id="new-name" placeholder="Ex: Salon Ahmed">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="new-email" placeholder="client@email.com">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="text" id="new-password" placeholder="Mot de passe">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" id="new-phone" placeholder="+212 6XX XXX XXX">
+        </div>
+        <div class="form-group">
+          <label>Plan</label>
+          <select id="new-plan">
+            <option value="starter">Starter — 99 MAD</option>
+            <option value="pro">Pro — 249 MAD</option>
+            <option value="business">Business — 499 MAD</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date début abonnement</label>
+          <input type="date" id="new-start-date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="display:flex;align-items:center;gap:0.8rem;padding-top:1.5rem;">
+          <label style="margin:0;display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+            <input type="checkbox" id="new-trial-toggle" onchange="toggleTrialFields()" style="width:16px;height:16px;accent-color:var(--accent);">
+            <span>Free trial</span>
+          </label>
+        </div>
+        <div class="form-group" id="trial-days-field" style="display:none;">
+          <label>Durée trial (jours)</label>
+          <select id="new-trial">
+            <option value="3">3 jours</option>
+            <option value="7">7 jours</option>
+            <option value="14" selected>14 jours</option>
+            <option value="30">30 jours</option>
+          </select>
+        </div>
+        <div class="form-group" id="trial-end-preview" style="display:none;">
+          <label>Date fin calculée</label>
+          <input type="text" id="new-end-preview" readonly style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;width:100%;">
+        </div>
+      </div>
+      <button class="btn-add" onclick="addNewClient()">Créer le compte</button>
+    </div>
+
+    <!-- CLIENTS LIST -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.8rem;">
+      <div class="section-title" style="margin-bottom:0;">👥 Clients (<span id="clients-count">0</span>)</div>
+      <input type="text" class="search-bar" placeholder="🔍 Rechercher..." oninput="filterClients(this.value)">
+    </div>
+    <div class="clients-card">
+      <div class="table-head">
+        <span>ÉTABLISSEMENT</span>
+        <span>EMAIL</span>
+        <span>TRIAL FIN</span>
+        <span>PLAN</span>
+        <span>STATUT</span>
+        <span>ACTIONS</span>
+      </div>
+      <div id="clients-list"></div>
+    </div>
+
   </div>
 </div>
 
-<!-- EDIT MODAL -->
-<!-- STAFF EDIT MODAL -->
-<div id="staff-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;">
-    <button onclick="closeEditStaff()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:1.5rem;">✏️ Modifier le membre</div>
-    <input type="hidden" id="edit-staff-id">
-    <div class="form-row">
-      <div class="form-group">
-        <label>Nom</label>
-        <input type="text" id="edit-staff-name">
-      </div>
-      <div class="form-group">
-        <label>Spécialité</label>
-        <input type="text" id="edit-staff-specialty">
-      </div>
+<!-- RESET PASSWORD MODAL -->
+<div class="modal" id="resetpwd-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="document.getElementById('resetpwd-modal').classList.remove('open')">✕</button>
+    <div class="modal-title">🔄 Réinitialiser mot de passe</div>
+    <input type="hidden" id="resetpwd-id">
+    <div class="form-group" style="margin-bottom:0.8rem;">
+      <label>Client</label>
+      <input type="text" id="resetpwd-name" readonly style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Heure d'ouverture</label>
-        <div style="display:flex;gap:0.5rem;">
-          <select id="edit-staff-oh" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-            <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
-          </select>
-          <select id="edit-staff-om" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-            <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
-          </select>
-          <select id="edit-staff-oampm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-            <option value="AM">AM</option><option value="PM">PM</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Heure de fermeture</label>
-        <div style="display:flex;gap:0.5rem;">
-          <select id="edit-staff-ch" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-            <option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option>
-          </select>
-          <select id="edit-staff-cm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-            <option value="00">00</option><option value="15">15</option><option value="30">30</option><option value="45">45</option>
-          </select>
-          <select id="edit-staff-campm" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.6rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-            <option value="AM">AM</option><option value="PM">PM</option>
-          </select>
-        </div>
-      </div>
+    <div id="resetpwd-alert" style="margin-bottom:0.5rem;"></div>
+    <div class="form-group" style="margin-bottom:1.2rem;">
+      <label>Nouveau mot de passe</label>
+      <input type="text" id="resetpwd-new" placeholder="Minimum 6 caractères" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
     </div>
-    <div class="form-group">
-      <label>Services assignés</label>
-      <div id="edit-staff-services" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.3rem;"></div>
-    </div>
-    <div id="edit-staff-alert"></div>
-    <button onclick="saveEditStaff()" class="btn-add" style="width:100%;margin-top:0.5rem;">💾 Enregistrer</button>
+    <button class="btn-add" onclick="saveResetPwd()" style="width:100%;">Enregistrer</button>
   </div>
 </div>
 
-<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:460px;position:relative;">
-    <button onclick="closeEditModal()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:1.5rem;">✏️ Modifier la réservation</div>
-    <input type="hidden" id="edit-id">
-    <div class="form-group"><label>Nom du client</label><input type="text" id="edit-name" placeholder="Nom du client"></div>
-    <div class="form-group"><label>Téléphone</label><input type="tel" id="edit-phone" placeholder="+212..."></div>
-    <div class="form-group"><label>Service</label><input type="text" id="edit-service" placeholder="Service"></div>
-    <div class="form-row">
-      <div class="form-group"><label>Date</label><input type="date" id="edit-date"></div>
-      <div class="form-group"><label>Heure</label><input type="time" id="edit-time"></div>
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal" id="changepwd-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="document.getElementById('changepwd-modal').classList.remove('open')">✕</button>
+    <div class="modal-title">🔑 Changer mot de passe admin</div>
+    <div id="changepwd-alert" style="margin-bottom:0.8rem;"></div>
+    <div class="form-group" style="margin-bottom:0.8rem;">
+      <label>Mot de passe actuel</label>
+      <input type="password" id="pwd-current" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
     </div>
-    <div class="form-group">
-      <label>Statut</label>
-      <select id="edit-status" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.7rem 1rem;border-radius:9px;font-size:0.88rem;font-family:'DM Sans',sans-serif;">
-        <option value="en_attente">En attente</option>
-        <option value="confirme">Confirmé</option>
-        <option value="annule">Annulé</option>
+    <div class="form-group" style="margin-bottom:0.8rem;">
+      <label>Nouveau mot de passe</label>
+      <input type="password" id="pwd-new" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div class="form-group" style="margin-bottom:1.2rem;">
+      <label>Confirmer nouveau mot de passe</label>
+      <input type="password" id="pwd-confirm" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <button class="btn-add" onclick="saveNewPwd()" style="width:100%;">Enregistrer</button>
+  </div>
+</div>
+
+<!-- EXTEND MODAL -->
+<div class="modal" id="extend-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">⏱️ Renouveler abonnement</div>
+    <input type="hidden" id="extend-id">
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Client</label>
+      <input type="text" id="extend-name" readonly style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;width:100%;">
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Date début abonnement</label>
+      <input type="date" id="extend-start" oninput="calcExtendEnd()" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Date fin (début + 1 mois)</label>
+      <input type="text" id="extend-date" readonly style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div class="form-group" style="margin-bottom:1.2rem;">
+      <label>Plan</label>
+      <select id="extend-plan" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+        <option value="starter">Starter — 99 MAD</option>
+        <option value="pro">Pro — 249 MAD</option>
+        <option value="business">Business — 499 MAD</option>
       </select>
     </div>
-    <button class="btn-add" onclick="saveEdit()" style="width:100%;margin-top:0.5rem;">Enregistrer</button>
+    <button class="btn-add" onclick="saveExtend()" style="width:100%;">Enregistrer</button>
   </div>
 </div>
 
 <script>
-  // ---- SUPABASE INIT ----
-  let sb;
-  let currentUser = null;
-  let currentBusiness = null;
+  const { createClient } = supabase;
+  const sb = createClient(
+    'https://uewtdxkpsraufzjsebnh.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
+  );
+  const sbAdmin = createClient(
+    'https://uewtdxkpsraufzjsebnh.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo'
+  );
 
-  // sb init moved to end of script after all functions defined
-
-  function showAlert(id, msg, type) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = `<div style="padding:0.6rem 1rem;border-radius:8px;font-size:0.83rem;margin-bottom:0.8rem;background:${type==='success'?'rgba(74,222,128,0.1)':'rgba(248,113,113,0.1)'};border:1px solid ${type==='success'?'rgba(74,222,128,0.3)':'rgba(248,113,113,0.3)'};color:${type==='success'?'#4ade80':'#f87171'}">${msg}</div>`;
-    setTimeout(() => el.innerHTML = '', 4000);
-  }
-
-  // ---- CHECK SESSION ----
-  async function checkSession() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      currentUser = session.user;
-      await loadBusiness();
-      if (currentBusiness) showDashboard();
-    }
-  }
-
-  // ---- PASSWORD RECOVERY HANDLER ----
-  function setupPasswordRecovery() {
-    sb.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        const modal = document.createElement('div');
-        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
-        modal.innerHTML = `
-          <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:380px;position:relative;">
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:.4rem;color:var(--text)">🔑 Nouveau mot de passe</div>
-            <div style="font-size:.8rem;color:var(--muted);margin-bottom:1.4rem;line-height:1.6">Choisissez un nouveau mot de passe pour votre compte.</div>
-            <div id="newpwd-alert"></div>
-            <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Nouveau mot de passe</label>
-            <input id="new-pwd" type="password" placeholder="Minimum 6 caractères"
-              style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
-            <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Confirmer mot de passe</label>
-            <input id="confirm-new-pwd" type="password" placeholder="Répétez le mot de passe"
-              style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;box-sizing:border-box;">
-            <button id="newpwd-btn" onclick="saveNewPassword()"
-              style="width:100%;background:#7c6af7;color:#fff;border:none;padding:.82rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;">
-              Enregistrer le nouveau mot de passe
-            </button>
-          </div>`;
-        document.body.appendChild(modal);
-      }
-    });
-  }
-
-  async function saveNewPassword() {
-    const pwd = document.getElementById('new-pwd').value;
-    const confirm = document.getElementById('confirm-new-pwd').value;
-    const btn = document.getElementById('newpwd-btn');
-    const alertBox = document.getElementById('newpwd-alert');
-    if (pwd.length < 6) {
-      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Minimum 6 caractères.</div>';
-      return;
-    }
-    if (pwd !== confirm) {
-      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Les mots de passe ne correspondent pas.</div>';
-      return;
-    }
-    btn.disabled = true; btn.textContent = 'Enregistrement...';
-    const { error } = await sb.auth.updateUser({ password: pwd });
-    if (error) {
-      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">' + error.message + '</div>';
-      btn.disabled = false; btn.textContent = 'Enregistrer';
+  function resetAdminPwd() {
+    const secret = prompt('Code secret de récupération:');
+    if (secret === 'reservaplus') {
+      localStorage.removeItem('admin_pwd');
+      ADMIN_PASSWORD = 'reservaplus2026';
+      alert('✅ Mot de passe réinitialisé: reservaplus2026');
     } else {
-      alertBox.innerHTML = '<div style="background:#064e3b;border:1px solid #34d399;color:#34d399;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem">✅ Mot de passe mis à jour !</div>';
-      btn.textContent = '✓ Enregistré';
-      setTimeout(() => { document.querySelectorAll('div[style*="z-index:600"]').forEach(m => m.remove()); }, 2000);
+      alert('Code incorrect');
     }
   }
 
-  // ---- AUTH FUNCTIONS ----
-  function switchTab(tab) {
-    document.querySelectorAll('.auth-tab').forEach((t, i) => {
-      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
-    });
-    document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
-    document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
-    clearAlert('auth-alert');
-  }
+  // ADMIN PASSWORD — مخزن فـ localStorage
+  let ADMIN_PASSWORD = localStorage.getItem('admin_pwd') || 'reservaplus2026';
+  let allClients = [];
 
-  async function register() {
-    const name = document.getElementById('reg-name').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const phone = document.getElementById('reg-phone').value.trim();
-    const password = document.getElementById('reg-password').value;
-
-    if (!name || !email || !password) return showAlert('auth-alert', 'Veuillez remplir tous les champs.', 'error');
-
-    const btn = document.querySelector('#register-form .btn-submit');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Création...';
-
-    const { data, error } = await sb.auth.signUp({ email, password });
-    if (error) {
-      showAlert('auth-alert', error.message, 'error');
-      btn.disabled = false; btn.textContent = "Créer mon compte";
-      return;
-    }
-
-    currentUser = data.user;
-
-    // Save business info
-    await sb.from('businesses').insert({ name, email, phone });
-    await loadBusiness();
-    showDashboard();
-  }
-
-  async function login() {
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-
-    if (!email || !password) return showAlert('auth-alert', 'Veuillez remplir tous les champs.', 'error');
-
-    const btn = document.getElementById('btn-login');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Connexion...';
-
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-      showAlert('auth-alert', 'Email ou mot de passe incorrect.', 'error');
-      btn.disabled = false; btn.textContent = "S'identifier";
-      return;
-    }
-
-    currentUser = data.user;
-    await loadBusiness();
-    if (!currentBusiness) {
-      btn.disabled = false; btn.textContent = "S'identifier";
-      return;
-    }
-    showDashboard();
-  }
-
-  // ---- FORGOT PASSWORD ----
-  function showForgotPassword() {
-    const modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
-    modal.innerHTML = `
-      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:380px;position:relative;">
-        <button onclick="this.closest('div[style*=fixed]').remove()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:.4rem;color:var(--text)">Mot de passe oublié</div>
-        <div style="font-size:.8rem;color:var(--muted);margin-bottom:1.4rem;line-height:1.6">Entrez votre adresse e-mail. Vous recevrez un lien pour réinitialiser votre mot de passe.</div>
-        <div id="forgot-alert"></div>
-        <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Adresse e-mail</label>
-        <input id="forgot-email" type="email" placeholder="votre@email.com"
-          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;box-sizing:border-box;">
-        <button id="forgot-btn" onclick="sendResetEmail()"
-          style="width:100%;background:#2d3748;color:#fff;border:none;padding:.82rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;">
-          Envoyer le lien →
-        </button>
-      </div>`;
-    document.body.appendChild(modal);
-  }
-
-  async function sendResetEmail() {
-    const email = document.getElementById('forgot-email').value.trim();
-    if (!email) return;
-    const btn = document.getElementById('forgot-btn');
-    const alertBox = document.getElementById('forgot-alert');
-    btn.disabled = true; btn.textContent = 'Envoi...';
-
-    const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo';
-    const BREVO_KEY = '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';
-
-    try {
-      // 1. توليد reset link من Supabase Admin API
-      const linkRes = await fetch('https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/generate-link', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SERVICE_KEY,
-          'Authorization': 'Bearer ' + SERVICE_KEY
-        },
-        body: JSON.stringify({
-          type: 'recovery',
-          email: email,
-          options: { redirectTo: 'https://reservaplus.vercel.app/app.html' }
-        })
-      });
-
-      const linkData = await linkRes.json();
-      console.log('Supabase link response:', linkData);
-
-      if (!linkData.action_link) {
-        alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">❌ Email introuvable dans notre système.</div>`;
-        btn.disabled = false; btn.textContent = 'Envoyer le lien →';
-        return;
-      }
-
-      // 2. إرسال email بـ Brevo API مع الـ reset link الحقيقي
-      const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'api-key': BREVO_KEY,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: 'ReservaPlus', email: 'a45296001@smtp-brevo.com' },
-          to: [{ email: email }],
-          subject: '🔑 Réinitialisation de votre mot de passe ReservaPlus',
-          htmlContent: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#0d0c0f;padding:2.5rem;border-radius:16px">
-            <div style="font-weight:800;font-size:1.4rem;color:#7c6af7;margin-bottom:1.5rem">ReservaPlus</div>
-            <h2 style="color:#f0eef8;font-size:1.1rem;margin-bottom:1rem">Réinitialisation de mot de passe</h2>
-            <p style="color:#8884a8;line-height:1.75;margin-bottom:1.5rem">Bonjour,<br><br>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous :</p>
-            <div style="text-align:center;margin:2rem 0">
-              <a href="${linkData.action_link}" style="display:inline-block;background:#7c6af7;color:#fff;padding:.9rem 2rem;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none">
-                Réinitialiser mon mot de passe →
-              </a>
-            </div>
-            <p style="color:#8884a8;font-size:.78rem;line-height:1.6">Ce lien expire dans <strong style="color:#f0eef8">1 heure</strong>.<br>Si vous n'avez pas fait cette demande, ignorez cet email.</p>
-            <hr style="border:none;border-top:1px solid #232230;margin:1.5rem 0">
-            <p style="color:#8884a8;font-size:.72rem;text-align:center">ReservaPlus · Maroc 🇲🇦</p>
-          </div>`
-        })
-      });
-
-      const emailData = await emailRes.json();
-      console.log('Brevo response:', emailData);
-
-      alertBox.innerHTML = `<div style="background:#064e3b;border:1px solid #34d399;color:#34d399;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem">✅ Email envoyé ! Vérifiez votre boîte mail (et les spams).</div>`;
-      btn.textContent = 'Email envoyé ✓';
-
-    } catch(e) {
-      console.error('Reset error:', e);
-      alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">❌ Erreur. Réessayez.</div>`;
-      btn.disabled = false; btn.textContent = 'Envoyer le lien →';
-    }
-  }
-
-  // ---- INSCRIPTION (S'inscrire sans WhatsApp) ----
-  // ---- REGISTER PAGE ----
-  function showInscription() {
-    document.getElementById('auth-page').classList.remove('active');
-    document.getElementById('register-page').style.display = 'flex';
-    // default pro selected
-    const proPlan = document.querySelector('[data-plan="pro"]');
-    if(proPlan) {
-      proPlan.style.borderColor = 'var(--accent)';
-      proPlan.style.background = 'rgba(124,106,247,0.08)';
-    }
-  }
-
-  function showAuthPage() {
-    document.getElementById('register-page').style.display = 'none';
-    document.getElementById('auth-page').classList.add('active');
-  }
-
-  function pickSecteur(el, val) {
-    document.querySelectorAll('#secteur-btns button').forEach(b => {
-      b.style.borderColor = 'var(--border)';
-      b.style.color = 'var(--muted)';
-      b.style.background = 'var(--surface)';
-    });
-    el.style.borderColor = 'var(--accent)';
-    el.style.color = 'var(--accent)';
-    el.style.background = 'rgba(124,106,247,0.1)';
-    document.getElementById('rp-secteur').value = val;
-    document.getElementById('rp-secteur-autre').style.display = 'none';
-  }
-
-  function pickSecteurAutre(el) {
-    document.querySelectorAll('#secteur-btns button').forEach(b => {
-      b.style.borderColor = 'var(--border)';
-      b.style.color = 'var(--muted)';
-      b.style.background = 'var(--surface)';
-    });
-    el.style.borderColor = 'var(--accent)';
-    el.style.color = 'var(--accent)';
-    el.style.background = 'rgba(124,106,247,0.1)';
-    const input = document.getElementById('rp-secteur-autre');
-    input.style.display = 'block';
-    input.focus();
-    document.getElementById('rp-secteur').value = '';
-  }
-
-  function pickPlanReg(el, plan) {
-    document.querySelectorAll('[data-plan]').forEach(d => {
-      d.style.borderColor = 'var(--border)';
-      d.style.background = 'var(--surface)';
-    });
-    el.style.borderColor = 'var(--accent)';
-    el.style.background = 'rgba(124,106,247,0.08)';
-    document.getElementById('rp-plan').value = plan;
-  }
-
-  async function doRegisterPage() {
-    const name = document.getElementById('rp-name').value.trim();
-    const email = document.getElementById('rp-email').value.trim();
-    const phone = document.getElementById('rp-phone').value.trim();
-    const pwd = document.getElementById('rp-pwd').value;
-    const plan = document.getElementById('rp-plan').value || 'pro';
-    const secteur = document.getElementById('rp-secteur').value;
-    const alertBox = document.getElementById('reg-page-alert');
-
-    if (!name || !email || !pwd) {
-      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">Veuillez remplir les champs obligatoires (*).</div>';
-      return;
-    }
-    if (pwd.length < 6) {
-      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">Le mot de passe doit contenir au moins 6 caractères.</div>';
-      return;
-    }
-
-    const btn = document.getElementById('rp-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Création en cours...';
-
-    const { data, error } = await sb.auth.signUp({ email, password: pwd });
-    if (error) {
-      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">' + error.message + '</div>';
-      btn.disabled = false; btn.textContent = 'Créer mon compte →';
-      return;
-    }
-
-    currentUser = data.user;
-
-    // Pro: 30 jours d'essai — Starter: gratuit sans trial
-    const trialEnd = new Date();
-    if (plan === 'pro') {
-      trialEnd.setDate(trialEnd.getDate() + 30);
+  function checkPassword() {
+    const pwd = document.getElementById('admin-password').value;
+    if (pwd === ADMIN_PASSWORD) {
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('admin-page').style.display = 'block';
+      loadClients();
     } else {
-      trialEnd.setFullYear(trialEnd.getFullYear() + 10); // Starter = gratuit permanent
+      document.getElementById('login-error').style.display = 'block';
     }
+  }
 
-    await sb.from('businesses').insert({
-      name, email, phone, secteur,
-      user_id: currentUser.id,
-      plan: plan,
-      is_active: true,
-      trial_end: trialEnd.toISOString().split('T')[0]
+  function logout() {
+    document.getElementById('login-page').style.display = 'flex';
+    document.getElementById('admin-page').style.display = 'none';
+    document.getElementById('admin-password').value = '';
+  }
+
+  function openChangePwd() {
+    document.getElementById('changepwd-modal').classList.add('open');
+    document.getElementById('pwd-current').value = '';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+  }
+
+  function saveNewPwd() {
+    const current = document.getElementById('pwd-current').value;
+    const newPwd = document.getElementById('pwd-new').value;
+    const confirm = document.getElementById('pwd-confirm').value;
+    const alertEl = document.getElementById('changepwd-alert');
+
+    if (current !== ADMIN_PASSWORD) {
+      alertEl.innerHTML = '<div class="alert error">Mot de passe actuel incorrect</div>';
+      return;
+    }
+    if (newPwd.length < 6) {
+      alertEl.innerHTML = '<div class="alert error">Minimum 6 caractères</div>';
+      return;
+    }
+    if (newPwd !== confirm) {
+      alertEl.innerHTML = '<div class="alert error">Les mots de passe ne correspondent pas</div>';
+      return;
+    }
+    ADMIN_PASSWORD = newPwd;
+    localStorage.setItem('admin_pwd', newPwd);
+    alertEl.innerHTML = '<div class="alert success">✓ Mot de passe changé!</div>';
+    setTimeout(() => document.getElementById('changepwd-modal').classList.remove('open'), 1500);
+  }
+
+  // LOAD CLIENTS
+  async function loadClients() {
+    const { data } = await sb.from('businesses').select('*').order('created_at', { ascending: false });
+    allClients = data || [];
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in2days = new Date(today); in2days.setDate(in2days.getDate() + 2);
+
+    const total = allClients.length;
+    const active = allClients.filter(c => c.is_active && new Date(c.trial_end) >= today).length;
+    const expired = allClients.filter(c => new Date(c.trial_end) < today).length;
+    const blocked = allClients.filter(c => !c.is_active).length;
+    const expiringSoon = allClients.filter(c => {
+      const te = new Date(c.trial_end);
+      return c.is_active && te >= today && te <= in2days;
     });
 
-    await loadBusiness();
-    document.getElementById('register-page').style.display = 'none';
-    showDashboard();
-  }
+    document.getElementById('kpi-total').textContent = total;
+    document.getElementById('kpi-active').textContent = active;
+    document.getElementById('kpi-expired').textContent = expired;
+    document.getElementById('kpi-blocked').textContent = blocked;
+    document.getElementById('kpi-expiring').textContent = expiringSoon.length;
+    document.getElementById('clients-count').textContent = total;
 
-  // old modal functions kept for compat
-  function selectPlanInscr(el, plan) {}
-  async function doInscription() {}
-
-  // THEME
-  function toggleTheme() {
-    const isLight = document.body.classList.toggle('light-mode');
-    document.getElementById('theme-btn').innerHTML = isLight ? '🌙 Dark' : '☀️ Light';
-    localStorage.setItem('rp-theme', isLight ? 'light' : 'dark');
-  }
-  (function() {
-    if (localStorage.getItem('rp-theme') === 'light') {
-      document.body.classList.add('light-mode');
-      const btn = document.getElementById('theme-btn');
-      if (btn) btn.innerHTML = '🌙 Dark';
+    // Alert 2 jours
+    if (expiringSoon.length > 0) {
+      document.getElementById('expiring-alert').style.display = 'block';
+      document.getElementById('expiring-list').innerHTML = expiringSoon.map(c =>
+        `<div style="margin-bottom:0.3rem;">• <strong>${c.name}</strong> (${c.email}) — expire le <strong>${c.trial_end}</strong>
+        <button class="action-btn green" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'starter'}')" style="margin-left:8px;">⏱️ Renouveler</button></div>`
+      ).join('');
+    } else {
+      document.getElementById('expiring-alert').style.display = 'none';
     }
-  })();
 
-  async function logout() {
-    await sb.auth.signOut();
-    currentUser = null; currentBusiness = null;
-    document.getElementById('dashboard-page').classList.remove('active');
-    document.getElementById('auth-page').classList.add('active');
+    renderClients(allClients);
   }
 
-  // ---- BUSINESS ----
-  async function loadBusiness() {
-    console.log('loadBusiness called, user:', currentUser?.email, currentUser?.id);
-    // Try by user_id first
-    const { data: d1 } = await sb.from('businesses').select('*').eq('user_id', currentUser.id).maybeSingle();
-    let data = d1;
-    console.log('by user_id result:', JSON.stringify(data));
-    if (!data) {
-      const { data: d2 } = await sb.from('businesses').select('*').eq('email', currentUser.email).maybeSingle();
-      console.log('by email result:', JSON.stringify(d2));
-      if (d2) {
-        await sb.from('businesses').update({ user_id: currentUser.id }).eq('email', currentUser.email);
-        data = d2;
-      }
-    }
-    console.log('final data:', JSON.stringify(data));
-    if (!data) {
-      // No business found — show error
-      await sb.auth.signOut();
-      const loginBtn = document.querySelector('#login-form .btn-submit');
-      if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Se connecter'; }
-      showAlert('auth-alert', 'Compte non configuré. Contactez le support.', 'error');
+  function renderClients(clients) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const wrap = document.getElementById('clients-list');
+    if (!clients.length) {
+      wrap.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted);">Aucun client pour le moment</div>';
       return;
     }
-    currentBusiness = data;
+    wrap.innerHTML = clients.map(c => {
+      const trialEnd = new Date(c.trial_end);
+      const isExpired = trialEnd < today;
+      const daysLeft = Math.ceil((trialEnd - today) / (1000*60*60*24));
+      const planColor = c.plan === 'business' ? '#f7706a' : c.plan === 'pro' ? '#7c6af7' : '#7070a0';
 
-    // Check trial
-    const trialEnd = new Date(data.trial_end);
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    if (trialEnd < today && data.is_active !== false) {
-      await sb.from('businesses').update({ is_active: false }).eq('id', data.id);
-      data.is_active = false;
-    }
-    currentBusiness = data;
-  }
+      let statusBadge = '';
+      if (!c.is_active) statusBadge = '<span class="badge badge-red">Bloqué</span>';
+      else if (isExpired) statusBadge = '<span class="badge badge-yellow">Expiré</span>';
+      else statusBadge = `<span class="badge badge-green">${daysLeft}j restants</span>`;
 
-  // ---- PLANS CONFIG ----
-  const PLANS = {
-    starter: {
-      name: 'Starter',
-      price: 99,
-      maxServices: 2,
-      maxReservations: 50,
-      hasStats: false,
-      hasCalendar: false,
-      hasSupport: false,
-      color: '#7070a0'
-    },
-    pro: {
-      name: 'Pro',
-      price: 249,
-      maxServices: 10,
-      maxReservations: 500,
-      hasStats: true,
-      hasCalendar: true,
-      hasSupport: true,
-      color: '#7c6af7'
-    },
-    business: {
-      name: 'Business',
-      price: 499,
-      maxServices: Infinity,
-      maxReservations: Infinity,
-      hasStats: true,
-      hasCalendar: true,
-      hasSupport: true,
-      color: '#f7706a'
-    }
-  };
-
-  function getPlan() {
-    return PLANS[currentBusiness?.plan || 'starter'];
-  }
-
-  function checkAccess(feature) {
-    const plan = getPlan();
-    if (!plan[feature]) {
-      showUpgradeModal(feature);
-      return false;
-    }
-    return true;
-  }
-
-  function showUpgradeModal(feature) {
-    const plan = getPlan();
-    const needed = feature === 'hasStats' || feature === 'hasCalendar' ? 'Pro (249 MAD)' : 'Pro (249 MAD)';
-    const msg = `Cette fonctionnalité n'est pas disponible dans votre plan ${plan.name}.\n\nUpgradez vers ${needed} pour y accéder.`;
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem;';
-    modal.innerHTML = `
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:380px;width:100%;text-align:center;">
-        <div style="font-size:2rem;margin-bottom:1rem;">🔒</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0.8rem;">Fonctionnalité Premium</div>
-        <div style="color:var(--muted);font-size:0.85rem;line-height:1.6;margin-bottom:1.5rem;">Cette fonctionnalité n'est pas disponible dans le plan <strong style="color:var(--text)">${plan.name}</strong>. Upgradez pour y accéder.</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1.5rem;">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:0.3rem;">Plan Pro — 249 MAD/mois</div>
-          <div style="color:var(--muted);font-size:0.8rem;">Statistiques · Calendrier · Support · 10 services</div>
-        </div>
-        <div style="display:flex;gap:0.8rem;">
-          <button onclick="this.closest('div[style*=fixed]').remove()" style="flex:1;background:none;border:1px solid var(--border);color:var(--muted);padding:0.7rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;">Fermer</button>
-          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20upgrader%20mon%20plan%20ReservaPlus." target="_blank" style="flex:1;background:var(--accent);color:white;padding:0.7rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:0.88rem;">💬 Upgrader</a>
-        </div>
-      </div>
-    `;
-    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-    document.body.appendChild(modal);
-  }
-
-  // ---- SHOW DASHBOARD ----
-  function showDashboard() {
-    // Check if blocked
-    if (currentBusiness?.is_active === false) {
-      document.getElementById('auth-page').classList.remove('active');
-      // Update blocked page text based on plan
-      const isPro = currentBusiness?.plan === 'pro';
-      const titleEl = document.getElementById('blocked-title');
-      const descEl = document.getElementById('blocked-desc');
-      if (titleEl) titleEl.innerHTML = isPro ? 'Abonnement<br>Pro terminé.' : 'Compte<br>bloqué.';
-      if (descEl) descEl.textContent = isPro
-        ? 'Votre abonnement Pro de 30 jours est terminé. Renouvelez pour continuer.'
-        : 'Votre compte a été suspendu. Contactez-nous pour continuer.';
-      document.getElementById('blocked-page').style.display = 'flex';
-      return;
-    }
-    document.getElementById('blocked-page').style.display = 'none';
-    document.getElementById('auth-page').classList.remove('active');
-    document.getElementById('dashboard-page').classList.add('active');
-    const plan = getPlan();
-    document.getElementById('user-email-display').textContent = currentUser.email;
-    // Plan badge
-    const planBadge = document.getElementById('plan-badge');
-    if (planBadge) {
-      planBadge.textContent = plan.name;
-      planBadge.style.color = plan.color;
-      planBadge.style.borderColor = plan.color;
-    }
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('b-date').value = today;
-    if (document.getElementById('dash-date')) {
-      document.getElementById('dash-date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-    }
-    document.getElementById('my-link-url').textContent = window.location.origin + '/booking.html?id=' + (currentBusiness?.id || currentUser.id);
-    loadReservations();
-    loadServices();
-    startRealtime();
-  }
-
-  // ---- REAL-TIME ----
-  function startRealtime() {
-    // Real-time Supabase
-    sb.channel('reservations-' + currentBusiness.id)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'reservations'
-      }, payload => {
-        loadReservations();
-        if (payload.eventType === 'INSERT') {
-          showToast('🔔 Nouvelle réservation de ' + payload.new.client_name + '!');
-        }
-      })
-      .subscribe();
-
-    // Auto-refresh كل 15 ثانية كحل احتياطي
-    setInterval(() => loadReservations(), 15000);
-
-    // Rappels — check كل 5 دقائق
-    checkRappels();
-    setInterval(() => checkRappels(), 5 * 60 * 1000);
-  }
-
-  // ---- RAPPELS SYSTEM ----
-  async function checkRappels() {
-    if (!currentBusiness) return;
-
-    const now = new Date();
-    const in2h = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    const todayStr = now.toISOString().split('T')[0];
-
-    // جيب حجوزات اليوم فقط اللي ماتذكروش بعد
-    const { data: rdvs, error: rdvErr } = await sb.from('reservations')
-      .select('*')
-      .eq('business_id', currentBusiness.id)
-      .eq('date', todayStr);
-
-    console.log('🔔 checkRappels — now:', now.toLocaleTimeString(), 'rdvs today:', rdvs?.length, 'error:', rdvErr?.message);
-
-    if (!rdvs || rdvs.length === 0) return;
-
-    // فلتر — موعدهم بين دابا و 2h من دابا + مش annulé + ماتذكروش بعد
-    const upcoming = rdvs.filter(r => {
-      if (!r.time) return false;
-      if (r.statut === 'annule') return false;
-      if (r.reminded_at) return false;
-      const rdvDateTime = new Date(todayStr + 'T' + r.time.slice(0,5) + ':00');
-      const diffMs = rdvDateTime - now;
-      console.log('  RDV:', r.client_name, r.time, '→ diff:', Math.round(diffMs/60000), 'min');
-      return diffMs > 0 && diffMs <= 2 * 60 * 60 * 1000;
-    });
-
-    console.log('  Upcoming in 2h:', upcoming.length);
-    if (upcoming.length === 0) return;
-
-    addRappelNotifs(upcoming);
-
-    const ids = upcoming.map(r => r.id);
-    await sb.from('reservations').update({ reminded_at: new Date().toISOString() }).in('id', ids);
-  }
-
-  let rappelNotifs = [];
-
-  function addRappelNotifs(rdvs) {
-    rappelNotifs = [...rappelNotifs, ...rdvs];
-    renderNotifPanel();
-    // Badge
-    const badge = document.getElementById('notif-badge');
-    badge.style.display = 'inline-block';
-    badge.textContent = rappelNotifs.length;
-    // Bell shake
-    const bell = document.getElementById('notif-bell');
-    bell.style.animation = 'bellShake 0.5s ease';
-    setTimeout(() => bell.style.animation = '', 500);
-    // Toast
-    rdvs.forEach(r => showToast('⏰ Rappel — ' + r.client_name + ' dans moins de 2h !'));
-  }
-
-  function renderNotifPanel() {
-    const list = document.getElementById('notif-list');
-    const count = document.getElementById('notif-count');
-    count.textContent = rappelNotifs.length + ' rappel(s)';
-
-    if (rappelNotifs.length === 0) {
-      list.innerHTML = '<div style="padding:1.2rem;text-align:center;color:var(--muted);font-size:0.82rem">Aucun rappel pour le moment</div>';
-      return;
-    }
-
-    list.innerHTML = rappelNotifs.map(r => {
-      const waMsg = encodeURIComponent(
-        'Bonjour, rappel pour votre RDV aujourd\'hui \u00e0 ' + r.time +
-        ' chez ' + currentBusiness.name + '. A tout a l\'heure !'
-      );
-      const waLink = 'https://wa.me/' + (r.client_phone || '').replace(/[^0-9]/g, '') + '?text=' + waMsg;
-      return `
-        <div style="padding:0.8rem;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:0.4rem">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div>
-              <div style="font-weight:600;font-size:0.85rem;color:var(--text)">${r.client_name}</div>
-              <div style="font-size:0.75rem;color:var(--muted)">${r.service || ''} · ${r.time || ''}</div>
-              <div style="font-size:0.75rem;color:var(--muted)">${r.client_phone || ''}</div>
-            </div>
-            <div style="background:#f8717120;border:1px solid #f87171;color:#f87171;font-size:0.65rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:100px;white-space:nowrap">Dans 2h</div>
-          </div>
-          <a href="${waLink}" target="_blank"
-            style="display:flex;align-items:center;justify-content:center;gap:0.4rem;background:#25D366;color:#fff;padding:0.5rem;border-radius:8px;font-size:0.78rem;font-weight:600;text-decoration:none;margin-top:0.2rem">
-            💬 Envoyer rappel WhatsApp
-          </a>
-        </div>`;
-    }).join('');
-  }
-
-  function toggleNotifPanel() {
-    const panel = document.getElementById('notif-panel');
-    const isOpen = panel.style.display !== 'none';
-    panel.style.display = isOpen ? 'none' : 'block';
-    if (!isOpen) renderNotifPanel();
-    // Close on outside click
-    if (!isOpen) {
-      setTimeout(() => {
-        document.addEventListener('click', function closePanel(e) {
-          if (!document.getElementById('notif-bell').contains(e.target) &&
-              !panel.contains(e.target)) {
-            panel.style.display = 'none';
-            document.removeEventListener('click', closePanel);
-          }
-        });
-      }, 10);
-    }
-  }
-
-  // ---- TOAST NOTIFICATION ----
-  function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.textContent = msg;
-    toast.style.cssText = `
-      position:fixed; bottom:2rem; right:2rem;
-      background:#7c6af7; color:white;
-      padding:0.9rem 1.5rem; border-radius:10px;
-      font-size:0.88rem; font-weight:500;
-      box-shadow:0 8px 30px rgba(124,106,247,0.4);
-      z-index:999; animation:fadeUp 0.3s ease;
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
-  }
-
-  // ---- RESERVATIONS ----
-  async function loadReservations() {
-    if (!currentBusiness) return;
-    const { data } = await sb.from('reservations').select('*').eq('business_id', currentBusiness.id).order('date', { ascending: false });
-    const reservations = data || [];
-    allReservations = reservations;
-
-    // Load staff names
-    const { data: staffData } = await sb.from('staff').select('id,name').eq('business_id', currentBusiness.id);
-    window.staffMap = {};
-    (staffData || []).forEach(s => window.staffMap[s.id] = s.name);
-
-    // Auto-done: بعد 2 ساعة من وقت الحجز
-    const now = new Date();
-    const idsToMarkDone = [];
-    for (const r of reservations) {
-      if (r.status === 'confirme' || r.status === 'en_attente') {
-        const resDateTime = new Date(r.date + 'T' + (r.time || '00:00') + ':00');
-        const doneAt = new Date(resDateTime.getTime() + 2 * 60 * 60 * 1000);
-        if (now > doneAt) {
-          idsToMarkDone.push(r.id);
-          r.status = 'done';
-        }
-      }
-    }
-    if (idsToMarkDone.length > 0) {
-      await sb.from('reservations').update({ status: 'done' }).in('id', idsToMarkDone);
-    }
-
-    // KPIs — كيحسب كل شي حتى done و annule
-    document.getElementById('kpi-total').textContent = reservations.filter(r => r.status !== 'done').length;
-    document.getElementById('kpi-confirmed').textContent = reservations.filter(r => r.status === 'confirme').length;
-    document.getElementById('kpi-pending').textContent = reservations.filter(r => r.status === 'en_attente').length;
-    if (document.getElementById('kpi-annule'))
-      document.getElementById('kpi-annule').textContent = reservations.filter(r => r.status === 'annule').length;
-
-    // Tables — ما تبانش done و annule
-    const visible = reservations.filter(r => r.status !== 'done' && r.status !== 'annule');
-    renderTable('overview-table', visible.slice(0, 5));
-    renderTable('all-reservations-table', visible);
-  }
-
-  function renderTable(id, reservations) {
-    const wrap = document.getElementById(id);
-    const header = `<div class="table-head"><span>CLIENT</span><span>SERVICE</span><span>STAFF</span><span>DATE</span><span>HEURE</span><span>STATUT</span></div>`;
-    if (!reservations.length) {
-      wrap.innerHTML = header + '<div class="table-empty">Aucune réservation pour le moment.</div>';
-      return;
-    }
-    const rows = reservations.map(r => {
-      const badgeClass = r.status === 'confirme' ? 'badge-green' : r.status === 'annule' ? 'badge-red' : r.status === 'done' ? 'badge-done' : 'badge-yellow';
-      const statusLabel = r.status === 'confirme' ? 'Confirmé' : r.status === 'annule' ? 'Annulé' : r.status === 'done' ? '✓ Terminé' : 'En attente';
-      const actions = r.status !== 'confirme' && r.status !== 'done'
-        ? `<button onclick="changeStatus('${r.id}','confirme')" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:4px;" title="Confirmer">✓</button>`
-        : '';
-      const cancelBtn = r.status !== 'annule' && r.status !== 'done'
-        ? `<button onclick="changeStatus('${r.id}','annule')" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Annuler">✗</button>`
-        : '';
-      const doneBtn = r.status !== 'done'
-        ? `<button onclick="changeStatus('${r.id}','done')" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Marquer terminé">✔</button>`
-        : '';
-      const editBtn = `<button onclick="openEditModal(${JSON.stringify(r).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.3);color:var(--accent);border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;" title="Modifier">✏️</button>`;
-      const phone = (r.client_phone || '').replace(/\s/g,'').replace(/^\+/,'');
-      const waMsg = encodeURIComponent(`Bonjour ${r.client_name}! Votre rendez-vous est confirmé:\n📅 Date: ${r.date}\n⏰ Heure: ${r.time?.slice(0,5)}\n💈 Service: ${r.service_name || ''}\n\nMerci de votre confiance! — ${currentBusiness?.name}`);
-      const waBtn = phone ? `<a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80;border-radius:5px;padding:0.18rem 0.5rem;font-size:0.68rem;cursor:pointer;margin-left:2px;text-decoration:none;" title="WhatsApp">💬</a>` : '';
-      const staffName = r.staff_id && window.staffMap?.[r.staff_id] ? `<span style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);padding:0.1rem 0.4rem;border-radius:5px;font-size:0.7rem;">👤 ${window.staffMap[r.staff_id]}</span>` : '<span style="color:var(--muted);font-size:0.75rem;">—</span>';
       return `<div class="table-row">
-        <span>${r.client_name}<br><span style="color:var(--muted);font-size:0.72rem;">${r.client_phone || ''}</span></span>
-        <span>${r.service_name || '—'}</span>
-        <span>${staffName}</span>
-        <span>${r.date}</span>
-        <span>${r.time?.slice(0,5) || '—'}</span>
-        <span style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"><span class="badge ${badgeClass}">${statusLabel}</span>${actions}${cancelBtn}${doneBtn}${editBtn}${waBtn}</span>
-      </div>`;
-    }).join('');
-    wrap.innerHTML = header + rows;
-  }
-
-  async function addReservation() {
-    const name = document.getElementById('b-name').value.trim();
-    const phone = document.getElementById('b-phone').value.trim();
-    const service = document.getElementById('b-service').value.trim();
-    const date = document.getElementById('b-date').value;
-    const time = document.getElementById('b-time').value;
-    const status = document.getElementById('b-status').value;
-
-    if (!name || !date || !time) return showAlert('booking-alert', 'Nom, date et heure sont obligatoires.', 'error');
-
-    const btn = document.querySelector('#view-new-reservation .btn-add');
-    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Ajout...';
-
-    const { error } = await sb.from('reservations').insert({
-      business_id: currentBusiness.id,
-      client_name: name,
-      client_phone: phone,
-      service_name: service,
-      date, time, status
-    });
-
-    if (error) {
-      showAlert('booking-alert', 'Erreur: ' + error.message, 'error');
-    } else {
-      showAlert('booking-alert', '✓ Rendez-vous ajouté avec succès!', 'success');
-      document.getElementById('b-name').value = '';
-      document.getElementById('b-phone').value = '';
-      document.getElementById('b-service').value = '';
-      document.getElementById('b-time').value = '';
-      await loadReservations();
-    }
-
-    btn.disabled = false; btn.textContent = 'Ajouter le rendez-vous';
-  }
-
-  // ---- STATS ----
-  let statsPeriod = 7;
-
-  function setStatsPeriod(days, btn) {
-    statsPeriod = days;
-    document.querySelectorAll('.stat-period-btn').forEach(b => {
-      b.style.background = 'var(--surface)';
-      b.style.borderColor = 'var(--border)';
-      b.style.color = 'var(--muted)';
-    });
-    btn.style.background = 'var(--accent)';
-    btn.style.borderColor = 'var(--accent)';
-    btn.style.color = 'white';
-    loadStats();
-  }
-
-  async function loadStats() {
-    if (!currentBusiness) return;
-
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + statsPeriod); // future too
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - statsPeriod + 1);
-    const startStr = startDate.toISOString().split('T')[0];
-    const endStr = endDate.toISOString().split('T')[0];
-
-    const { data } = await sb.from('reservations')
-      .select('*')
-      .eq('business_id', currentBusiness.id)
-      .gte('date', startStr)
-      .lte('date', endStr);
-
-    const reservations = data || [];
-    const total = reservations.length;
-    const confirmed = reservations.filter(r => r.status === 'confirme').length;
-    const pending = reservations.filter(r => r.status === 'en_attente').length;
-    const annule = reservations.filter(r => r.status === 'annule').length;
-    const done = reservations.filter(r => r.status === 'done').length;
-
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-confirmed').textContent = confirmed;
-    document.getElementById('stat-pending').textContent = pending;
-    document.getElementById('stat-annule').textContent = annule;
-    document.getElementById('stat-done').textContent = done;
-    document.getElementById('stat-confirmed-pct').textContent = total > 0 ? Math.round(confirmed/total*100) + '% du total' : '0%';
-    document.getElementById('stat-annule-pct').textContent = total > 0 ? Math.round(annule/total*100) + '% du total' : '0%';
-    document.getElementById('stat-done-pct').textContent = total > 0 ? Math.round(done/total*100) + '% du total' : '0%';
-
-    // Build day-by-day data (past + future)
-    const days = [];
-    for (let i = statsPeriod - 1; i >= -statsPeriod; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const dayRes = reservations.filter(r => r.date === dateStr);
-      if (dayRes.length > 0 || i >= 0) {
-        days.push({
-          date: dateStr,
-          label: d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}),
-          total: dayRes.length,
-          confirmed: dayRes.filter(r => r.status === 'confirme').length,
-          pending: dayRes.filter(r => r.status === 'en_attente').length,
-          annule: dayRes.filter(r => r.status === 'annule').length,
-          done: dayRes.filter(r => r.status === 'done').length,
-        });
-      }
-    }
-
-    // Bar chart
-    const maxVal = Math.max(...days.map(d => d.total), 1);
-    document.getElementById('bar-chart').innerHTML = days.map(d => `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:24px;">
-        <div style="font-size:0.62rem;color:var(--muted);">${d.total || ''}</div>
-        <div style="width:100%;background:var(--accent);border-radius:4px 4px 0 0;height:${Math.max(d.total/maxVal*100,2)}px;opacity:0.85;min-height:4px;transition:height 0.3s;"></div>
-      </div>
-    `).join('');
-    document.getElementById('bar-labels').innerHTML = days.map(d => `
-      <div style="flex:1;min-width:24px;text-align:center;font-size:0.6rem;color:var(--muted);">${d.label}</div>
-    `).join('');
-
-    // Table
-    document.getElementById('stats-table-body').innerHTML = days.reverse().map(d => `
-      <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;padding:0.7rem 1.2rem;font-size:0.82rem;border-bottom:1px solid rgba(30,30,46,0.5);align-items:center;" onmouseover="this.style.background='rgba(124,106,247,0.04)'" onmouseout="this.style.background='transparent'">
-        <span style="font-weight:500;">${d.date}</span>
-        <span>${d.total}</span>
-        <span style="color:var(--green)">${d.confirmed}</span>
-        <span style="color:var(--yellow)">${d.pending}</span>
-        <span style="color:var(--red)">${d.annule}</span>
-        <span style="color:#a78bfa">${d.done}</span>
-      </div>
-    `).join('') || '<div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:0.85rem;">Aucune donnée pour cette période</div>';
-  }
-
-  // ---- CHANGE STATUS ----
-  async function changeStatus(id, newStatus) {
-    await sb.from('reservations').update({ status: newStatus }).eq('id', id);
-    await loadReservations();
-  }
-
-  // ---- EDIT MODAL ----
-  function openEditModal(r) {
-    document.getElementById('edit-id').value = r.id;
-    document.getElementById('edit-name').value = r.client_name || '';
-    document.getElementById('edit-phone').value = r.client_phone || '';
-    document.getElementById('edit-service').value = r.service_name || '';
-    document.getElementById('edit-date').value = r.date || '';
-    document.getElementById('edit-time').value = r.time?.slice(0,5) || '';
-    document.getElementById('edit-status').value = r.status || 'en_attente';
-    document.getElementById('edit-modal').style.display = 'flex';
-  }
-
-  function closeEditModal() {
-    document.getElementById('edit-modal').style.display = 'none';
-  }
-
-  async function saveEdit() {
-    const id = document.getElementById('edit-id').value;
-    const updates = {
-      client_name: document.getElementById('edit-name').value.trim(),
-      client_phone: document.getElementById('edit-phone').value.trim(),
-      service_name: document.getElementById('edit-service').value.trim(),
-      date: document.getElementById('edit-date').value,
-      time: document.getElementById('edit-time').value,
-      status: document.getElementById('edit-status').value
-    };
-    await sb.from('reservations').update(updates).eq('id', id);
-    closeEditModal();
-    await loadReservations();
-    renderCalendar();
-  }
-
-  // ---- CALENDAR ----
-  let calYear = new Date().getFullYear();
-  let calMonth = new Date().getMonth();
-  let allReservations = [];
-
-  function changeMonth(dir) {
-    calMonth += dir;
-    if (calMonth > 11) { calMonth = 0; calYear++; }
-    if (calMonth < 0) { calMonth = 11; calYear--; }
-    renderCalendar();
-  }
-
-  function renderCalendar() {
-    const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-    document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
-
-    const firstDay = new Date(calYear, calMonth, 1).getDay();
-    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-    const offset = firstDay === 0 ? 6 : firstDay - 1;
-
-    const grid = document.getElementById('cal-grid');
-    let html = '';
-
-    for (let i = 0; i < offset; i++) {
-      html += '<div style="padding:0.6rem;min-height:60px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);opacity:0.3;"></div>';
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const dayRes = allReservations.filter(r => r.date === dateStr);
-      const isToday = dateStr === today;
-      const confirmed = dayRes.filter(r => r.status === 'confirme').length;
-      const pending = dayRes.filter(r => r.status === 'en_attente').length;
-
-      html += `
-        <div onclick="showDayReservations('${dateStr}')" style="padding:0.5rem;min-height:60px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;${isToday ? 'background:rgba(124,106,247,0.08);' : ''}" onmouseover="this.style.background='rgba(124,106,247,0.06)'" onmouseout="this.style.background='${isToday ? 'rgba(124,106,247,0.08)' : 'transparent'}'">
-          <div style="font-size:0.78rem;font-weight:${isToday ? '700' : '400'};color:${isToday ? 'var(--accent)' : 'var(--text)'};margin-bottom:0.3rem;">${d}</div>
-          ${confirmed > 0 ? `<div style="background:rgba(74,222,128,0.15);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.65rem;color:var(--green);margin-bottom:2px;">✓ ${confirmed}</div>` : ''}
-          ${pending > 0 ? `<div style="background:rgba(251,191,36,0.15);border-radius:4px;padding:0.1rem 0.3rem;font-size:0.65rem;color:#fbbf24;">⏳ ${pending}</div>` : ''}
-        </div>`;
-    }
-
-    grid.innerHTML = html;
-  }
-
-  function showDayReservations(dateStr) {
-    const dayRes = allReservations.filter(r => r.date === dateStr);
-    const wrap = document.getElementById('cal-day-reservations');
-    document.getElementById('cal-day-title').textContent = 'Réservations du ' + dateStr;
-    wrap.style.display = 'block';
-    renderTable('cal-day-table', dayRes);
-  }
-
-  function ampmTo24(h, m, ampm) {
-    let hour = parseInt(h);
-    if (ampm === 'AM' && hour === 12) hour = 0;
-    else if (ampm === 'PM' && hour !== 12) hour += 12;
-    else if (ampm === 'PM' && hour === 12) hour = 12;
-    return String(hour).padStart(2,'0') + ':' + m;
-  }
-
-  function to12h(time24) {
-    if (!time24) return { h: '09', m: '00', ampm: 'AM' };
-    const [h, m] = time24.split(':');
-    let hour = parseInt(h);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    if (hour === 0) hour = 12;
-    if (hour > 12) hour -= 12;
-    return { h: String(hour).padStart(2,'0'), m: m || '00', ampm };
-  }
-
-  async function saveHours() {
-    const opening = ampmTo24(
-      document.getElementById('biz-opening-h').value,
-      document.getElementById('biz-opening-m').value,
-      document.getElementById('biz-opening-ampm').value
-    );
-    const closing = ampmTo24(
-      document.getElementById('biz-closing-h').value,
-      document.getElementById('biz-closing-m').value,
-      document.getElementById('biz-closing-ampm').value
-    );
-    document.getElementById('biz-opening').value = opening;
-    document.getElementById('biz-closing').value = closing;
-    const slotDuration = parseInt(document.getElementById('biz-slot-duration').value);
-
-    if (!opening || !closing) return showAlert('hours-alert', 'Veuillez remplir les deux horaires.', 'error');
-
-    const btn = document.getElementById('save-hours-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement...'; }
-
-    const { error } = await sb.from('businesses').update({
-      opening_time: opening,
-      closing_time: closing,
-      slot_duration: slotDuration
-    }).eq('id', currentBusiness.id);
-
-    if (error) {
-      showAlert('hours-alert', 'Erreur: ' + error.message, 'error');
-    } else {
-      currentBusiness.opening_time = opening;
-      currentBusiness.closing_time = closing;
-      currentBusiness.slot_duration = slotDuration;
-      showAlert('hours-alert', '✓ Horaires enregistrés!', 'success');
-    }
-    if (btn) { btn.disabled = false; btn.textContent = '💾 Enregistrer les horaires'; }
-  }
-
-  // ---- SERVICES ----
-  async function loadServices() {
-    if (!currentBusiness) return;
-
-    // Load hours
-    const { data: biz } = await sb.from('businesses').select('opening_time,closing_time,slot_duration').eq('id', currentBusiness.id).single();
-    if (biz) {
-      if (biz.opening_time) {
-        const o = to12h(biz.opening_time.slice(0,5));
-        document.getElementById('biz-opening-h').value = o.h;
-        document.getElementById('biz-opening-m').value = o.m;
-        document.getElementById('biz-opening-ampm').value = o.ampm;
-        document.getElementById('biz-opening').value = biz.opening_time.slice(0,5);
-      }
-      if (biz.closing_time) {
-        const c = to12h(biz.closing_time.slice(0,5));
-        document.getElementById('biz-closing-h').value = c.h;
-        document.getElementById('biz-closing-m').value = c.m;
-        document.getElementById('biz-closing-ampm').value = c.ampm;
-        document.getElementById('biz-closing').value = biz.closing_time.slice(0,5);
-      }
-      if (biz.slot_duration) document.getElementById('biz-slot-duration').value = biz.slot_duration;
-      currentBusiness.opening_time = biz.opening_time;
-      currentBusiness.closing_time = biz.closing_time;
-      currentBusiness.slot_duration = biz.slot_duration || 30;
-    }
-    const { data } = await sb.from('services').select('*').eq('business_id', currentBusiness.id).order('created_at');
-    const services = data || [];
-    const wrap = document.getElementById('services-list-dash');
-    if (!wrap) return;
-
-    if (!services.length) {
-      wrap.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:1rem;">Aucun service pour le moment. Ajoutez votre premier service!</div>';
-      return;
-    }
-
-    wrap.innerHTML = services.map(s => `
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;position:relative;">
-        <button onclick="deleteService('${s.id}')" style="position:absolute;top:0.8rem;right:0.8rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;" title="Supprimer">🗑️</button>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:0.4rem;">${s.name}</div>
-        <div style="color:var(--accent);font-size:0.88rem;font-weight:600;margin-bottom:0.25rem;">${s.price} MAD</div>
-        <div style="color:var(--muted);font-size:0.78rem;">⏱ ${s.duration} min${s.description ? ' · ' + s.description : ''}</div>
-      </div>
-    `).join('');
-  }
-
-  async function addService() {
-    const name = document.getElementById('svc-name').value.trim();
-    const duration = parseInt(document.getElementById('svc-duration').value);
-    const price = parseFloat(document.getElementById('svc-price').value);
-    const desc = document.getElementById('svc-desc').value.trim();
-
-    if (!name) return showAlert('service-alert', 'Le nom est obligatoire.', 'error');
-    if (!duration || duration < 5) return showAlert('service-alert', 'Durée invalide.', 'error');
-    if (isNaN(price) || price < 0) return showAlert('service-alert', 'Prix invalide.', 'error');
-
-    // Check plan limit
-    const plan = getPlan();
-    const { count } = await sb.from('services').select('*', { count: 'exact', head: true }).eq('business_id', currentBusiness.id);
-    if (count >= plan.maxServices) {
-      return showUpgradeModal('maxServices');
-    }
-
-    const btn = document.querySelector('#view-services .btn-add');
-    btn.disabled = true; btn.textContent = 'Ajout...';
-
-    const { error } = await sb.from('services').insert({
-      business_id: currentBusiness.id,
-      name, duration, price,
-      description: desc || null
-    });
-
-    if (error) {
-      showAlert('service-alert', 'Erreur: ' + error.message, 'error');
-    } else {
-      showAlert('service-alert', '✓ Service ajouté!', 'success');
-      document.getElementById('svc-name').value = '';
-      document.getElementById('svc-duration').value = '';
-      document.getElementById('svc-price').value = '';
-      document.getElementById('svc-desc').value = '';
-      await loadServices();
-    }
-    btn.disabled = false; btn.textContent = 'Ajouter le service';
-  }
-
-  async function deleteService(id) {
-    if (!confirm('Supprimer ce service?')) return;
-    await sb.from('services').delete().eq('id', id);
-    await loadServices();
-  }
-
-  // ---- NAVIGATION ----
-  function showView(view, btn) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('view-' + view).classList.add('active');
-    btn.classList.add('active');
-  }
-
-  // ---- LINK ----
-  // ---- STAFF ----
-  // ---- STAFF TABS ----
-  function switchStaffTab(tab) {
-    const isList = tab === 'list';
-    document.getElementById('staff-panel-list').style.display = isList ? 'block' : 'none';
-    document.getElementById('staff-panel-planning').style.display = isList ? 'none' : 'block';
-    const tabList = document.getElementById('staff-tab-list');
-    const tabPlan = document.getElementById('staff-tab-planning');
-    tabList.style.background = isList ? 'var(--accent)' : 'var(--surface)';
-    tabList.style.color = isList ? '#fff' : 'var(--muted)';
-    tabList.style.border = isList ? 'none' : '1px solid var(--border)';
-    tabPlan.style.background = isList ? 'var(--surface)' : 'var(--accent)';
-    tabPlan.style.color = isList ? 'var(--muted)' : '#fff';
-    tabPlan.style.border = isList ? '1px solid var(--border)' : 'none';
-    if (!isList) {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('planning-date').value = today;
-      loadPlanning();
-    }
-  }
-
-  async function loadPlanning() {
-    const date = document.getElementById('planning-date').value;
-    if (!date || !currentBusiness) return;
-
-    const container = document.getElementById('planning-list');
-    container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:1rem;">Chargement...</div>';
-
-    // جيب كل staff
-    const { data: staffList } = await sb.from('staff').select('*').eq('business_id', currentBusiness.id).eq('is_active', true).order('created_at');
-    // جيب حجوزات اليوم — كل الحجوزات بما فيها المقبولة والمنتظرة
-    const { data: rdvs, error: rdvErr } = await sb.from('reservations').select('*').eq('business_id', currentBusiness.id).eq('date', date).order('time');
-
-    console.log('Planning date:', date, 'Staff:', staffList?.length, 'RDVs:', rdvs?.length, rdvErr);
-
-    if (!staffList?.length) {
-      container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:1rem;">Aucun staff actif.</div>';
-      return;
-    }
-
-    if (!rdvs?.length) {
-      container.innerHTML = `<div style="color:var(--muted);font-size:0.85rem;padding:1.5rem;text-align:center;">
-        <div style="font-size:2rem;margin-bottom:0.5rem">📭</div>
-        Aucun RDV le ${new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})}
-      </div>`;
-      return;
-    }
-
-    container.innerHTML = staffList.map(staff => {
-      const myRdvs = (rdvs || []).filter(r => String(r.staff_id) === String(staff.id));
-      const unassigned = (rdvs || []).filter(r => !r.staff_id);
-
-      return `
-        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1rem;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
-            <div>
-              <div style="font-weight:700;font-size:0.95rem;">${staff.name}</div>
-              ${staff.specialty ? `<div style="font-size:0.75rem;color:var(--muted)">${staff.specialty}</div>` : ''}
-            </div>
-            <div style="background:rgba(124,106,247,0.12);color:var(--accent);font-size:0.75rem;font-weight:700;padding:0.25rem 0.7rem;border-radius:100px;">
-              ${myRdvs.length} RDV
-            </div>
-          </div>
-          ${myRdvs.length === 0
-            ? '<div style="color:var(--muted);font-size:0.8rem;padding:0.5rem 0;">Aucun RDV ce jour</div>'
-            : myRdvs.map(r => `
-              <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.8rem;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;">
-                <div>
-                  <div style="font-weight:600;font-size:0.85rem;">${r.client_name}</div>
-                  <div style="font-size:0.75rem;color:var(--muted)">${r.service || ''} · ${r.time || ''}</div>
-                  <div style="font-size:0.72rem;color:var(--muted)">${r.client_phone || ''}</div>
-                </div>
-                <div style="display:flex;align-items:center;gap:0.4rem;">
-                  <select onchange="reassignRdv('${r.id}', this.value, this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.3rem 0.5rem;border-radius:7px;font-size:0.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;">
-                    <option value="">Transférer à...</option>
-                    ${staffList.filter(s => s.id !== staff.id).map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-                  </select>
-                </div>
-              </div>`).join('')
+        <span style="font-weight:500;">${c.name}<br>
+          <span style="color:var(--muted);font-size:0.72rem;">${c.phone || ''}</span><br>
+          ${c.secteur ? `<span style="background:rgba(124,106,247,0.1);color:var(--accent);font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:4px;">${c.secteur}</span>` : ''}
+        </span>
+        <span style="color:var(--muted);font-size:0.78rem;">${c.email}</span>
+        <span style="font-size:0.78rem;">${c.trial_end || '—'}</span>
+        <span><span class="badge" style="background:rgba(124,106,247,0.1);color:${planColor}">${(c.plan || 'starter').toUpperCase()}</span></span>
+        <span>${statusBadge}</span>
+        <span>
+          <button class="action-btn" onclick="openResetPwd('${c.user_id}','${c.name}')" title="Reset mot de passe">🔄</button>
+          <button class="action-btn green" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'starter'}')" title="Prolonger">⏱️</button>
+          ${c.is_active
+            ? `<button class="action-btn red" onclick="toggleBlock('${c.id}',false)" title="Bloquer">🔒</button>`
+            : `<button class="action-btn green" onclick="toggleBlock('${c.id}',true)" title="Débloquer">🔓</button>`
           }
-        </div>`;
-    }).join('');
-
-    // RDV sans staff
-    const noStaffRdvs = (rdvs || []).filter(r => !r.staff_id);
-    if (noStaffRdvs.length > 0) {
-      container.innerHTML += `
-        <div style="background:var(--card);border:1.5px dashed var(--border);border-radius:14px;padding:1.2rem;margin-bottom:1rem;">
-          <div style="font-weight:700;font-size:0.88rem;margin-bottom:0.8rem;color:var(--muted)">⚠️ RDV sans staff assigné (${noStaffRdvs.length})</div>
-          ${noStaffRdvs.map(r => `
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0.8rem;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap;">
-              <div>
-                <div style="font-weight:600;font-size:0.85rem;">${r.client_name}</div>
-                <div style="font-size:0.75rem;color:var(--muted)">${r.service || ''} · ${r.time || ''}</div>
-              </div>
-              <select onchange="reassignRdv('${r.id}', this.value, this)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.3rem 0.5rem;border-radius:7px;font-size:0.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;">
-                <option value="">Assigner à...</option>
-                ${staffList.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
-              </select>
-            </div>`).join('')}
-        </div>`;
-    }
-  }
-
-  async function reassignRdv(rdvId, newStaffId, selectEl) {
-    if (!newStaffId) return;
-    selectEl.disabled = true;
-    const { error } = await sb.from('reservations').update({ staff_id: newStaffId }).eq('id', rdvId);
-    if (error) {
-      showToast('Erreur lors du transfert');
-      selectEl.disabled = false;
-    } else {
-      showToast('✅ RDV transféré !');
-      setTimeout(() => loadPlanning(), 500);
-    }
-  }
-
-  async function loadStaff() {
-    if (!currentBusiness) return;
-
-    const { data: services } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
-    const checksDiv = document.getElementById('staff-services-check');
-    checksDiv.innerHTML = (services || []).map(s => `
-      <label style="display:flex;align-items:center;gap:0.4rem;background:var(--surface);border:1px solid var(--border);padding:0.35rem 0.7rem;border-radius:7px;cursor:pointer;font-size:0.82rem;">
-        <input type="checkbox" value="${s.id}" data-name="${s.name}" style="accent-color:var(--accent);">
-        ${s.name}
-      </label>
-    `).join('');
-
-    const { data: staffList } = await sb.from('staff').select('*').eq('business_id', currentBusiness.id).order('created_at');
-    const wrap = document.getElementById('staff-list');
-    if (!staffList?.length) {
-      wrap.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">Aucun membre pour le moment</div>';
-      return;
-    }
-
-    const staffIds = staffList.map(s => s.id);
-    const { data: staffServices } = await sb.from('staff_services').select('*').in('staff_id', staffIds);
-    const { data: allServices } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
-
-    wrap.innerHTML = staffList.map(s => {
-      const myServices = (staffServices || [])
-        .filter(ss => ss.staff_id === s.id)
-        .map(ss => allServices?.find(sv => sv.id === ss.service_id)?.name)
-        .filter(Boolean);
-      const o = to12h(s.opening_time?.slice(0,5) || '08:00');
-      const c = to12h(s.closing_time?.slice(0,5) || '18:00');
-      return `
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem;">
-            <div>
-              <div style="font-weight:600;font-size:0.95rem;">${s.name}</div>
-              ${s.specialty ? `<div style="color:var(--muted);font-size:0.78rem;">${s.specialty}</div>` : ''}
-            </div>
-            <div style="display:flex;gap:0.3rem;align-items:center;">
-              <button onclick="toggleStaffActive('${s.id}', ${s.is_active})" style="background:${s.is_active!==false?'rgba(74,222,128,0.1)':'rgba(248,113,113,0.1)'};border:1px solid ${s.is_active!==false?'rgba(74,222,128,0.3)':'rgba(248,113,113,0.3)'};color:${s.is_active!==false?'#4ade80':'#f87171'};border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.75rem;">${s.is_active!==false?'✅ Actif':'❌ Inactif'}</button>
-              <button onclick="openEditStaff(${JSON.stringify({...s, myServiceIds: (staffServices||[]).filter(ss=>ss.staff_id===s.id).map(ss=>ss.service_id)}).replace(/"/g,'&quot;')})" style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.8rem;">✏️</button>
-              <button onclick="deleteStaff('${s.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;">🗑️</button>
-            </div>
-          </div>
-          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.5rem;">⏰ ${o.h}:${o.m} ${o.ampm} — ${c.h}:${c.m} ${c.ampm}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:0.3rem;">
-            ${myServices.map(sv => `<span style="background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.2);color:var(--accent);padding:0.15rem 0.5rem;border-radius:5px;font-size:0.72rem;">${sv}</span>`).join('') || '<span style="color:var(--muted);font-size:0.78rem;">Aucun service assigné</span>'}
-          </div>
-        </div>`;
-    }).join('');
-  }
-
-  async function addStaff() {
-    const name = document.getElementById('staff-name').value.trim();
-    if (!name) return showAlert('staff-alert', 'Nom obligatoire.', 'error');
-    const opening = ampmTo24(
-      document.getElementById('staff-opening-h').value,
-      document.getElementById('staff-opening-m').value,
-      document.getElementById('staff-opening-ampm').value
-    );
-    const closing = ampmTo24(
-      document.getElementById('staff-closing-h').value,
-      document.getElementById('staff-closing-m').value,
-      document.getElementById('staff-closing-ampm').value
-    );
-    const specialty = document.getElementById('staff-specialty').value.trim();
-    const { data: newStaff, error } = await sb.from('staff').insert({
-      business_id: currentBusiness.id,
-      name, specialty, opening_time: opening, closing_time: closing
-    }).select().single();
-    if (error) return showAlert('staff-alert', 'Erreur: ' + error.message, 'error');
-    const checked = document.querySelectorAll('#staff-services-check input:checked');
-    if (checked.length > 0) {
-      const links = Array.from(checked).map(cb => ({ staff_id: newStaff.id, service_id: cb.value }));
-      await sb.from('staff_services').insert(links);
-    }
-    document.getElementById('staff-name').value = '';
-    document.getElementById('staff-specialty').value = '';
-    showAlert('staff-alert', '✓ Membre ajouté!', 'success');
-    await loadStaff();
-  }
-
-  async function openEditStaff(s) {
-    document.getElementById('edit-staff-id').value = s.id;
-    document.getElementById('edit-staff-name').value = s.name;
-    document.getElementById('edit-staff-specialty').value = s.specialty || '';
-
-    const o = to12h(s.opening_time?.slice(0,5) || '08:00');
-    const c = to12h(s.closing_time?.slice(0,5) || '18:00');
-    document.getElementById('edit-staff-oh').value = o.h;
-    document.getElementById('edit-staff-om').value = o.m;
-    document.getElementById('edit-staff-oampm').value = o.ampm;
-    document.getElementById('edit-staff-ch').value = c.h;
-    document.getElementById('edit-staff-cm').value = c.m;
-    document.getElementById('edit-staff-campm').value = c.ampm;
-
-    // Load services checkboxes
-    const { data: services } = await sb.from('services').select('*').eq('business_id', currentBusiness.id);
-    const assignedIds = s.myServiceIds || [];
-    document.getElementById('edit-staff-services').innerHTML = (services || []).map(sv => `
-      <label style="display:flex;align-items:center;gap:0.4rem;background:var(--surface);border:1px solid var(--border);padding:0.35rem 0.7rem;border-radius:7px;cursor:pointer;font-size:0.82rem;">
-        <input type="checkbox" value="${sv.id}" ${assignedIds.includes(sv.id) ? 'checked' : ''} style="accent-color:var(--accent);">
-        ${sv.name}
-      </label>
-    `).join('');
-
-    document.getElementById('staff-edit-modal').style.display = 'flex';
-  }
-
-  function closeEditStaff() {
-    document.getElementById('staff-edit-modal').style.display = 'none';
-  }
-
-  async function saveEditStaff() {
-    const id = document.getElementById('edit-staff-id').value;
-    const name = document.getElementById('edit-staff-name').value.trim();
-    if (!name) return showAlert('edit-staff-alert', 'Nom obligatoire.', 'error');
-
-    const opening = ampmTo24(document.getElementById('edit-staff-oh').value, document.getElementById('edit-staff-om').value, document.getElementById('edit-staff-oampm').value);
-    const closing = ampmTo24(document.getElementById('edit-staff-ch').value, document.getElementById('edit-staff-cm').value, document.getElementById('edit-staff-campm').value);
-    const specialty = document.getElementById('edit-staff-specialty').value.trim();
-
-    await sb.from('staff').update({ name, specialty, opening_time: opening, closing_time: closing }).eq('id', id);
-
-    // Update services
-    await sb.from('staff_services').delete().eq('staff_id', id);
-    const checked = document.querySelectorAll('#edit-staff-services input:checked');
-    if (checked.length > 0) {
-      const links = Array.from(checked).map(cb => ({ staff_id: id, service_id: cb.value }));
-      await sb.from('staff_services').insert(links);
-    }
-
-    closeEditStaff();
-    await loadStaff();
-  }
-
-  async function toggleStaffActive(id, currentState) {
-    await sb.from('staff').update({ is_active: currentState === false ? true : false }).eq('id', id);
-    await loadStaff();
-  }
-
-  async function deleteStaff(id) {
-    if (!confirm('Supprimer ce membre?')) return;
-    await sb.from('staff_services').delete().eq('staff_id', id);
-    await sb.from('staff').delete().eq('id', id);
-    await loadStaff();
-  }
-
-  async function changePassword() {
-    const newPwd = document.getElementById('new-pwd').value;
-    const confirmPwd = document.getElementById('confirm-pwd').value;
-    if (newPwd.length < 6) return showAlert('pwd-alert', 'Minimum 6 caractères.', 'error');
-    if (newPwd !== confirmPwd) return showAlert('pwd-alert', 'Les mots de passe ne correspondent pas.', 'error');
-    const { error } = await sb.auth.updateUser({ password: newPwd });
-    if (error) return showAlert('pwd-alert', 'Erreur: ' + error.message, 'error');
-    showAlert('pwd-alert', '✓ Mot de passe changé avec succès!', 'success');
-    document.getElementById('new-pwd').value = '';
-    document.getElementById('confirm-pwd').value = '';
-  }
-
-  function confirmDeleteAccount() {
-    const modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
-    modal.innerHTML = `
-      <div style="background:var(--card);border:1.5px solid rgba(248,113,113,0.4);border-radius:18px;padding:2rem;width:100%;max-width:380px;position:relative;text-align:center">
-        <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:.5rem;color:var(--text)">Confirmer la suppression</div>
-        <div style="font-size:.83rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem">
-          Cette action est <strong style="color:#f87171">irréversible</strong>.<br>
-          Toutes vos données seront supprimées définitivement.<br><br>
-          Tapez <strong style="color:var(--text)">SUPPRIMER</strong> pour confirmer :
-        </div>
-        <input id="delete-confirm-input" type="text" placeholder="Tapez SUPPRIMER"
-          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.7rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;box-sizing:border-box;text-align:center">
-        <div style="display:flex;gap:.7rem">
-          <button onclick="this.closest('div[style*=fixed]').remove()" style="flex:1;background:none;border:1.5px solid var(--border);color:var(--muted);padding:.7rem;border-radius:9px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem">Annuler</button>
-          <button onclick="deleteMyAccount(this)" style="flex:1;background:rgba(248,113,113,0.15);border:1.5px solid #f87171;color:#f87171;padding:.7rem;border-radius:9px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600">🗑️ Supprimer</button>
-        </div>
+          <button class="action-btn red" onclick="deleteClient('${c.id}','${c.name}')" title="Supprimer">🗑️</button>
+        </span>
       </div>`;
-    document.body.appendChild(modal);
+    }).join('');
   }
 
-  async function deleteMyAccount(btn) {
-    const input = document.getElementById('delete-confirm-input').value.trim();
-    if (input !== 'SUPPRIMER') {
-      document.getElementById('delete-confirm-input').style.borderColor = '#f87171';
+  function filterClients(q) {
+    const filtered = allClients.filter(c =>
+      c.name?.toLowerCase().includes(q.toLowerCase()) ||
+      c.email?.toLowerCase().includes(q.toLowerCase())
+    );
+    renderClients(filtered);
+  }
+
+  // CREATE CLIENT
+  async function addNewClient() {
+    const name = document.getElementById('new-name').value.trim();
+    const email = document.getElementById('new-email').value.trim();
+    const password = document.getElementById('new-password').value.trim();
+    const phone = document.getElementById('new-phone').value.trim();
+    const plan = document.getElementById('new-plan').value;
+    const startDate = document.getElementById('new-start-date').value;
+    const isTrial = document.getElementById('new-trial-toggle').checked;
+
+    if (!name || !email || !password) return showAddAlert('Nom, email et mot de passe obligatoires.', 'error');
+    if (!startDate) return showAddAlert('Veuillez entrer une date de début.', 'error');
+
+    // Calculate end date
+    const start = new Date(startDate);
+    let endDate;
+    if (isTrial) {
+      const days = parseInt(document.getElementById('new-trial').value || 14);
+      endDate = new Date(start);
+      endDate.setDate(endDate.getDate() + days);
+    } else {
+      endDate = new Date(start);
+      endDate.setMonth(endDate.getMonth() + 1);
+    }
+    const trialEndStr = endDate.toISOString().split('T')[0];
+
+    const btn = document.querySelector('.btn-add');
+    btn.disabled = true; btn.textContent = 'Création...';
+
+    // Create auth user with service role
+    const { data: authData, error: authError } = await sbAdmin.auth.admin.createUser({
+      email, password, email_confirm: true
+    });
+    if (authError) {
+      showAddAlert('Erreur: ' + authError.message, 'error');
+      btn.disabled = false; btn.textContent = 'Créer le compte';
       return;
     }
-    btn.disabled = true; btn.textContent = 'Suppression...';
+
+    const { error: bizError } = await sb.from('businesses').insert({
+      name, email, phone,
+      user_id: authData.user?.id,
+      plan,
+      trial_end: trialEndStr,
+      is_active: true
+    });
+
+    if (bizError) {
+      showAddAlert('Erreur business: ' + bizError.message, 'error');
+    } else {
+      showAddAlert(`✓ Compte créé! Abonnement jusqu'au ${trialEndStr}`, 'success');
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-email').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('new-phone').value = '';
+      document.getElementById('new-start-date').value = '';
+      document.getElementById('new-trial-toggle').checked = false;
+      toggleTrialFields();
+      await loadClients();
+    }
+    btn.disabled = false; btn.textContent = 'Créer le compte';
+  }
+
+  function showAddAlert(msg, type) {
+    const el = document.getElementById('add-alert');
+    el.innerHTML = `<div class="alert ${type}">${msg}</div>`;
+    setTimeout(() => el.innerHTML = '', 5000);
+  }
+
+  // RESET PASSWORD DIRECT
+  function openResetPwd(userId, name) {
+    document.getElementById('resetpwd-id').value = userId;
+    document.getElementById('resetpwd-name').value = name;
+    document.getElementById('resetpwd-new').value = '';
+    document.getElementById('resetpwd-alert').innerHTML = '';
+    document.getElementById('resetpwd-modal').classList.add('open');
+  }
+
+  async function saveResetPwd() {
+    const userId = document.getElementById('resetpwd-id').value;
+    const newPwd = document.getElementById('resetpwd-new').value;
+    if (newPwd.length < 6) {
+      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert error">Minimum 6 caractères</div>';
+      return;
+    }
+    const { error } = await sbAdmin.auth.admin.updateUserById(userId, { password: newPwd });
+    if (error) {
+      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert error">Erreur: ' + error.message + '</div>';
+    } else {
+      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert success">✓ Mot de passe changé!</div>';
+      setTimeout(() => document.getElementById('resetpwd-modal').classList.remove('open'), 1500);
+    }
+  }
+
+  // DELETE CLIENT
+  async function deleteClient(id, name) {
+    if (!confirm(`Supprimer le compte de "${name}" ?\nToutes ses données seront définitivement perdues.`)) return;
 
     const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo';
 
-    try {
-      // 1. حذف بيانات المتجر
-      if (currentBusiness) {
-        await sb.from('reservations').delete().eq('business_id', currentBusiness.id);
-        await sb.from('staff_services').delete().in('staff_id',
-          (await sb.from('staff').select('id').eq('business_id', currentBusiness.id)).data?.map(s=>s.id) || []
-        );
-        await sb.from('staff').delete().eq('business_id', currentBusiness.id);
-        await sb.from('services').delete().eq('business_id', currentBusiness.id);
-        await sb.from('businesses').delete().eq('id', currentBusiness.id);
-      }
+    // 1. Get user_id before deleting
+    const { data: biz } = await sb.from('businesses').select('user_id').eq('id', id).single();
 
-      // 2. حذف من auth.users بـ Service Role
-      await fetch(`https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/users/${currentUser.id}`, {
+    // 2. Delete all related data
+    await sb.from('reservations').delete().eq('business_id', id);
+
+    const { data: staffList } = await sb.from('staff').select('id').eq('business_id', id);
+    if (staffList?.length) {
+      await sb.from('staff_services').delete().in('staff_id', staffList.map(s => s.id));
+    }
+    await sb.from('staff').delete().eq('business_id', id);
+    await sb.from('services').delete().eq('business_id', id);
+    await sb.from('businesses').delete().eq('id', id);
+
+    // 3. Delete from auth.users via Service Role API
+    if (biz?.user_id) {
+      await fetch(`https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/users/${biz.user_id}`, {
         method: 'DELETE',
         headers: {
           'apikey': SERVICE_KEY,
           'Authorization': 'Bearer ' + SERVICE_KEY
         }
       });
-
-      // 3. تسجيل الخروج وإظهار login
-      await sb.auth.signOut();
-      currentUser = null; currentBusiness = null;
-      document.querySelectorAll('div[style*="fixed"]').forEach(m => m.remove());
-      document.getElementById('dashboard-page').classList.remove('active');
-      document.getElementById('auth-page').classList.add('active');
-      showToast('✅ Compte supprimé avec succès.');
-
-    } catch(e) {
-      btn.disabled = false; btn.textContent = '🗑️ Supprimer';
-      console.error(e);
     }
+
+    alert('✅ Compte supprimé complètement.');
+    await loadClients();
   }
 
-  function copyLink() {
-    navigator.clipboard.writeText(document.getElementById('my-link-url').textContent);
-    const btn = document.querySelector('.btn-copy');
-    btn.textContent = '✓ Copié!';
-    setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
-  }
-  function shareWhatsApp() {
-    const link = document.getElementById('my-link-url').textContent;
-    window.open('https://wa.me/?text=' + encodeURIComponent('Réservez votre rendez-vous ici: ' + link));
+  // TOGGLE BLOCK
+  async function toggleBlock(id, active) {
+    await sb.from('businesses').update({ is_active: active }).eq('id', id);
+    await loadClients();
   }
 
-  // ---- APP INIT (after all functions defined) ----
-  sb = supabase.createClient(
-    'https://uewtdxkpsraufzjsebnh.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
-  );
-  checkSession();
-  setupPasswordRecovery();
+  // TOGGLE TRIAL FIELDS
+  function toggleTrialFields() {
+    const checked = document.getElementById('new-trial-toggle').checked;
+    document.getElementById('trial-days-field').style.display = checked ? 'block' : 'none';
+    document.getElementById('trial-end-preview').style.display = checked ? 'block' : 'none';
+    calcNewClientEnd();
+  }
 
+  function calcNewClientEnd() {
+    const start = document.getElementById('new-start-date').value;
+    const isTrial = document.getElementById('new-trial-toggle').checked;
+    if (!start) return;
+    const d = new Date(start);
+    if (isTrial) {
+      const days = parseInt(document.getElementById('new-trial').value || 14);
+      d.setDate(d.getDate() + days);
+    } else {
+      d.setMonth(d.getMonth() + 1);
+    }
+    document.getElementById('new-end-preview').value = d.toISOString().split('T')[0];
+  }
+
+  function calcExtendEnd() {
+    const start = document.getElementById('extend-start').value;
+    if (!start) return;
+    const d = new Date(start);
+    d.setMonth(d.getMonth() + 1);
+    document.getElementById('extend-date').value = d.toISOString().split('T')[0];
+  }
+
+  // EXTEND MODAL
+  function openExtend(id, name, trialEnd, plan) {
+    document.getElementById('extend-id').value = id;
+    document.getElementById('extend-name').value = name;
+    document.getElementById('extend-start').value = '';
+    document.getElementById('extend-date').value = '';
+    document.getElementById('extend-plan').value = plan;
+    document.getElementById('extend-modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('extend-modal').classList.remove('open');
+  }
+
+  async function saveExtend() {
+    const id = document.getElementById('extend-id').value;
+    const endDate = document.getElementById('extend-date').value;
+    const plan = document.getElementById('extend-plan').value;
+    if (!endDate) return alert('Veuillez entrer une date de début!');
+    await sb.from('businesses').update({ trial_end: endDate, plan, is_active: true }).eq('id', id);
+    closeModal();
+    await loadClients();
+  }
+
+  function addOneMonth() {
+    const dateInput = document.getElementById('extend-date');
+    const current = dateInput.value ? new Date(dateInput.value) : new Date();
+    current.setMonth(current.getMonth() + 1);
+    dateInput.value = current.toISOString().split('T')[0];
+  }
+
+  // Init
+  document.getElementById('new-start-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('new-start-date').addEventListener('input', calcNewClientEnd);
+  document.getElementById('new-trial').addEventListener('change', calcNewClientEnd);
 </script>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="admin-bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,22,0.96);backdrop-filter:blur(20px);border-top:1px solid rgba(124,106,247,0.15);z-index:200;padding:0.4rem 0 calc(0.4rem + env(safe-area-inset-bottom));grid-template-columns:repeat(4,1fr);" id="admin-bnav">
+  <a href="index.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">🏠</span><span style="font-size:0.58rem;font-weight:500;">Accueil</span>
+  </a>
+  <a href="app.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">📊</span><span style="font-size:0.58rem;font-weight:500;">Dashboard</span>
+  </a>
+  <a href="booking.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:1.1rem;">📅</span><span style="font-size:0.58rem;font-weight:500;">Réserver</span>
+  </a>
+  <span style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;color:var(--accent);padding:0.4rem 0;font-family:'DM Sans',sans-serif;">
+    <span style="font-size:1.1rem;">💻</span><span style="font-size:0.58rem;font-weight:500;">Admin</span>
+  </span>
+</div>
+<style>
+@media(max-width:768px){
+  #admin-bnav{display:grid !important;}
+}
+</style>
 </body>
 </html>
