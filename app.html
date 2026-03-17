@@ -1698,8 +1698,8 @@
 
     list.innerHTML = rappelNotifs.map(r => {
       const waMsg = encodeURIComponent(
-        'Bonjour, rappel pour votre RDV aujourd'hui à ' + r.time +
-        ' chez ' + currentBusiness.name + '. À tout à l'heure !'
+        'Bonjour, rappel pour votre RDV aujourd\'hui \u00e0 ' + r.time +
+        ' chez ' + currentBusiness.name + '. A tout a l\'heure !'
       );
       const waLink = 'https://wa.me/' + (r.client_phone || '').replace(/[^0-9]/g, '') + '?text=' + waMsg;
       return `
