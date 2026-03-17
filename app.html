@@ -548,6 +548,152 @@
 
 </div>
 
+<!-- REGISTER PAGE -->
+<div id="register-page" class="page" style="display:none;flex-direction:row;min-height:100vh;">
+
+  <!-- LEFT panel -->
+  <div class="auth-left" style="display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="auth-left-logo">ReservaPlus</div>
+    <div class="auth-left-body">
+      <div class="auth-left-title" style="font-size:clamp(1.4rem,2.5vw,2rem)">Lancez votre<br>espace de<br>réservation.</div>
+      <div class="auth-left-desc" style="margin-top:1rem;line-height:1.8">
+        Rejoignez des dizaines de professionnels au Maroc qui gèrent leurs RDV avec ReservaPlus.
+      </div>
+      <!-- Testimonial -->
+      <div style="margin-top:2rem;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:1.2rem">
+        <div style="color:#f59e0b;font-size:.85rem;margin-bottom:.5rem">★★★★★</div>
+        <div style="color:rgba(255,255,255,0.85);font-size:.82rem;line-height:1.7;font-style:italic">"Mes clients réservent seuls maintenant. Je perds plus de RDV."</div>
+        <div style="color:rgba(255,255,255,0.5);font-size:.75rem;margin-top:.6rem">— Youssef B., Salon de coiffure · Casablanca</div>
+      </div>
+    </div>
+    <div class="auth-left-footer">
+      <span>© 2026 ReservaPlus</span><span>Maroc 🇲🇦</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: register form -->
+  <div class="auth-right" style="overflow-y:auto;padding:2.5rem 2rem;align-items:flex-start;justify-content:flex-start;flex-direction:column;">
+    <div style="width:100%;max-width:560px;margin:0 auto;">
+
+      <div style="margin-bottom:2rem">
+        <div class="auth-logo" style="margin-bottom:.5rem">Reserva<span>Plus</span></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--text);margin-bottom:.3rem">Créez votre compte</div>
+        <div style="font-size:.85rem;color:var(--muted)">Gratuit pour démarrer · Sans carte bancaire</div>
+      </div>
+
+      <div id="reg-page-alert"></div>
+
+      <!-- Step indicator -->
+      <div style="display:flex;gap:.5rem;margin-bottom:2rem">
+        <div style="flex:1;height:3px;border-radius:2px;background:var(--accent)"></div>
+        <div style="flex:1;height:3px;border-radius:2px;background:var(--accent)" id="reg-step2-bar" style="background:var(--border)"></div>
+      </div>
+
+      <!-- Info fields -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div style="grid-column:1/-1">
+          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500">Nom de votre établissement *</label>
+          <input id="rp-name" type="text" placeholder="Ex: Salon Ahmed, Cabinet Dr. Alami..."
+            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.78rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500">Adresse e-mail *</label>
+          <input id="rp-email" type="email" placeholder="votre@email.com"
+            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.78rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500">Téléphone</label>
+          <input id="rp-phone" type="tel" placeholder="+212 6XX XXX XXX"
+            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.78rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem;font-weight:500">Mot de passe *</label>
+          <input id="rp-pwd" type="password" placeholder="Minimum 6 caractères"
+            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:.78rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+      </div>
+
+      <!-- Secteur -->
+      <div style="margin-bottom:1.5rem">
+        <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.5rem;font-weight:500">Votre secteur d'activité</label>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem" id="secteur-btns">
+          <button onclick="pickSecteur(this,'💈 Coiffure')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">💈 Coiffure</button>
+          <button onclick="pickSecteur(this,'💅 Beauté')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">💅 Beauté</button>
+          <button onclick="pickSecteur(this,'🏋️ Sport & Fitness')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🏋️ Sport</button>
+          <button onclick="pickSecteur(this,'🩺 Santé')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🩺 Santé</button>
+          <button onclick="pickSecteur(this,'🐾 Vétérinaire')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🐾 Vétérinaire</button>
+          <button onclick="pickSecteur(this,'📚 Formation')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">📚 Formation</button>
+          <button onclick="pickSecteur(this,'🔧 Artisan')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">🔧 Artisan</button>
+          <button onclick="pickSecteur(this,'Autre')" style="background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">Autre</button>
+        </div>
+        <input type="hidden" id="rp-secteur" value="">
+      </div>
+
+      <!-- Plan selection -->
+      <div style="margin-bottom:1.5rem">
+        <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.6rem;font-weight:500">Choisissez votre plan</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+
+          <!-- Starter -->
+          <div onclick="pickPlanReg(this,'starter')" data-plan="starter"
+            style="border:1.5px solid var(--border);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;background:var(--surface)">
+            <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.1em;margin-bottom:.5rem">STARTER</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text)">Gratuit</div>
+            <div style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .8rem">Pour démarrer</div>
+            <div style="display:flex;flex-direction:column;gap:.3rem">
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>30 RDV/mois</div>
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>3 services</div>
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Lien de réservation</div>
+              <div style="font-size:.75rem;opacity:.4;display:flex;gap:.4rem"><span>–</span>Staff illimité</div>
+            </div>
+          </div>
+
+          <!-- Pro -->
+          <div onclick="pickPlanReg(this,'pro')" data-plan="pro"
+            style="border:1.5px solid var(--accent);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;background:rgba(124,106,247,0.08);position:relative">
+            <div style="position:absolute;top:-1px;right:1rem;background:var(--accent);color:#fff;font-size:.58rem;font-weight:700;padding:.15rem .5rem;border-radius:0 0 6px 6px;letter-spacing:.05em">RECOMMANDÉ</div>
+            <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.5rem">PRO</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text)">199 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
+            <div style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .8rem">Pour les pros sérieux</div>
+            <div style="display:flex;flex-direction:column;gap:.3rem">
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>RDV illimités</div>
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Services illimités</div>
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Staff illimité</div>
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Stats & Calendrier</div>
+            </div>
+          </div>
+
+        </div>
+        <input type="hidden" id="rp-plan" value="pro">
+      </div>
+
+      <button id="rp-btn" onclick="doRegisterPage()"
+        style="width:100%;background:var(--accent);color:#fff;border:none;padding:.9rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;margin-bottom:.8rem"
+        onmouseenter="this.style.background='#5a4bd1'" onmouseleave="this.style.background='var(--accent)'">
+        Créer mon compte →
+      </button>
+
+      <div style="text-align:center;font-size:.78rem;color:var(--muted)">
+        Déjà un compte ?
+        <span onclick="showAuthPage()" style="color:var(--accent);cursor:pointer;font-weight:600"> Se connecter</span>
+      </div>
+
+      <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:.5rem">
+        <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus." target="_blank"
+          style="display:flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.78rem;text-decoration:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
+          Ou s'inscrire via WhatsApp
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- BLOCKED PAGE -->
 <div id="blocked-page" class="page" style="display:none;flex-direction:row;min-height:100vh;">
   <!-- Left purple panel -->
@@ -1362,86 +1508,70 @@
   }
 
   // ---- INSCRIPTION (S'inscrire sans WhatsApp) ----
+  // ---- REGISTER PAGE ----
   function showInscription() {
-    const modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;';
-    modal.innerHTML = `
-      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:22px;padding:2rem;width:100%;max-width:420px;position:relative;">
-        <button onclick="this.closest('div[style*=fixed]').remove()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:.3rem;color:var(--text)">Créer un compte</div>
-        <div style="font-size:.78rem;color:var(--muted);margin-bottom:1.5rem">14 jours gratuits, sans carte bancaire.</div>
-        <div id="inscr-alert"></div>
-
-        <label style="display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem">Nom de votre établissement *</label>
-        <input id="inscr-name" type="text" placeholder="Ex: Salon Ahmed"
-          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.68rem 1rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
-
-        <label style="display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem">Adresse e-mail *</label>
-        <input id="inscr-email" type="email" placeholder="votre@email.com"
-          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.68rem 1rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
-
-        <label style="display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem">Téléphone</label>
-        <input id="inscr-phone" type="tel" placeholder="+212 6XX XXX XXX"
-          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.68rem 1rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
-
-        <label style="display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem">Mot de passe *</label>
-        <input id="inscr-pwd" type="password" placeholder="Minimum 6 caractères"
-          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.68rem 1rem;color:var(--text);font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1.2rem;box-sizing:border-box;">
-
-        <div style="font-size:.73rem;color:var(--muted);margin-bottom:1rem">Choisissez votre plan de départ :</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.2rem" id="plan-selector">
-          <div onclick="selectPlanInscr(this,'starter')" data-plan="starter"
-            style="border:1.5px solid var(--border);border-radius:10px;padding:.7rem;cursor:pointer;text-align:center;transition:all .2s">
-            <div style="font-weight:700;font-size:.82rem;margin-bottom:.2rem">Starter</div>
-            <div style="font-size:.7rem;color:var(--muted)">Gratuit · 30 RDV/mois</div>
-          </div>
-          <div onclick="selectPlanInscr(this,'pro')" data-plan="pro"
-            style="border:1.5px solid var(--accent);background:var(--accent-bg,rgba(124,106,247,.1));border-radius:10px;padding:.7rem;cursor:pointer;text-align:center;transition:all .2s">
-            <div style="font-weight:700;font-size:.82rem;margin-bottom:.2rem;color:var(--accent)">Pro ⭐</div>
-            <div style="font-size:.7rem;color:var(--muted)">199 MAD/mois · Illimité</div>
-          </div>
-        </div>
-        <input type="hidden" id="inscr-plan" value="pro">
-
-        <button id="inscr-btn" onclick="doInscription()"
-          style="width:100%;background:#2d3748;color:#fff;border:none;padding:.85rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;margin-bottom:.7rem;">
-          Créer mon compte →
-        </button>
-        <div style="text-align:center;font-size:.72rem;color:var(--muted)">Déjà un compte ? <span onclick="this.closest('div[style*=fixed]').remove()" style="color:var(--accent);cursor:pointer">Se connecter</span></div>
-      </div>`;
-    document.body.appendChild(modal);
-    // Pre-select pro
-    const pro = modal.querySelector('[data-plan="pro"]');
-    if(pro) pro.style.borderColor = 'var(--accent)';
+    document.getElementById('auth-page').classList.remove('active');
+    document.getElementById('register-page').style.display = 'flex';
+    // default pro selected
+    const proPlan = document.querySelector('[data-plan="pro"]');
+    if(proPlan) {
+      proPlan.style.borderColor = 'var(--accent)';
+      proPlan.style.background = 'rgba(124,106,247,0.08)';
+    }
   }
 
-  function selectPlanInscr(el, plan) {
-    document.querySelectorAll('#plan-selector > div').forEach(d => {
-      d.style.borderColor = 'var(--border)';
-      d.style.background = 'transparent';
+  function showAuthPage() {
+    document.getElementById('register-page').style.display = 'none';
+    document.getElementById('auth-page').classList.add('active');
+  }
+
+  function pickSecteur(el, val) {
+    document.querySelectorAll('#secteur-btns button').forEach(b => {
+      b.style.borderColor = 'var(--border)';
+      b.style.color = 'var(--muted)';
+      b.style.background = 'var(--surface)';
     });
     el.style.borderColor = 'var(--accent)';
-    el.style.background = 'var(--accent-bg, rgba(124,106,247,.1))';
-    document.getElementById('inscr-plan').value = plan;
+    el.style.color = 'var(--accent)';
+    el.style.background = 'rgba(124,106,247,0.1)';
+    document.getElementById('rp-secteur').value = val;
   }
 
-  async function doInscription() {
-    const name = document.getElementById('inscr-name').value.trim();
-    const email = document.getElementById('inscr-email').value.trim();
-    const phone = document.getElementById('inscr-phone').value.trim();
-    const pwd = document.getElementById('inscr-pwd').value;
-    const plan = document.getElementById('inscr-plan').value;
+  function pickPlanReg(el, plan) {
+    document.querySelectorAll('[data-plan]').forEach(d => {
+      d.style.borderColor = 'var(--border)';
+      d.style.background = 'var(--surface)';
+    });
+    el.style.borderColor = 'var(--accent)';
+    el.style.background = 'rgba(124,106,247,0.08)';
+    document.getElementById('rp-plan').value = plan;
+  }
+
+  async function doRegisterPage() {
+    const name = document.getElementById('rp-name').value.trim();
+    const email = document.getElementById('rp-email').value.trim();
+    const phone = document.getElementById('rp-phone').value.trim();
+    const pwd = document.getElementById('rp-pwd').value;
+    const plan = document.getElementById('rp-plan').value || 'pro';
+    const secteur = document.getElementById('rp-secteur').value;
+    const alertBox = document.getElementById('reg-page-alert');
 
     if (!name || !email || !pwd) {
-      document.getElementById('inscr-alert').innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Veuillez remplir les champs obligatoires.</div>';
+      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">Veuillez remplir les champs obligatoires (*).</div>';
       return;
     }
-    const btn = document.getElementById('inscr-btn');
-    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Création...';
+    if (pwd.length < 6) {
+      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">Le mot de passe doit contenir au moins 6 caractères.</div>';
+      return;
+    }
+
+    const btn = document.getElementById('rp-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Création en cours...';
 
     const { data, error } = await sb.auth.signUp({ email, password: pwd });
     if (error) {
-      document.getElementById('inscr-alert').innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">${error.message}</div>`;
+      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">' + error.message + '</div>';
       btn.disabled = false; btn.textContent = 'Créer mon compte →';
       return;
     }
@@ -1451,7 +1581,7 @@
     trialEnd.setDate(trialEnd.getDate() + 14);
 
     await sb.from('businesses').insert({
-      name, email, phone,
+      name, email, phone, secteur,
       user_id: currentUser.id,
       plan: plan,
       is_active: true,
@@ -1459,10 +1589,13 @@
     });
 
     await loadBusiness();
-    // Close modal
-    document.querySelectorAll('div[style*="fixed"]').forEach(m => { if(m.id !== 'blocked-page' && m.id !== 'auth-page') m.remove(); });
+    document.getElementById('register-page').style.display = 'none';
     showDashboard();
   }
+
+  // old modal functions kept for compat
+  function selectPlanInscr(el, plan) {}
+  async function doInscription() {}
 
   // THEME
   function toggleTheme() {
