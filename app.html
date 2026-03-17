@@ -2256,19 +2256,26 @@
 
     // جيب كل staff
     const { data: staffList } = await sb.from('staff').select('*').eq('business_id', currentBusiness.id).eq('is_active', true).order('created_at');
-    // جيب حجوزات اليوم
-    const { data: rdvs } = await sb.from('reservations').select('*').eq('business_id', currentBusiness.id).eq('date', date).neq('statut', 'annule').order('time');
+    // جيب حجوزات اليوم — كل الحجوزات بما فيها المقبولة والمنتظرة
+    const { data: rdvs, error: rdvErr } = await sb.from('reservations').select('*').eq('business_id', currentBusiness.id).eq('date', date).order('time');
+
+    console.log('Planning date:', date, 'Staff:', staffList?.length, 'RDVs:', rdvs?.length, rdvErr);
 
     if (!staffList?.length) {
       container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:1rem;">Aucun staff actif.</div>';
       return;
     }
 
-    // جيب كل staff للـ reassign select
-    const staffOptions = (staffList || []).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    if (!rdvs?.length) {
+      container.innerHTML = `<div style="color:var(--muted);font-size:0.85rem;padding:1.5rem;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:0.5rem">📭</div>
+        Aucun RDV le ${new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})}
+      </div>`;
+      return;
+    }
 
     container.innerHTML = staffList.map(staff => {
-      const myRdvs = (rdvs || []).filter(r => r.staff_id === staff.id);
+      const myRdvs = (rdvs || []).filter(r => String(r.staff_id) === String(staff.id));
       const unassigned = (rdvs || []).filter(r => !r.staff_id);
 
       return `
