@@ -707,8 +707,8 @@
     <div class="auth-left-logo">ReservaPlus</div>
     <div class="auth-left-body">
       <div style="font-size:3rem;margin-bottom:1.2rem;">🔒</div>
-      <div class="auth-left-title" style="font-size:clamp(1.5rem,2.5vw,2.2rem)">Période<br>d'essai<br>terminée.</div>
-      <div class="auth-left-desc" style="margin-top:1rem">Vos 14 jours gratuits sont écoulés. Choisissez un plan pour continuer à recevoir des réservations.</div>
+      <div class="auth-left-title" style="font-size:clamp(1.5rem,2.5vw,2.2rem)" id="blocked-title">Abonnement<br>terminé.</div>
+      <div class="auth-left-desc" style="margin-top:1rem" id="blocked-desc">Votre abonnement est terminé. Choisissez un plan pour continuer à recevoir des réservations.</div>
     </div>
     <div class="auth-left-footer">
       <span>© 2026 ReservaPlus</span><span>Maroc 🇲🇦</span>
@@ -1176,6 +1176,15 @@
           </div>
           <button class="btn-add" onclick="changePassword()">Enregistrer</button>
         </div>
+
+        <!-- DANGER ZONE -->
+        <div style="margin-top:3rem;max-width:420px;border:1.5px solid rgba(248,113,113,0.3);border-radius:14px;padding:1.5rem;background:rgba(248,113,113,0.04)">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;color:#f87171;margin-bottom:.4rem">⚠️ Zone dangereuse</div>
+          <div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.2rem">La suppression de votre compte est <strong>irréversible</strong>. Toutes vos données (réservations, services, staff) seront définitivement supprimées.</div>
+          <button onclick="confirmDeleteAccount()" style="background:rgba(248,113,113,0.1);border:1.5px solid rgba(248,113,113,0.4);color:#f87171;padding:.65rem 1.3rem;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s" onmouseenter="this.style.background='rgba(248,113,113,0.2)'" onmouseleave="this.style.background='rgba(248,113,113,0.1)'">
+            🗑️ Supprimer mon compte
+          </button>
+        </div>
       </div>
 
       <!-- MY LINK -->
@@ -1599,8 +1608,14 @@
     }
 
     currentUser = data.user;
+
+    // Pro: 30 jours d'essai — Starter: gratuit sans trial
     const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 14);
+    if (plan === 'pro') {
+      trialEnd.setDate(trialEnd.getDate() + 30);
+    } else {
+      trialEnd.setFullYear(trialEnd.getFullYear() + 10); // Starter = gratuit permanent
+    }
 
     await sb.from('businesses').insert({
       name, email, phone, secteur,
@@ -1755,6 +1770,14 @@
     // Check if blocked
     if (currentBusiness?.is_active === false) {
       document.getElementById('auth-page').classList.remove('active');
+      // Update blocked page text based on plan
+      const isPro = currentBusiness?.plan === 'pro';
+      const titleEl = document.getElementById('blocked-title');
+      const descEl = document.getElementById('blocked-desc');
+      if (titleEl) titleEl.innerHTML = isPro ? 'Abonnement<br>Pro terminé.' : 'Compte<br>bloqué.';
+      if (descEl) descEl.textContent = isPro
+        ? 'Votre abonnement Pro de 30 jours est terminé. Renouvelez pour continuer.'
+        : 'Votre compte a été suspendu. Contactez-nous pour continuer.';
       document.getElementById('blocked-page').style.display = 'flex';
       return;
     }
@@ -2657,6 +2680,73 @@
     showAlert('pwd-alert', '✓ Mot de passe changé avec succès!', 'success');
     document.getElementById('new-pwd').value = '';
     document.getElementById('confirm-pwd').value = '';
+  }
+
+  function confirmDeleteAccount() {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+    modal.innerHTML = `
+      <div style="background:var(--card);border:1.5px solid rgba(248,113,113,0.4);border-radius:18px;padding:2rem;width:100%;max-width:380px;position:relative;text-align:center">
+        <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:.5rem;color:var(--text)">Confirmer la suppression</div>
+        <div style="font-size:.83rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem">
+          Cette action est <strong style="color:#f87171">irréversible</strong>.<br>
+          Toutes vos données seront supprimées définitivement.<br><br>
+          Tapez <strong style="color:var(--text)">SUPPRIMER</strong> pour confirmer :
+        </div>
+        <input id="delete-confirm-input" type="text" placeholder="Tapez SUPPRIMER"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.7rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;box-sizing:border-box;text-align:center">
+        <div style="display:flex;gap:.7rem">
+          <button onclick="this.closest('div[style*=fixed]').remove()" style="flex:1;background:none;border:1.5px solid var(--border);color:var(--muted);padding:.7rem;border-radius:9px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem">Annuler</button>
+          <button onclick="deleteMyAccount(this)" style="flex:1;background:rgba(248,113,113,0.15);border:1.5px solid #f87171;color:#f87171;padding:.7rem;border-radius:9px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600">🗑️ Supprimer</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+
+  async function deleteMyAccount(btn) {
+    const input = document.getElementById('delete-confirm-input').value.trim();
+    if (input !== 'SUPPRIMER') {
+      document.getElementById('delete-confirm-input').style.borderColor = '#f87171';
+      return;
+    }
+    btn.disabled = true; btn.textContent = 'Suppression...';
+
+    const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo';
+
+    try {
+      // 1. حذف بيانات المتجر
+      if (currentBusiness) {
+        await sb.from('reservations').delete().eq('business_id', currentBusiness.id);
+        await sb.from('staff_services').delete().in('staff_id',
+          (await sb.from('staff').select('id').eq('business_id', currentBusiness.id)).data?.map(s=>s.id) || []
+        );
+        await sb.from('staff').delete().eq('business_id', currentBusiness.id);
+        await sb.from('services').delete().eq('business_id', currentBusiness.id);
+        await sb.from('businesses').delete().eq('id', currentBusiness.id);
+      }
+
+      // 2. حذف من auth.users بـ Service Role
+      await fetch(`https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/users/${currentUser.id}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': SERVICE_KEY,
+          'Authorization': 'Bearer ' + SERVICE_KEY
+        }
+      });
+
+      // 3. تسجيل الخروج وإظهار login
+      await sb.auth.signOut();
+      currentUser = null; currentBusiness = null;
+      document.querySelectorAll('div[style*="fixed"]').forEach(m => m.remove());
+      document.getElementById('dashboard-page').classList.remove('active');
+      document.getElementById('auth-page').classList.add('active');
+      showToast('✅ Compte supprimé avec succès.');
+
+    } catch(e) {
+      btn.disabled = false; btn.textContent = '🗑️ Supprimer';
+      console.error(e);
+    }
   }
 
   function copyLink() {
