@@ -1109,11 +1109,11 @@
 
 <script>
   // ---- SUPABASE INIT ----
-  const { createClient } = supabase;
-  const sb = createClient(
-    'https://uewtdxkpsraufzjsebnh.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
-  );
+  let sb;
+  let currentUser = null;
+  let currentBusiness = null;
+
+  // sb init moved to end of script after all functions defined
 
   function showAlert(id, msg, type) {
     const el = document.getElementById(id);
@@ -1121,9 +1121,6 @@
     el.innerHTML = `<div style="padding:0.6rem 1rem;border-radius:8px;font-size:0.83rem;margin-bottom:0.8rem;background:${type==='success'?'rgba(74,222,128,0.1)':'rgba(248,113,113,0.1)'};border:1px solid ${type==='success'?'rgba(74,222,128,0.3)':'rgba(248,113,113,0.3)'};color:${type==='success'?'#4ade80':'#f87171'}">${msg}</div>`;
     setTimeout(() => el.innerHTML = '', 4000);
   }
-
-  let currentUser = null;
-  let currentBusiness = null;
 
   // ---- CHECK SESSION ----
   async function checkSession() {
@@ -1135,61 +1132,55 @@
     }
   }
 
-  checkSession();
-
   // ---- PASSWORD RECOVERY HANDLER ----
-  sb.auth.onAuthStateChange((event, session) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      // إظهار form تغيير password
-      const modal = document.createElement('div');
-      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
-      modal.innerHTML = `
-        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:380px;position:relative;">
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:.4rem;color:var(--text)">🔑 Nouveau mot de passe</div>
-          <div style="font-size:.8rem;color:var(--muted);margin-bottom:1.4rem;line-height:1.6">Choisissez un nouveau mot de passe pour votre compte.</div>
-          <div id="newpwd-alert"></div>
-          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Nouveau mot de passe</label>
-          <input id="new-pwd" type="password" placeholder="Minimum 6 caractères"
-            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
-          <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Confirmer mot de passe</label>
-          <input id="confirm-new-pwd" type="password" placeholder="Répétez le mot de passe"
-            style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;box-sizing:border-box;">
-          <button id="newpwd-btn" onclick="saveNewPassword()"
-            style="width:100%;background:#7c6af7;color:#fff;border:none;padding:.82rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;">
-            Enregistrer le nouveau mot de passe
-          </button>
-        </div>`;
-      document.body.appendChild(modal);
-    }
-  });
+  function setupPasswordRecovery() {
+    sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+        modal.innerHTML = `
+          <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:2rem;width:100%;max-width:380px;position:relative;">
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:.4rem;color:var(--text)">🔑 Nouveau mot de passe</div>
+            <div style="font-size:.8rem;color:var(--muted);margin-bottom:1.4rem;line-height:1.6">Choisissez un nouveau mot de passe pour votre compte.</div>
+            <div id="newpwd-alert"></div>
+            <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Nouveau mot de passe</label>
+            <input id="new-pwd" type="password" placeholder="Minimum 6 caractères"
+              style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;box-sizing:border-box;">
+            <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Confirmer mot de passe</label>
+            <input id="confirm-new-pwd" type="password" placeholder="Répétez le mot de passe"
+              style="width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:.72rem 1rem;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:1rem;box-sizing:border-box;">
+            <button id="newpwd-btn" onclick="saveNewPassword()"
+              style="width:100%;background:#7c6af7;color:#fff;border:none;padding:.82rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;">
+              Enregistrer le nouveau mot de passe
+            </button>
+          </div>`;
+        document.body.appendChild(modal);
+      }
+    });
+  }
 
   async function saveNewPassword() {
     const pwd = document.getElementById('new-pwd').value;
     const confirm = document.getElementById('confirm-new-pwd').value;
     const btn = document.getElementById('newpwd-btn');
     const alertBox = document.getElementById('newpwd-alert');
-
     if (pwd.length < 6) {
-      alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Minimum 6 caractères.</div>`;
+      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Minimum 6 caractères.</div>';
       return;
     }
     if (pwd !== confirm) {
-      alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Les mots de passe ne correspondent pas.</div>`;
+      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">Les mots de passe ne correspondent pas.</div>';
       return;
     }
-
     btn.disabled = true; btn.textContent = 'Enregistrement...';
     const { error } = await sb.auth.updateUser({ password: pwd });
-
     if (error) {
-      alertBox.innerHTML = `<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">${error.message}</div>`;
+      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.5rem .8rem;border-radius:8px;font-size:.78rem;margin-bottom:.8rem">' + error.message + '</div>';
       btn.disabled = false; btn.textContent = 'Enregistrer';
     } else {
-      alertBox.innerHTML = `<div style="background:#064e3b;border:1px solid #34d399;color:#34d399;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem">✅ Mot de passe mis à jour !</div>`;
+      alertBox.innerHTML = '<div style="background:#064e3b;border:1px solid #34d399;color:#34d399;padding:.6rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.8rem">✅ Mot de passe mis à jour !</div>';
       btn.textContent = '✓ Enregistré';
-      setTimeout(() => {
-        document.querySelectorAll('div[style*="z-index:600"]').forEach(m => m.remove());
-      }, 2000);
+      setTimeout(() => { document.querySelectorAll('div[style*="z-index:600"]').forEach(m => m.remove()); }, 2000);
     }
   }
 
@@ -2388,6 +2379,15 @@
     const link = document.getElementById('my-link-url').textContent;
     window.open('https://wa.me/?text=' + encodeURIComponent('Réservez votre rendez-vous ici: ' + link));
   }
+
+  // ---- APP INIT (after all functions defined) ----
+  sb = supabase.createClient(
+    'https://uewtdxkpsraufzjsebnh.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
+  );
+  checkSession();
+  setupPasswordRecovery();
+
 </script>
 </body>
 </html>
