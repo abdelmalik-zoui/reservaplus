@@ -599,13 +599,36 @@
 
   // DELETE CLIENT
   async function deleteClient(id, name) {
-    if (!confirm(`Supprimer le compte de "${name}"?\nToutes ses données seront perdues.`)) return;
-    // Delete reservations, services, then business
-    await sb.from('reservations').delete().eq('business_id', id);
-    await sb.from('services').delete().eq('business_id', id);
+    if (!confirm(`Supprimer le compte de "${name}" ?\nToutes ses données seront définitivement perdues.`)) return;
+
+    const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo';
+
+    // 1. Get user_id before deleting
     const { data: biz } = await sb.from('businesses').select('user_id').eq('id', id).single();
+
+    // 2. Delete all related data
+    await sb.from('reservations').delete().eq('business_id', id);
+
+    const { data: staffList } = await sb.from('staff').select('id').eq('business_id', id);
+    if (staffList?.length) {
+      await sb.from('staff_services').delete().in('staff_id', staffList.map(s => s.id));
+    }
+    await sb.from('staff').delete().eq('business_id', id);
+    await sb.from('services').delete().eq('business_id', id);
     await sb.from('businesses').delete().eq('id', id);
-    if (biz?.user_id) await sbAdmin.auth.admin.deleteUser(biz.user_id);
+
+    // 3. Delete from auth.users via Service Role API
+    if (biz?.user_id) {
+      await fetch(`https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/users/${biz.user_id}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': SERVICE_KEY,
+          'Authorization': 'Bearer ' + SERVICE_KEY
+        }
+      });
+    }
+
+    alert('✅ Compte supprimé complètement.');
     await loadClients();
   }
 
