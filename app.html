@@ -1659,20 +1659,20 @@
     const todayStr = now.toISOString().split('T')[0];
 
     // جيب حجوزات اليوم فقط اللي ماتذكروش بعد
-    const { data: rdvs } = await sb.from('reservations')
+    const { data: rdvs, error: rdvErr } = await sb.from('reservations')
       .select('*')
       .eq('business_id', currentBusiness.id)
-      .neq('statut', 'annule')
-      .is('reminded_at', null)
       .eq('date', todayStr);
 
-    console.log('🔔 checkRappels — now:', now.toLocaleTimeString(), 'rdvs today:', rdvs?.length);
+    console.log('🔔 checkRappels — now:', now.toLocaleTimeString(), 'rdvs today:', rdvs?.length, 'error:', rdvErr?.message);
 
     if (!rdvs || rdvs.length === 0) return;
 
-    // فلتر — موعدهم بين دابا و 2h من دابا
+    // فلتر — موعدهم بين دابا و 2h من دابا + مش annulé + ماتذكروش بعد
     const upcoming = rdvs.filter(r => {
       if (!r.time) return false;
+      if (r.statut === 'annule') return false;
+      if (r.reminded_at) return false;
       const rdvDateTime = new Date(todayStr + 'T' + r.time.slice(0,5) + ':00');
       const diffMs = rdvDateTime - now;
       console.log('  RDV:', r.client_name, r.time, '→ diff:', Math.round(diffMs/60000), 'min');
