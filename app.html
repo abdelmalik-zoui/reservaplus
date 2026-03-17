@@ -1656,32 +1656,34 @@
 
     const now = new Date();
     const in2h = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    const todayStr = now.toISOString().split('T')[0];
 
-    // جيب الحجوزات اللي فـ الساعتين الجايين وماتذكروش بعد
+    // جيب حجوزات اليوم فقط اللي ماتذكروش بعد
     const { data: rdvs } = await sb.from('reservations')
       .select('*')
       .eq('business_id', currentBusiness.id)
       .neq('statut', 'annule')
       .is('reminded_at', null)
-      .gte('date', now.toISOString().split('T')[0])
-      .lte('date', in2h.toISOString().split('T')[0]);
+      .eq('date', todayStr);
+
+    console.log('🔔 checkRappels — now:', now.toLocaleTimeString(), 'rdvs today:', rdvs?.length);
 
     if (!rdvs || rdvs.length === 0) return;
 
-    // فلتر — فقط اللي موعدهم فـ الساعتين الجايين
+    // فلتر — موعدهم بين دابا و 2h من دابا
     const upcoming = rdvs.filter(r => {
       if (!r.time) return false;
-      const rdvDate = new Date(r.date + 'T' + r.time);
-      const diffMs = rdvDate - now;
+      const rdvDateTime = new Date(todayStr + 'T' + r.time.slice(0,5) + ':00');
+      const diffMs = rdvDateTime - now;
+      console.log('  RDV:', r.client_name, r.time, '→ diff:', Math.round(diffMs/60000), 'min');
       return diffMs > 0 && diffMs <= 2 * 60 * 60 * 1000;
     });
 
+    console.log('  Upcoming in 2h:', upcoming.length);
     if (upcoming.length === 0) return;
 
-    // زيد للـ panel
     addRappelNotifs(upcoming);
 
-    // علم عليهم reminded_at
     const ids = upcoming.map(r => r.id);
     await sb.from('reservations').update({ reminded_at: new Date().toISOString() }).in('id', ids);
   }
