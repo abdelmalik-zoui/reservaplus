@@ -324,7 +324,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
           <div class="kpi" style="border-color:rgba(52,211,153,.2)">
             <div class="kl">💰 Revenus est.</div>
             <div class="kv" style="color:var(--gn);font-size:1.25rem" id="k-revenue">—</div>
-            <div class="ks">Clients Pro × 199 MAD</div>
+            <div class="ks">Tous clients Pro payés</div>
           </div>
         </div>
 
@@ -692,14 +692,17 @@ function updateKPIs() {
     const te = new Date(c.trial_end + 'T00:00:00');
     return te >= today && te <= in7;
   });
-  const pro = actifs.filter(c => c.plan && c.plan !== 'starter');
+  // Revenus = tous les clients avec payment_status='payé' (actifs OU pas)
+  const proPayes = allClients.filter(c => c.payment_status === 'payé' && c.plan && c.plan !== 'starter');
+  const proActifsCount = actifs.filter(c => c.plan && c.plan !== 'starter').length;
+  const revenue = proPayes.length * 199;
 
   set('k-total', allClients.length);
   set('k-active', actifs.length);
   set('k-pending', pending.length);
   set('k-blocked', blocked.length);
   set('k-expiring', expiring.length);
-  set('k-revenue', (pro.length * 199).toLocaleString('fr-FR') + ' MAD');
+  set('k-revenue', revenue.toLocaleString('fr-FR') + ' MAD');
   set('cnt-actifs', actifs.length);
   set('cnt-pending', pending.length);
   set('cnt-blocked', blocked.length);
@@ -710,8 +713,8 @@ function updateKPIs() {
   si.style.display = pending.length ? 'inline' : 'none';
 
   // Billing KPIs
-  set('b-revenue', (pro.length * 199).toLocaleString('fr-FR') + ' MAD');
-  set('b-pro', pro.length);
+  set('b-revenue', revenue.toLocaleString('fr-FR') + ' MAD');
+  set('b-pro', proActifsCount);
   set('b-starter', allClients.filter(c => !c.plan || c.plan === 'starter').length);
   set('b-pending', pending.length);
 
