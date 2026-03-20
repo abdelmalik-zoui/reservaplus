@@ -481,7 +481,9 @@
 
       // Status badge
       let statusBadge = '';
-      if (!c.is_active) {
+      if (!c.is_active && c.payment_status === 'en_attente') {
+        statusBadge = '<span class="badge badge-yellow">💳 En attente paiement</span>';
+      } else if (!c.is_active) {
         statusBadge = '<span class="badge badge-red">🔒 Bloqué</span>';
       } else if (isStarter) {
         statusBadge = '<span class="badge badge-green">✓ Gratuit</span>';
@@ -506,9 +508,13 @@
         <span>
           <button class="action-btn" onclick="openResetPwd('${c.user_id}','${c.name}')" title="Reset mot de passe">🔄</button>
           <button class="action-btn green" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'starter'}')" title="Prolonger">⏱️</button>
+          ${!c.is_active && c.payment_status === 'en_attente'
+            ? `<button class="action-btn green" onclick="activateClient('${c.id}')" title="Activer après paiement" style="font-weight:700">✅ Activer</button>`
+            : ''
+          }
           ${c.is_active
             ? `<button class="action-btn red" onclick="toggleBlock('${c.id}',false)" title="Bloquer">🔒</button>`
-            : `<button class="action-btn green" onclick="toggleBlock('${c.id}',true)" title="Débloquer">🔓</button>`
+            : c.payment_status !== 'en_attente' ? `<button class="action-btn green" onclick="toggleBlock('${c.id}',true)" title="Débloquer">🔓</button>` : ''
           }
           <button class="action-btn red" onclick="deleteClient('${c.id}','${c.name}')" title="Supprimer">🗑️</button>
         </span>
@@ -650,6 +656,23 @@
     }
 
     alert('✅ Compte supprimé complètement.');
+    await loadClients();
+  }
+
+  // ACTIVATE CLIENT (after payment confirmed)
+  async function activateClient(id) {
+    const trialEnd = new Date();
+    const { data: biz } = await sb.from('businesses').select('plan').eq('id', id).single();
+    if (biz?.plan === 'pro_annuel') trialEnd.setFullYear(trialEnd.getFullYear() + 1);
+    else trialEnd.setDate(trialEnd.getDate() + 30);
+
+    await sb.from('businesses').update({
+      is_active: true,
+      payment_status: 'payé',
+      trial_end: trialEnd.toISOString().split('T')[0]
+    }).eq('id', id);
+
+    alert('✅ Compte activé ! Le client peut maintenant se connecter.');
     await loadClients();
   }
 
