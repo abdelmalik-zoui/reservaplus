@@ -4,136 +4,125 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ReservaPlus — Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e;
-    --accent: #7c6af7; --text: #f0f0f5; --muted: #7070a0;
-    --card: #13131c; --green: #4ade80; --yellow: #fbbf24;
-    --red: #f87171; --purple: #a78bfa;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+:root {
+  --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e;
+  --accent:#7c6af7; --text:#f0f0f5; --muted:#7070a0;
+  --card:#13131c; --green:#4ade80; --yellow:#fbbf24;
+  --red:#f87171; --purple:#a78bfa;
+  --accent-bg:rgba(124,106,247,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-  /* LOGIN */
-  .login-wrap { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:1rem; }
-  .login-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2.5rem; width:100%; max-width:380px; text-align:center; }
-  .login-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; margin-bottom:0.3rem; }
-  .login-logo span { color:var(--accent); }
-  .login-sub { color:var(--muted); font-size:0.82rem; margin-bottom:2rem; }
-  .login-input { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.75rem 1rem; border-radius:9px; font-size:0.88rem; font-family:'DM Sans',sans-serif; margin-bottom:0.8rem; }
-  .login-input:focus { outline:none; border-color:var(--accent); }
-  .btn-login { width:100%; background:var(--accent); border:none; color:white; padding:0.85rem; border-radius:9px; font-size:0.92rem; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
-  .btn-login:hover { background:#6a58e5; }
-  .login-error { color:var(--red); font-size:0.82rem; margin-bottom:0.8rem; display:none; }
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem;}
+.login-card{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:2.5rem;width:100%;max-width:360px;text-align:center;}
+.login-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;margin-bottom:.3rem;}
+.login-logo span{color:var(--accent);}
 
-  /* ADMIN LAYOUT */
-  #admin-page { display:none; }
-  .admin-nav { display:flex; justify-content:space-between; align-items:center; padding:1rem 2rem; border-bottom:1px solid var(--border); background:var(--surface); }
-  .admin-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; }
-  .admin-logo span { color:var(--accent); }
-  .admin-badge { background:rgba(247,112,106,0.1); border:1px solid rgba(247,112,106,0.3); color:#f7706a; padding:0.2rem 0.8rem; border-radius:100px; font-size:0.72rem; font-weight:600; margin-left:0.5rem; }
-  .btn-logout { background:none; border:1px solid var(--border); color:var(--muted); padding:0.4rem 0.9rem; border-radius:7px; cursor:pointer; font-size:0.78rem; font-family:'DM Sans',sans-serif; }
+/* NAV */
+.admin-nav{display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;}
+.admin-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;}
+.admin-logo span{color:var(--accent);}
+.admin-badge{background:rgba(247,112,106,0.1);border:1px solid rgba(247,112,106,0.3);color:#f7706a;padding:.15rem .7rem;border-radius:100px;font-size:.68rem;font-weight:700;margin-left:.5rem;letter-spacing:.05em;}
 
-  .admin-content { padding:2rem; max-width:1200px; margin:0 auto; }
+/* CONTENT */
+.admin-content{padding:1.5rem 2rem;max-width:1300px;margin:0 auto;}
 
-  /* KPIs */
-  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:2rem; }
-  .kpi { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.2rem; }
-  .kpi-label { color:var(--muted); font-size:0.75rem; margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.05em; }
-  .kpi-val { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; }
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-bottom:1.5rem;}
+.kpi{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.2rem;transition:border-color .2s;}
+.kpi:hover{border-color:rgba(124,106,247,.3);}
+.kpi-label{color:var(--muted);font-size:.7rem;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.06em;}
+.kpi-val{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;line-height:1;}
+.kpi-sub{font-size:.7rem;color:var(--muted);margin-top:.3rem;}
 
-  /* ADD CLIENT */
-  .section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; margin-bottom:1rem; }
-  .add-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:2rem; }
-  .form-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:0.8rem; margin-bottom:0.8rem; }
-  .form-group label { display:block; font-size:0.78rem; color:var(--muted); margin-bottom:0.35rem; }
-  .form-group input, .form-group select { width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.65rem 0.9rem; border-radius:8px; font-size:0.85rem; font-family:'DM Sans',sans-serif; }
-  .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--accent); }
-  .btn-add { background:var(--accent); border:none; color:white; padding:0.65rem 1.5rem; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
-  .btn-add:hover { background:#6a58e5; }
-  #add-alert { margin-bottom:0.8rem; }
-  .alert { padding:0.7rem 1rem; border-radius:8px; font-size:0.83rem; }
-  .alert.success { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); color:var(--green); }
-  .alert.error { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:var(--red); }
+/* TABS */
+.tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:0;}
+.tab-btn{background:none;border:none;color:var(--muted);padding:.7rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;display:flex;align-items:center;gap:.4rem;}
+.tab-btn.active{color:var(--text);border-bottom-color:var(--accent);}
+.tab-btn .count{background:rgba(124,106,247,.15);color:var(--accent);font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:100px;}
+.tab-btn.yellow-count .count{background:rgba(251,191,36,.15);color:var(--yellow);}
+.tab-btn.red-count .count{background:rgba(248,113,113,.15);color:var(--red);}
 
-  /* CLIENTS TABLE */
-  .clients-card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  .table-head { display:grid; grid-template-columns:2fr 2fr 1.5fr 1fr 1fr 1.5fr; padding:0.7rem 1.2rem; font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border); background:var(--surface); }
-  .table-row { display:grid; grid-template-columns:2fr 2fr 1.5fr 1fr 1fr 1.5fr; padding:0.9rem 1.2rem; font-size:0.82rem; border-bottom:1px solid rgba(30,30,46,0.5); align-items:center; transition:background 0.15s; }
-  .table-row:hover { background:rgba(124,106,247,0.04); }
-  .table-row:last-child { border-bottom:none; }
-  .badge { padding:0.2rem 0.65rem; border-radius:100px; font-size:0.7rem; font-weight:500; }
-  .badge-green { background:rgba(74,222,128,0.1); color:var(--green); }
-  .badge-red { background:rgba(248,113,113,0.1); color:var(--red); }
-  .badge-yellow { background:rgba(251,191,36,0.1); color:var(--yellow); }
-  .badge-purple { background:rgba(167,139,250,0.1); color:var(--purple); }
+/* SEARCH & FILTER */
+.list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:.8rem;flex-wrap:wrap;}
+.search-input{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.6rem 1rem;border-radius:9px;font-size:.85rem;font-family:'DM Sans',sans-serif;width:260px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--accent);}
 
-  .action-btn { background:none; border:1px solid var(--border); color:var(--muted); padding:0.22rem 0.55rem; border-radius:5px; font-size:0.72rem; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; margin-left:3px; }
-  .action-btn:hover { border-color:var(--accent); color:var(--accent); }
-  .action-btn.red:hover { border-color:var(--red); color:var(--red); }
-  .action-btn.green:hover { border-color:var(--green); color:var(--green); }
+/* TABLE */
+.table-wrap{background:var(--card);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.t-head{display:grid;padding:.65rem 1.2rem;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);background:var(--surface);}
+.t-row{display:grid;padding:.9rem 1.2rem;font-size:.82rem;border-bottom:1px solid rgba(30,30,46,.5);align-items:center;transition:background .15s;}
+.t-row:hover{background:rgba(124,106,247,.03);}
+.t-row:last-child{border-bottom:none;}
+.t-cols-active  {grid-template-columns:2.2fr 1.8fr 1fr 1.2fr 1fr 1.5fr;}
+.t-cols-pending {grid-template-columns:2.2fr 1.8fr 1.2fr 1.2fr 1.5fr;}
+.t-cols-blocked {grid-template-columns:2.2fr 1.8fr 1fr 1.2fr 1.2fr 1.5fr;}
 
-  .search-bar { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:0.6rem 1rem; border-radius:8px; font-size:0.85rem; font-family:'DM Sans',sans-serif; width:100%; max-width:280px; margin-bottom:1rem; }
-  .search-bar:focus { outline:none; border-color:var(--accent); }
+/* BADGES */
+.badge{padding:.18rem .6rem;border-radius:100px;font-size:.68rem;font-weight:600;}
+.bg{background:rgba(74,222,128,.1);color:var(--green);}
+.by{background:rgba(251,191,36,.1);color:var(--yellow);}
+.br{background:rgba(248,113,113,.1);color:var(--red);}
+.bp{background:rgba(124,106,247,.1);color:var(--accent);}
 
-  /* EXTEND MODAL */
-  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; align-items:center; justify-content:center; padding:1rem; }
-  .modal.open { display:flex; }
-  .modal-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; width:100%; max-width:380px; position:relative; }
-  .modal-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; margin-bottom:1.2rem; }
-  .modal-close { position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; }
+/* ACTION BUTTONS */
+.acts{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center;}
+.ab{background:none;border:1px solid var(--border);color:var(--muted);padding:.22rem .55rem;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.ab:hover{border-color:var(--accent);color:var(--accent);}
+.ab.r:hover{border-color:var(--red);color:var(--red);}
+.ab.g:hover{border-color:var(--green);color:var(--green);}
+.ab.wa{border-color:rgba(37,211,102,.4);color:#25D366;}
+.ab.wa:hover{background:rgba(37,211,102,.1);}
+.ab.activate{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.4);color:var(--green);font-weight:700;}
+.ab.activate:hover{background:rgba(74,222,128,.2);}
 
-  @media (max-width:768px) {
-    /* NAV */
-    .admin-nav { padding:0.8rem 4%; flex-wrap:wrap; gap:0.5rem; }
-    .admin-logo { font-size:1.1rem; }
-    .admin-badge { font-size:0.55rem; padding:0.15rem 0.4rem; }
-    .btn-logout { padding:0.4rem 0.7rem; font-size:0.72rem; }
+/* FORM */
+.add-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem;margin-bottom:.8rem;}
+.fg label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:.35rem;}
+.fg input,.fg select{width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{border-color:var(--accent);}
+.btn-a{background:var(--accent);border:none;color:#fff;padding:.65rem 1.5rem;border-radius:9px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-a:hover{background:#6a58e5;}
+.btn-out{background:none;border:1.5px solid var(--border);color:var(--muted);padding:.65rem 1.2rem;border-radius:9px;font-size:.85rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-out:hover{border-color:var(--accent);color:var(--accent);}
 
-    /* KPIs */
-    .stats-grid { grid-template-columns:1fr 1fr; gap:0.6rem; padding:0 4% 0.5rem; }
-    .stat-card { padding:1rem 0.8rem; }
-    .stat-val { font-size:1.5rem; }
-    .stat-label { font-size:0.7rem; }
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center;padding:1rem;}
+.modal.open{display:flex;}
+.modal-card{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:2rem;width:100%;max-width:420px;position:relative;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:1.2rem;}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;}
 
-    /* FILTERS */
-    .filters { padding:0.8rem 4%; flex-wrap:wrap; gap:0.5rem; }
-    .filter-btn { padding:0.4rem 0.8rem; font-size:0.75rem; }
-    .search-wrap { width:100%; }
-    .search-wrap input { width:100%; }
+/* ALERT */
+#add-alert, #extend-alert, #resetpwd-alert, #changepwd-alert{margin-bottom:.8rem;}
+.alert-s{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:var(--green);padding:.6rem 1rem;border-radius:8px;font-size:.82rem;}
+.alert-e{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);padding:.6rem 1rem;border-radius:8px;font-size:.82rem;}
 
-    /* TABLE -> CARDS on mobile */
-    .table-wrap { padding:0 4% 1rem; }
-    .table-head { display:none; }
-    .table-row {
-      display:flex; flex-direction:column; gap:0.4rem;
-      padding:1rem; border-radius:10px;
-      border:1px solid var(--border); margin-bottom:0.5rem;
-      background:var(--card);
-    }
-    .table-row span { font-size:0.82rem; }
-    .table-row span:before { color:var(--muted); font-size:0.65rem; font-weight:600; display:block; margin-bottom:0.1rem; text-transform:uppercase; letter-spacing:0.06em; }
-    .table-row span:nth-child(1):before { content:'Client'; }
-    .table-row span:nth-child(2):before { content:'Service'; }
-    .table-row span:nth-child(3):before { content:'Staff'; }
-    .table-row span:nth-child(4):before { content:'Date'; }
-    .table-row span:nth-child(5):before { content:'Heure'; }
-    .table-row span:nth-child(6):before { content:'Statut'; }
-    .table-row span:nth-child(7) { display:flex; gap:0.4rem; flex-wrap:wrap; }
+/* DURATION PILLS */
+.dur-pills{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+.dur-pill{background:var(--surface);border:1.5px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:100px;font-size:.78rem;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.dur-pill.sel{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
 
-    /* SECTION HEADER */
-    .section-header { padding:1rem 4% 0.5rem; flex-wrap:wrap; gap:0.5rem; }
-    .section-header h2 { font-size:1rem; }
+/* EMPTY */
+.empty{padding:2.5rem;text-align:center;color:var(--muted);font-size:.85rem;}
+.empty .eico{font-size:2.5rem;margin-bottom:.8rem;opacity:.4;}
 
-    /* MODALS */
-    .modal-box { padding:1.5rem; margin:1rem; width:calc(100% - 2rem); max-width:100%; }
+/* EXPIRING ALERT */
+.exp-alert{background:rgba(248,113,113,.07);border:1.5px solid rgba(248,113,113,.25);border-radius:12px;padding:1rem 1.3rem;margin-bottom:1.2rem;font-size:.83rem;}
 
-    /* BOTTOM NAV */
-    .admin-bottom-nav { display:flex; }
-    body { padding-bottom:70px; }
-  }
+@media(max-width:768px){
+  .admin-content{padding:1rem;}
+  .t-head{display:none;}
+  .t-row{display:flex;flex-direction:column;gap:.4rem;padding:.9rem 1rem;}
+  .search-input{width:100%;}
+  .tabs{overflow-x:auto;}
+}
 </style>
 </head>
 <body>
@@ -142,632 +131,700 @@
 <div id="login-page" class="login-wrap">
   <div class="login-card">
     <div class="login-logo">Reserva<span>Plus</span></div>
-    <div class="login-sub">🔐 Espace Administrateur</div>
-    <div class="login-error" id="login-error">Mot de passe incorrect</div>
-    <input type="password" class="login-input" id="admin-password" placeholder="Mot de passe admin" onkeydown="if(event.key==='Enter')checkPassword()">
-    <button class="btn-login" onclick="checkPassword()">Accéder</button>
-    <div style="margin-top:1rem;font-size:0.75rem;color:var(--muted);cursor:pointer;" onclick="resetAdminPwd()">Mot de passe oublié?</div>
+    <div style="color:var(--muted);font-size:.82rem;margin-bottom:1.8rem;">🔐 Espace Administrateur</div>
+    <div class="alert-e" id="login-error" style="display:none;margin-bottom:.8rem;">Mot de passe incorrect</div>
+    <input type="password" id="admin-password" placeholder="Mot de passe admin"
+      style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.75rem 1rem;border-radius:9px;font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:.8rem;"
+      onkeydown="if(event.key==='Enter')checkPassword()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    <button onclick="checkPassword()" style="width:100%;background:var(--accent);border:none;color:#fff;padding:.85rem;border-radius:9px;font-size:.92rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Accéder →</button>
+    <div style="margin-top:1rem;font-size:.72rem;color:var(--muted);cursor:pointer;" onclick="resetAdminPwd()">Mot de passe oublié?</div>
   </div>
 </div>
 
 <!-- ADMIN PAGE -->
-<div id="admin-page">
+<div id="admin-page" style="display:none;">
   <nav class="admin-nav">
-    <div>
+    <div style="display:flex;align-items:center;gap:.5rem;">
       <span class="admin-logo">Reserva<span>Plus</span></span>
       <span class="admin-badge">ADMIN</span>
     </div>
-    <div style="display:flex;gap:0.5rem;align-items:center;">
-      <button class="btn-logout" onclick="openChangePwd()" style="color:var(--accent);border-color:var(--accent);">🔑 Changer mot de passe</button>
-      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    <div style="display:flex;gap:.5rem;align-items:center;">
+      <button onclick="openChangePwd()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:7px;cursor:pointer;font-size:.78rem;font-family:'DM Sans',sans-serif;">🔑 Mot de passe</button>
+      <button onclick="logout()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem .9rem;border-radius:7px;cursor:pointer;font-size:.78rem;font-family:'DM Sans',sans-serif;">Déconnexion</button>
     </div>
   </nav>
 
   <div class="admin-content">
 
     <!-- KPIs -->
-    <div class="kpi-grid" style="margin-top:1.5rem;">
+    <div class="kpi-grid" style="margin-top:1.2rem;">
       <div class="kpi">
-        <div class="kpi-label">Total clients</div>
+        <div class="kpi-label">Total</div>
         <div class="kpi-val" id="kpi-total">—</div>
+        <div class="kpi-sub">Tous les comptes</div>
       </div>
-      <div class="kpi">
-        <div class="kpi-label">Actifs</div>
-        <div class="kpi-val" id="kpi-active" style="color:var(--green)">—</div>
+      <div class="kpi" style="border-color:rgba(74,222,128,.2);">
+        <div class="kpi-label">✅ Actifs</div>
+        <div class="kpi-val" style="color:var(--green)" id="kpi-active">—</div>
+        <div class="kpi-sub" id="kpi-active-rev" style="color:var(--green)"></div>
       </div>
-      <div class="kpi">
-        <div class="kpi-label">Expirés</div>
-        <div class="kpi-val" id="kpi-expired" style="color:var(--red)">—</div>
+      <div class="kpi" style="border-color:rgba(251,191,36,.2);">
+        <div class="kpi-label">⏳ En attente</div>
+        <div class="kpi-val" style="color:var(--yellow)" id="kpi-pending">—</div>
+        <div class="kpi-sub">Paiement non confirmé</div>
       </div>
-      <div class="kpi">
-        <div class="kpi-label">Bloqués</div>
-        <div class="kpi-val" id="kpi-blocked" style="color:var(--yellow)">—</div>
+      <div class="kpi" style="border-color:rgba(248,113,113,.2);">
+        <div class="kpi-label">🔒 Bloqués / Expirés</div>
+        <div class="kpi-val" style="color:var(--red)" id="kpi-blocked">—</div>
+        <div class="kpi-sub">Inactifs</div>
       </div>
-      <div class="kpi" style="border-color:rgba(248,113,113,0.3);">
-        <div class="kpi-label">⚠️ Expire bientôt</div>
-        <div class="kpi-val" id="kpi-expiring" style="color:var(--red)">—</div>
+      <div class="kpi" style="border-color:rgba(248,113,113,.2);">
+        <div class="kpi-label">⚠️ Expire dans 7j</div>
+        <div class="kpi-val" style="color:var(--red)" id="kpi-expiring">—</div>
+        <div class="kpi-sub">À renouveler</div>
       </div>
     </div>
 
-    <!-- ALERT 2 JOURS -->
-    <div id="expiring-alert" style="display:none;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:1rem 1.5rem;margin-bottom:1.5rem;">
-      <div style="font-weight:600;color:var(--red);margin-bottom:0.5rem;">⚠️ Clients dont l'abonnement expire dans 2 jours:</div>
-      <div id="expiring-list" style="font-size:0.85rem;color:var(--text);"></div>
+    <!-- EXPIRING ALERT -->
+    <div id="expiring-alert" class="exp-alert" style="display:none;">
+      <div style="font-weight:600;color:var(--red);margin-bottom:.5rem;">⚠️ Abonnements qui expirent dans 7 jours :</div>
+      <div id="expiring-list" style="font-size:.82rem;color:var(--text);"></div>
     </div>
 
     <!-- ADD CLIENT -->
-    <div class="section-title">➕ Créer un compte client</div>
-    <div class="add-card">
-      <div id="add-alert"></div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nom de l'établissement</label>
-          <input type="text" id="new-name" placeholder="Ex: Salon Ahmed">
+    <details style="margin-bottom:1.5rem;">
+      <summary style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;padding:.8rem 1.2rem;background:var(--card);border:1.5px solid var(--border);border-radius:12px;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+        ➕ Créer un compte client manuellement
+        <span style="font-size:.75rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;">▾</span>
+      </summary>
+      <div class="add-card" style="border-radius:0 0 12px 12px;border-top:none;margin-bottom:0;">
+        <div id="add-alert"></div>
+        <div class="form-row">
+          <div class="fg">
+            <label>Nom de l'établissement *</label>
+            <input type="text" id="new-name" placeholder="Ex: Salon Ahmed">
+          </div>
+          <div class="fg">
+            <label>Email *</label>
+            <input type="email" id="new-email" placeholder="client@email.com">
+          </div>
+          <div class="fg">
+            <label>Mot de passe *</label>
+            <input type="text" id="new-password" placeholder="Minimum 6 caractères">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="new-email" placeholder="client@email.com">
+        <div class="form-row">
+          <div class="fg">
+            <label>Téléphone</label>
+            <input type="tel" id="new-phone" placeholder="+212 6XX XXX XXX">
+          </div>
+          <div class="fg">
+            <label>Plan</label>
+            <select id="new-plan">
+              <option value="starter">Starter — Gratuit</option>
+              <option value="pro" selected>Pro Annuel</option>
+              <option value="pro_mensuel">Pro Mensuel</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Durée abonnement</label>
+            <select id="new-duration" onchange="calcNewEnd()">
+              <option value="0">Gratuit (Starter)</option>
+              <option value="30">1 mois</option>
+              <option value="90">3 mois</option>
+              <option value="180">6 mois</option>
+              <option value="365" selected>1 an</option>
+              <option value="custom">Personnalisé</option>
+            </select>
+          </div>
+          <div class="fg" id="custom-days-field" style="display:none;">
+            <label>Nombre de jours</label>
+            <input type="number" id="new-custom-days" placeholder="Ex: 45" oninput="calcNewEnd()">
+          </div>
+          <div class="fg">
+            <label>Date de fin calculée</label>
+            <input type="text" id="new-end-preview" readonly style="color:var(--muted);">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Mot de passe</label>
-          <input type="text" id="new-password" placeholder="Mot de passe">
-        </div>
+        <button class="btn-a" onclick="addNewClient()">Créer le compte ✓</button>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Téléphone</label>
-          <input type="tel" id="new-phone" placeholder="+212 6XX XXX XXX">
-        </div>
-        <div class="form-group">
-          <label>Plan</label>
-          <select id="new-plan">
-            <option value="starter">Starter — 99 MAD</option>
-            <option value="pro">Pro — 249 MAD</option>
-            <option value="business">Business — 499 MAD</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Date début abonnement</label>
-          <input type="date" id="new-start-date">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group" style="display:flex;align-items:center;gap:0.8rem;padding-top:1.5rem;">
-          <label style="margin:0;display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-            <input type="checkbox" id="new-trial-toggle" onchange="toggleTrialFields()" style="width:16px;height:16px;accent-color:var(--accent);">
-            <span>Free trial</span>
-          </label>
-        </div>
-        <div class="form-group" id="trial-days-field" style="display:none;">
-          <label>Durée trial (jours)</label>
-          <select id="new-trial">
-            <option value="3">3 jours</option>
-            <option value="7">7 jours</option>
-            <option value="14" selected>14 jours</option>
-            <option value="30">30 jours</option>
-          </select>
-        </div>
-        <div class="form-group" id="trial-end-preview" style="display:none;">
-          <label>Date fin calculée</label>
-          <input type="text" id="new-end-preview" readonly style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;width:100%;">
-        </div>
-      </div>
-      <button class="btn-add" onclick="addNewClient()">Créer le compte</button>
+    </details>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-actifs" onclick="switchTab('actifs')">
+        ✅ Actifs <span class="count" id="cnt-actifs">0</span>
+      </button>
+      <button class="tab-btn yellow-count" id="tab-pending" onclick="switchTab('pending')">
+        ⏳ En attente <span class="count" id="cnt-pending">0</span>
+      </button>
+      <button class="tab-btn red-count" id="tab-blocked" onclick="switchTab('blocked')">
+        🔒 Bloqués / Expirés <span class="count" id="cnt-blocked">0</span>
+      </button>
     </div>
 
-    <!-- CLIENTS LIST -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.8rem;">
-      <div class="section-title" style="margin-bottom:0;">👥 Clients (<span id="clients-count">0</span>)</div>
-      <input type="text" class="search-bar" placeholder="🔍 Rechercher..." oninput="filterClients(this.value)">
+    <!-- SEARCH -->
+    <div class="list-header">
+      <div style="font-size:.82rem;color:var(--muted)" id="tab-desc">Clients actifs</div>
+      <input type="text" class="search-input" placeholder="🔍 Nom, email..." oninput="filterClients(this.value)">
     </div>
-    <div class="clients-card">
-      <div class="table-head">
-        <span>ÉTABLISSEMENT</span>
-        <span>EMAIL</span>
-        <span>CRÉÉ LE</span>
-        <span>FIN ABONNEMENT</span>
-        <span>PLAN</span>
-        <span>STATUT</span>
-        <span>ACTIONS</span>
-      </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap" id="clients-table">
       <div id="clients-list"></div>
     </div>
 
   </div>
 </div>
 
-<!-- RESET PASSWORD MODAL -->
-<div class="modal" id="resetpwd-modal">
+<!-- ACTIVATE MODAL -->
+<div class="modal" id="activate-modal">
   <div class="modal-card">
-    <button class="modal-close" onclick="document.getElementById('resetpwd-modal').classList.remove('open')">✕</button>
-    <div class="modal-title">🔄 Réinitialiser mot de passe</div>
-    <input type="hidden" id="resetpwd-id">
-    <div class="form-group" style="margin-bottom:0.8rem;">
-      <label>Client</label>
-      <input type="text" id="resetpwd-name" readonly style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    <button class="modal-close" onclick="closeModal('activate-modal')">✕</button>
+    <div class="modal-title">✅ Activer le compte</div>
+    <input type="hidden" id="act-id">
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem">Client</div>
+      <div id="act-name" style="font-weight:600;font-size:.9rem;"></div>
+      <div id="act-email" style="font-size:.78rem;color:var(--muted);"></div>
     </div>
-    <div id="resetpwd-alert" style="margin-bottom:0.5rem;"></div>
-    <div class="form-group" style="margin-bottom:1.2rem;">
-      <label>Nouveau mot de passe</label>
-      <input type="text" id="resetpwd-new" placeholder="Minimum 6 caractères" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    <div style="margin-bottom:.8rem;">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem;font-weight:500;">Durée de l'abonnement :</div>
+      <div class="dur-pills">
+        <div class="dur-pill" onclick="selectDur(this,30)">1 mois</div>
+        <div class="dur-pill" onclick="selectDur(this,90)">3 mois</div>
+        <div class="dur-pill" onclick="selectDur(this,180)">6 mois</div>
+        <div class="dur-pill sel" onclick="selectDur(this,365)">1 an</div>
+        <div class="dur-pill" onclick="selectDur(this,'custom')">Personnalisé</div>
+      </div>
+      <div id="custom-dur-field" style="display:none;">
+        <input type="number" id="act-custom-days" placeholder="Nombre de jours"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.6rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;">
+      </div>
     </div>
-    <button class="btn-add" onclick="saveResetPwd()" style="width:100%;">Enregistrer</button>
-  </div>
-</div>
-
-<!-- CHANGE PASSWORD MODAL -->
-<div class="modal" id="changepwd-modal">
-  <div class="modal-card">
-    <button class="modal-close" onclick="document.getElementById('changepwd-modal').classList.remove('open')">✕</button>
-    <div class="modal-title">🔑 Changer mot de passe admin</div>
-    <div id="changepwd-alert" style="margin-bottom:0.8rem;"></div>
-    <div class="form-group" style="margin-bottom:0.8rem;">
-      <label>Mot de passe actuel</label>
-      <input type="password" id="pwd-current" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    <div class="fg" style="margin-bottom:1.2rem;">
+      <label>Plan</label>
+      <select id="act-plan" style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.6rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;">
+        <option value="starter">Starter — Gratuit</option>
+        <option value="pro" selected>Pro Annuel</option>
+        <option value="pro_mensuel">Pro Mensuel</option>
+      </select>
     </div>
-    <div class="form-group" style="margin-bottom:0.8rem;">
-      <label>Nouveau mot de passe</label>
-      <input type="password" id="pwd-new" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-    </div>
-    <div class="form-group" style="margin-bottom:1.2rem;">
-      <label>Confirmer nouveau mot de passe</label>
-      <input type="password" id="pwd-confirm" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-    </div>
-    <button class="btn-add" onclick="saveNewPwd()" style="width:100%;">Enregistrer</button>
+    <div id="act-end-preview" style="background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:.6rem 1rem;font-size:.8rem;color:var(--green);margin-bottom:1rem;"></div>
+    <button class="btn-a" onclick="doActivate()" style="width:100%;">✅ Activer maintenant</button>
   </div>
 </div>
 
 <!-- EXTEND MODAL -->
 <div class="modal" id="extend-modal">
   <div class="modal-card">
-    <button class="modal-close" onclick="closeModal()">✕</button>
+    <button class="modal-close" onclick="closeModal('extend-modal')">✕</button>
     <div class="modal-title">⏱️ Renouveler abonnement</div>
     <input type="hidden" id="extend-id">
-    <div class="form-group" style="margin-bottom:1rem;">
-      <label>Client</label>
-      <input type="text" id="extend-name" readonly style="background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;width:100%;">
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:.3rem">Client</div>
+      <div id="extend-name" style="font-weight:600;font-size:.9rem;"></div>
+      <div id="extend-cur-end" style="font-size:.78rem;color:var(--muted);margin-top:.2rem;"></div>
     </div>
-    <div class="form-group" style="margin-bottom:1rem;">
-      <label>Date début abonnement</label>
-      <input type="date" id="extend-start" oninput="calcExtendEnd()" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
+    <div id="extend-alert"></div>
+    <div style="margin-bottom:.8rem;">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.6rem;font-weight:500;">Durée à ajouter :</div>
+      <div class="dur-pills">
+        <div class="dur-pill" onclick="selectExtDur(this,30)">1 mois</div>
+        <div class="dur-pill" onclick="selectExtDur(this,90)">3 mois</div>
+        <div class="dur-pill" onclick="selectExtDur(this,180)">6 mois</div>
+        <div class="dur-pill sel" onclick="selectExtDur(this,365)">1 an</div>
+        <div class="dur-pill" onclick="selectExtDur(this,'custom')">Personnalisé</div>
+      </div>
+      <div id="custom-ext-field" style="display:none;">
+        <input type="number" id="ext-custom-days" placeholder="Nombre de jours"
+          style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.6rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;">
+      </div>
     </div>
-    <div class="form-group" style="margin-bottom:1rem;">
-      <label>Date fin (début + 1 mois)</label>
-      <input type="text" id="extend-date" readonly style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-    </div>
-    <div class="form-group" style="margin-bottom:1.2rem;">
+    <div class="fg" style="margin-bottom:1.2rem;">
       <label>Plan</label>
-      <select id="extend-plan" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:0.65rem 0.9rem;border-radius:8px;font-size:0.85rem;font-family:'DM Sans',sans-serif;">
-        <option value="starter">Starter — 99 MAD</option>
-        <option value="pro">Pro — 249 MAD</option>
-        <option value="business">Business — 499 MAD</option>
+      <select id="extend-plan" style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.6rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;">
+        <option value="starter">Starter — Gratuit</option>
+        <option value="pro" selected>Pro Annuel</option>
+        <option value="pro_mensuel">Pro Mensuel</option>
       </select>
     </div>
-    <button class="btn-add" onclick="saveExtend()" style="width:100%;">Enregistrer</button>
+    <div id="ext-end-preview" style="background:rgba(124,106,247,.07);border:1px solid rgba(124,106,247,.2);border-radius:8px;padding:.6rem 1rem;font-size:.8rem;color:var(--accent);margin-bottom:1rem;"></div>
+    <button class="btn-a" onclick="saveExtend()" style="width:100%;">💾 Enregistrer</button>
+  </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="modal" id="resetpwd-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('resetpwd-modal')">✕</button>
+    <div class="modal-title">🔄 Réinitialiser mot de passe</div>
+    <input type="hidden" id="resetpwd-id">
+    <div class="fg" style="margin-bottom:.8rem;">
+      <label>Client</label>
+      <input type="text" id="resetpwd-name" readonly style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:.65rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;">
+    </div>
+    <div id="resetpwd-alert"></div>
+    <div class="fg" style="margin-bottom:1.2rem;">
+      <label>Nouveau mot de passe</label>
+      <input type="text" id="resetpwd-new" placeholder="Minimum 6 caractères" style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;">
+    </div>
+    <button class="btn-a" onclick="saveResetPwd()" style="width:100%;">Enregistrer</button>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal" id="changepwd-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('changepwd-modal')">✕</button>
+    <div class="modal-title">🔑 Changer mot de passe admin</div>
+    <div id="changepwd-alert"></div>
+    <div class="fg" style="margin-bottom:.8rem;">
+      <label>Mot de passe actuel</label>
+      <input type="password" id="pwd-current" style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;">
+    </div>
+    <div class="fg" style="margin-bottom:.8rem;">
+      <label>Nouveau mot de passe</label>
+      <input type="password" id="pwd-new" style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;">
+    </div>
+    <div class="fg" style="margin-bottom:1.2rem;">
+      <label>Confirmer</label>
+      <input type="password" id="pwd-confirm" style="width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;">
+    </div>
+    <button class="btn-a" onclick="saveNewPwd()" style="width:100%;">Enregistrer</button>
   </div>
 </div>
 
 <script>
-  const { createClient } = supabase;
-  const sb = createClient(
-    'https://uewtdxkpsraufzjsebnh.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
-  );
-  const sbAdmin = createClient(
-    'https://uewtdxkpsraufzjsebnh.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo'
-  );
+const { createClient } = supabase;
+const sb = createClient(
+  'https://uewtdxkpsraufzjsebnh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzNzQ3NjksImV4cCI6MjA4Nzk1MDc2OX0.b9u0i3rI9f-_1TYcYouIkQMioG8cB1bppNQRR6tvwho'
+);
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo';
 
-  function resetAdminPwd() {
-    const secret = prompt('Code secret de récupération:');
-    if (secret === 'reservaplus') {
-      localStorage.removeItem('admin_pwd');
-      ADMIN_PASSWORD = 'reservaplus2026';
-      alert('✅ Mot de passe réinitialisé: reservaplus2026');
-    } else {
-      alert('Code incorrect');
-    }
-  }
+let ADMIN_PASSWORD = localStorage.getItem('admin_pwd') || 'reservaplus2026';
+let allClients = [];
+let currentTab = 'actifs';
+let selectedDur = 365;
+let selectedExtDur = 365;
 
-  // ADMIN PASSWORD — مخزن فـ localStorage
-  let ADMIN_PASSWORD = localStorage.getItem('admin_pwd') || 'reservaplus2026';
-  let allClients = [];
-
-  function checkPassword() {
-    const pwd = document.getElementById('admin-password').value;
-    if (pwd === ADMIN_PASSWORD) {
-      document.getElementById('login-page').style.display = 'none';
-      document.getElementById('admin-page').style.display = 'block';
-      loadClients();
-    } else {
-      document.getElementById('login-error').style.display = 'block';
-    }
-  }
-
-  function logout() {
-    document.getElementById('login-page').style.display = 'flex';
-    document.getElementById('admin-page').style.display = 'none';
-    document.getElementById('admin-password').value = '';
-  }
-
-  function openChangePwd() {
-    document.getElementById('changepwd-modal').classList.add('open');
-    document.getElementById('pwd-current').value = '';
-    document.getElementById('pwd-new').value = '';
-    document.getElementById('pwd-confirm').value = '';
-  }
-
-  function saveNewPwd() {
-    const current = document.getElementById('pwd-current').value;
-    const newPwd = document.getElementById('pwd-new').value;
-    const confirm = document.getElementById('pwd-confirm').value;
-    const alertEl = document.getElementById('changepwd-alert');
-
-    if (current !== ADMIN_PASSWORD) {
-      alertEl.innerHTML = '<div class="alert error">Mot de passe actuel incorrect</div>';
-      return;
-    }
-    if (newPwd.length < 6) {
-      alertEl.innerHTML = '<div class="alert error">Minimum 6 caractères</div>';
-      return;
-    }
-    if (newPwd !== confirm) {
-      alertEl.innerHTML = '<div class="alert error">Les mots de passe ne correspondent pas</div>';
-      return;
-    }
-    ADMIN_PASSWORD = newPwd;
-    localStorage.setItem('admin_pwd', newPwd);
-    alertEl.innerHTML = '<div class="alert success">✓ Mot de passe changé!</div>';
-    setTimeout(() => document.getElementById('changepwd-modal').classList.remove('open'), 1500);
-  }
-
-  // LOAD CLIENTS
-  async function loadClients() {
-    const { data } = await sb.from('businesses').select('*').order('created_at', { ascending: false });
-    allClients = data || [];
-
-    const today = new Date(); today.setHours(0,0,0,0);
-    const in2days = new Date(today); in2days.setDate(in2days.getDate() + 2);
-
-    const total = allClients.length;
-    const active = allClients.filter(c => c.is_active && new Date(c.trial_end) >= today).length;
-    const expired = allClients.filter(c => new Date(c.trial_end) < today).length;
-    const blocked = allClients.filter(c => !c.is_active).length;
-    const expiringSoon = allClients.filter(c => {
-      const te = new Date(c.trial_end);
-      return c.is_active && te >= today && te <= in2days;
-    });
-
-    document.getElementById('kpi-total').textContent = total;
-    document.getElementById('kpi-active').textContent = active;
-    document.getElementById('kpi-expired').textContent = expired;
-    document.getElementById('kpi-blocked').textContent = blocked;
-    document.getElementById('kpi-expiring').textContent = expiringSoon.length;
-    document.getElementById('clients-count').textContent = total;
-
-    // Alert 2 jours
-    if (expiringSoon.length > 0) {
-      document.getElementById('expiring-alert').style.display = 'block';
-      document.getElementById('expiring-list').innerHTML = expiringSoon.map(c =>
-        `<div style="margin-bottom:0.3rem;">• <strong>${c.name}</strong> (${c.email}) — expire le <strong>${c.trial_end}</strong>
-        <button class="action-btn green" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'starter'}')" style="margin-left:8px;">⏱️ Renouveler</button></div>`
-      ).join('');
-    } else {
-      document.getElementById('expiring-alert').style.display = 'none';
-    }
-
-    renderClients(allClients);
-  }
-
-  function renderClients(clients) {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const wrap = document.getElementById('clients-list');
-    if (!clients.length) {
-      wrap.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted);">Aucun client pour le moment</div>';
-      return;
-    }
-    wrap.innerHTML = clients.map(c => {
-      const trialEnd = new Date(c.trial_end + 'T00:00:00');
-      const createdAt = c.created_at ? new Date(c.created_at) : null;
-      const isExpired = trialEnd < today;
-      const daysLeft = Math.ceil((trialEnd - today) / (1000*60*60*24));
-      const planColor = c.plan === 'business' ? '#f7706a' : c.plan === 'pro' ? '#7c6af7' : '#7070a0';
-      const isStarter = !c.plan || c.plan === 'starter';
-
-      // Format dates
-      const fmtDate = d => d ? d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric'}) : '—';
-      const createdStr = createdAt ? fmtDate(createdAt) : '—';
-      const endStr = isStarter ? '<span style="color:var(--muted);font-size:0.75rem">Gratuit ∞</span>' : fmtDate(trialEnd);
-
-      // Status badge
-      let statusBadge = '';
-      if (!c.is_active && c.payment_status === 'en_attente') {
-        statusBadge = '<span class="badge badge-yellow">💳 En attente paiement</span>';
-      } else if (!c.is_active) {
-        statusBadge = '<span class="badge badge-red">🔒 Bloqué</span>';
-      } else if (isStarter) {
-        statusBadge = '<span class="badge badge-green">✓ Gratuit</span>';
-      } else if (isExpired) {
-        statusBadge = '<span class="badge badge-yellow">⚠️ Expiré</span>';
-      } else if (daysLeft <= 5) {
-        statusBadge = `<span class="badge badge-yellow">⏳ ${daysLeft}j restants</span>`;
-      } else {
-        statusBadge = `<span class="badge badge-green">✓ ${daysLeft}j restants</span>`;
-      }
-
-      return `<div class="table-row">
-        <span style="font-weight:500;">${c.name}<br>
-          <span style="color:var(--muted);font-size:0.72rem;">${c.phone || ''}</span><br>
-          ${c.secteur ? `<span style="background:rgba(124,106,247,0.1);color:var(--accent);font-size:0.68rem;padding:0.1rem 0.4rem;border-radius:4px;">${c.secteur}</span>` : ''}
-        </span>
-        <span style="color:var(--muted);font-size:0.78rem;">${c.email}</span>
-        <span style="font-size:0.78rem;color:var(--muted)">${createdStr}</span>
-        <span style="font-size:0.78rem;">${endStr}</span>
-        <span><span class="badge" style="background:rgba(124,106,247,0.1);color:${planColor}">${(c.plan || 'starter').toUpperCase()}</span></span>
-        <span>${statusBadge}</span>
-        <span>
-          <button class="action-btn" onclick="openResetPwd('${c.user_id}','${c.name}')" title="Reset mot de passe">🔄</button>
-          <button class="action-btn green" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'starter'}')" title="Prolonger">⏱️</button>
-          ${!c.is_active && c.payment_status === 'en_attente'
-            ? `<button class="action-btn green" onclick="activateClient('${c.id}')" title="Activer après paiement" style="font-weight:700">✅ Activer</button>`
-            : ''
-          }
-          ${c.is_active
-            ? `<button class="action-btn red" onclick="toggleBlock('${c.id}',false)" title="Bloquer">🔒</button>`
-            : c.payment_status !== 'en_attente' ? `<button class="action-btn green" onclick="toggleBlock('${c.id}',true)" title="Débloquer">🔓</button>` : ''
-          }
-          <button class="action-btn red" onclick="deleteClient('${c.id}','${c.name}')" title="Supprimer">🗑️</button>
-        </span>
-      </div>`;
-    }).join('');
-  }
-
-  function filterClients(q) {
-    const filtered = allClients.filter(c =>
-      c.name?.toLowerCase().includes(q.toLowerCase()) ||
-      c.email?.toLowerCase().includes(q.toLowerCase())
-    );
-    renderClients(filtered);
-  }
-
-  // CREATE CLIENT
-  async function addNewClient() {
-    const name = document.getElementById('new-name').value.trim();
-    const email = document.getElementById('new-email').value.trim();
-    const password = document.getElementById('new-password').value.trim();
-    const phone = document.getElementById('new-phone').value.trim();
-    const plan = document.getElementById('new-plan').value;
-    const startDate = document.getElementById('new-start-date').value;
-    const isTrial = document.getElementById('new-trial-toggle').checked;
-
-    if (!name || !email || !password) return showAddAlert('Nom, email et mot de passe obligatoires.', 'error');
-    if (!startDate) return showAddAlert('Veuillez entrer une date de début.', 'error');
-
-    // Calculate end date
-    const start = new Date(startDate);
-    let endDate;
-    if (isTrial) {
-      const days = parseInt(document.getElementById('new-trial').value || 14);
-      endDate = new Date(start);
-      endDate.setDate(endDate.getDate() + days);
-    } else {
-      endDate = new Date(start);
-      endDate.setMonth(endDate.getMonth() + 1);
-    }
-    const trialEndStr = endDate.toISOString().split('T')[0];
-
-    const btn = document.querySelector('.btn-add');
-    btn.disabled = true; btn.textContent = 'Création...';
-
-    // Create auth user with service role
-    const { data: authData, error: authError } = await sbAdmin.auth.admin.createUser({
-      email, password, email_confirm: true
-    });
-    if (authError) {
-      showAddAlert('Erreur: ' + authError.message, 'error');
-      btn.disabled = false; btn.textContent = 'Créer le compte';
-      return;
-    }
-
-    const { error: bizError } = await sb.from('businesses').insert({
-      name, email, phone,
-      user_id: authData.user?.id,
-      plan,
-      trial_end: trialEndStr,
-      is_active: true
-    });
-
-    if (bizError) {
-      showAddAlert('Erreur business: ' + bizError.message, 'error');
-    } else {
-      showAddAlert(`✓ Compte créé! Abonnement jusqu'au ${trialEndStr}`, 'success');
-      document.getElementById('new-name').value = '';
-      document.getElementById('new-email').value = '';
-      document.getElementById('new-password').value = '';
-      document.getElementById('new-phone').value = '';
-      document.getElementById('new-start-date').value = '';
-      document.getElementById('new-trial-toggle').checked = false;
-      toggleTrialFields();
-      await loadClients();
-    }
-    btn.disabled = false; btn.textContent = 'Créer le compte';
-  }
-
-  function showAddAlert(msg, type) {
-    const el = document.getElementById('add-alert');
-    el.innerHTML = `<div class="alert ${type}">${msg}</div>`;
-    setTimeout(() => el.innerHTML = '', 5000);
-  }
-
-  // RESET PASSWORD DIRECT
-  function openResetPwd(userId, name) {
-    document.getElementById('resetpwd-id').value = userId;
-    document.getElementById('resetpwd-name').value = name;
-    document.getElementById('resetpwd-new').value = '';
-    document.getElementById('resetpwd-alert').innerHTML = '';
-    document.getElementById('resetpwd-modal').classList.add('open');
-  }
-
-  async function saveResetPwd() {
-    const userId = document.getElementById('resetpwd-id').value;
-    const newPwd = document.getElementById('resetpwd-new').value;
-    if (newPwd.length < 6) {
-      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert error">Minimum 6 caractères</div>';
-      return;
-    }
-    const { error } = await sbAdmin.auth.admin.updateUserById(userId, { password: newPwd });
-    if (error) {
-      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert error">Erreur: ' + error.message + '</div>';
-    } else {
-      document.getElementById('resetpwd-alert').innerHTML = '<div class="alert success">✓ Mot de passe changé!</div>';
-      setTimeout(() => document.getElementById('resetpwd-modal').classList.remove('open'), 1500);
-    }
-  }
-
-  // DELETE CLIENT
-  async function deleteClient(id, name) {
-    if (!confirm(`Supprimer le compte de "${name}" ?\nToutes ses données seront définitivement perdues.`)) return;
-
-    const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVld3RkeGtwc3JhdWZ6anNlYm5oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjM3NDc2OSwiZXhwIjoyMDg3OTUwNzY5fQ.De5eZgqKNglKW7kGvi-2hlnfCjSBZgesO-Fe9VnvZWo';
-
-    // 1. Get user_id before deleting
-    const { data: biz } = await sb.from('businesses').select('user_id').eq('id', id).single();
-
-    // 2. Delete all related data
-    await sb.from('reservations').delete().eq('business_id', id);
-
-    const { data: staffList } = await sb.from('staff').select('id').eq('business_id', id);
-    if (staffList?.length) {
-      await sb.from('staff_services').delete().in('staff_id', staffList.map(s => s.id));
-    }
-    await sb.from('staff').delete().eq('business_id', id);
-    await sb.from('services').delete().eq('business_id', id);
-    await sb.from('businesses').delete().eq('id', id);
-
-    // 3. Delete from auth.users via Service Role API
-    if (biz?.user_id) {
-      await fetch(`https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/users/${biz.user_id}`, {
-        method: 'DELETE',
-        headers: {
-          'apikey': SERVICE_KEY,
-          'Authorization': 'Bearer ' + SERVICE_KEY
-        }
-      });
-    }
-
-    alert('✅ Compte supprimé complètement.');
-    await loadClients();
-  }
-
-  // ACTIVATE CLIENT (after payment confirmed)
-  async function activateClient(id) {
-    const trialEnd = new Date();
-    const { data: biz } = await sb.from('businesses').select('plan').eq('id', id).single();
-    if (biz?.plan === 'pro_annuel') trialEnd.setFullYear(trialEnd.getFullYear() + 1);
-    else trialEnd.setDate(trialEnd.getDate() + 30);
-
-    await sb.from('businesses').update({
-      is_active: true,
-      payment_status: 'payé',
-      trial_end: trialEnd.toISOString().split('T')[0]
-    }).eq('id', id);
-
-    alert('✅ Compte activé ! Le client peut maintenant se connecter.');
-    await loadClients();
-  }
-
-  // TOGGLE BLOCK
-  async function toggleBlock(id, active) {
-    await sb.from('businesses').update({ is_active: active }).eq('id', id);
-    await loadClients();
-  }
-
-  // TOGGLE TRIAL FIELDS
-  function toggleTrialFields() {
-    const checked = document.getElementById('new-trial-toggle').checked;
-    document.getElementById('trial-days-field').style.display = checked ? 'block' : 'none';
-    document.getElementById('trial-end-preview').style.display = checked ? 'block' : 'none';
-    calcNewClientEnd();
-  }
-
-  function calcNewClientEnd() {
-    const start = document.getElementById('new-start-date').value;
-    const isTrial = document.getElementById('new-trial-toggle').checked;
-    if (!start) return;
-    const d = new Date(start);
-    if (isTrial) {
-      const days = parseInt(document.getElementById('new-trial').value || 14);
-      d.setDate(d.getDate() + days);
-    } else {
-      d.setMonth(d.getMonth() + 1);
-    }
-    document.getElementById('new-end-preview').value = d.toISOString().split('T')[0];
-  }
-
-  function calcExtendEnd() {
-    const start = document.getElementById('extend-start').value;
-    if (!start) return;
-    const d = new Date(start);
-    d.setMonth(d.getMonth() + 1);
-    document.getElementById('extend-date').value = d.toISOString().split('T')[0];
-  }
-
-  // EXTEND MODAL
-  function openExtend(id, name, trialEnd, plan) {
-    document.getElementById('extend-id').value = id;
-    document.getElementById('extend-name').value = name;
-    document.getElementById('extend-start').value = '';
-    document.getElementById('extend-date').value = '';
-    document.getElementById('extend-plan').value = plan;
-    document.getElementById('extend-modal').classList.add('open');
-  }
-
-  function closeModal() {
-    document.getElementById('extend-modal').classList.remove('open');
-  }
-
-  async function saveExtend() {
-    const id = document.getElementById('extend-id').value;
-    const endDate = document.getElementById('extend-date').value;
-    const plan = document.getElementById('extend-plan').value;
-    if (!endDate) return alert('Veuillez entrer une date de début!');
-    await sb.from('businesses').update({ trial_end: endDate, plan, is_active: true }).eq('id', id);
-    closeModal();
-    await loadClients();
-  }
-
-  function addOneMonth() {
-    const dateInput = document.getElementById('extend-date');
-    const current = dateInput.value ? new Date(dateInput.value) : new Date();
-    current.setMonth(current.getMonth() + 1);
-    dateInput.value = current.toISOString().split('T')[0];
-  }
-
-  // Init
-  document.getElementById('new-start-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('new-start-date').addEventListener('input', calcNewClientEnd);
-  document.getElementById('new-trial').addEventListener('change', calcNewClientEnd);
-</script>
-
-<!-- MOBILE BOTTOM NAV -->
-<div class="admin-bottom-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,22,0.96);backdrop-filter:blur(20px);border-top:1px solid rgba(124,106,247,0.15);z-index:200;padding:0.4rem 0 calc(0.4rem + env(safe-area-inset-bottom));grid-template-columns:repeat(4,1fr);" id="admin-bnav">
-  <a href="index.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
-    <span style="font-size:1.1rem;">🏠</span><span style="font-size:0.58rem;font-weight:500;">Accueil</span>
-  </a>
-  <a href="app.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
-    <span style="font-size:1.1rem;">📊</span><span style="font-size:0.58rem;font-weight:500;">Dashboard</span>
-  </a>
-  <a href="booking.html" style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;text-decoration:none;color:var(--muted);padding:0.4rem 0;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;">
-    <span style="font-size:1.1rem;">📅</span><span style="font-size:0.58rem;font-weight:500;">Réserver</span>
-  </a>
-  <span style="display:flex;flex-direction:column;align-items:center;gap:0.2rem;color:var(--accent);padding:0.4rem 0;font-family:'DM Sans',sans-serif;">
-    <span style="font-size:1.1rem;">💻</span><span style="font-size:0.58rem;font-weight:500;">Admin</span>
-  </span>
-</div>
-<style>
-@media(max-width:768px){
-  #admin-bnav{display:grid !important;}
+// ---- AUTH ----
+function resetAdminPwd() {
+  const s = prompt('Code secret:');
+  if (s === 'reservaplus') { localStorage.removeItem('admin_pwd'); alert('Reset: reservaplus2026'); }
+  else alert('Code incorrect');
 }
-</style>
+function checkPassword() {
+  if (document.getElementById('admin-password').value === ADMIN_PASSWORD) {
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('admin-page').style.display = 'block';
+    loadClients();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+function logout() {
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('admin-page').style.display = 'none';
+  document.getElementById('admin-password').value = '';
+}
+
+// ---- LOAD ----
+async function loadClients() {
+  const { data } = await sb.from('businesses').select('*').order('created_at', { ascending: false });
+  allClients = data || [];
+  updateKPIs();
+  renderCurrentTab();
+}
+
+function updateKPIs() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const in7 = new Date(today); in7.setDate(in7.getDate() + 7);
+
+  const actifs = allClients.filter(c => c.is_active && c.payment_status !== 'en_attente');
+  const pending = allClients.filter(c => !c.is_active && c.payment_status === 'en_attente');
+  const blocked = allClients.filter(c => !c.is_active && c.payment_status !== 'en_attente');
+  const expiring = actifs.filter(c => {
+    if (!c.plan || c.plan === 'starter') return false;
+    const te = new Date(c.trial_end + 'T00:00:00');
+    return te >= today && te <= in7;
+  });
+
+  document.getElementById('kpi-total').textContent = allClients.length;
+  document.getElementById('kpi-active').textContent = actifs.length;
+  document.getElementById('kpi-pending').textContent = pending.length;
+  document.getElementById('kpi-blocked').textContent = blocked.length;
+  document.getElementById('kpi-expiring').textContent = expiring.length;
+  document.getElementById('cnt-actifs').textContent = actifs.length;
+  document.getElementById('cnt-pending').textContent = pending.length;
+  document.getElementById('cnt-blocked').textContent = blocked.length;
+
+  if (expiring.length > 0) {
+    document.getElementById('expiring-alert').style.display = 'block';
+    document.getElementById('expiring-list').innerHTML = expiring.map(c =>
+      `<span style="margin-right:1rem">• <strong>${c.name}</strong> (${c.email}) — expire le <strong>${c.trial_end}</strong>
+      <button class="ab g" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'pro'}')" style="margin-left:6px;">⏱️ Renouveler</button></span>`
+    ).join('');
+  } else {
+    document.getElementById('expiring-alert').style.display = 'none';
+  }
+}
+
+// ---- TABS ----
+function switchTab(tab) {
+  currentTab = tab;
+  ['actifs','pending','blocked'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t === tab);
+  });
+  const descs = { actifs:'Clients actifs', pending:'En attente de confirmation de paiement', blocked:'Comptes bloqués ou expirés' };
+  document.getElementById('tab-desc').textContent = descs[tab];
+  renderCurrentTab();
+}
+
+function renderCurrentTab(filter='') {
+  const today = new Date(); today.setHours(0,0,0,0);
+  let clients;
+  if (currentTab === 'actifs') clients = allClients.filter(c => c.is_active && c.payment_status !== 'en_attente');
+  else if (currentTab === 'pending') clients = allClients.filter(c => !c.is_active && c.payment_status === 'en_attente');
+  else clients = allClients.filter(c => !c.is_active && c.payment_status !== 'en_attente');
+
+  if (filter) clients = clients.filter(c =>
+    c.name?.toLowerCase().includes(filter.toLowerCase()) ||
+    c.email?.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  const list = document.getElementById('clients-list');
+  if (!clients.length) {
+    list.innerHTML = `<div class="empty"><div class="eico">${currentTab==='actifs'?'✅':currentTab==='pending'?'⏳':'🔒'}</div>Aucun client dans cette catégorie</div>`;
+    return;
+  }
+
+  const colClass = currentTab === 'actifs' ? 't-cols-active' : currentTab === 'pending' ? 't-cols-pending' : 't-cols-blocked';
+  let head = '';
+  if (currentTab === 'actifs') head = `<div class="t-head ${colClass}"><span>ÉTABLISSEMENT</span><span>EMAIL</span><span>CRÉÉ LE</span><span>FIN ABONNEMENT</span><span>PLAN</span><span>ACTIONS</span></div>`;
+  else if (currentTab === 'pending') head = `<div class="t-head ${colClass}"><span>ÉTABLISSEMENT</span><span>EMAIL</span><span>MÉTHODE PAIEMENT</span><span>PLAN DEMANDÉ</span><span>ACTIONS</span></div>`;
+  else head = `<div class="t-head ${colClass}"><span>ÉTABLISSEMENT</span><span>EMAIL</span><span>CRÉÉ LE</span><span>EXPIRATION</span><span>PLAN</span><span>ACTIONS</span></div>`;
+
+  list.innerHTML = head + clients.map(c => renderRow(c, colClass, today)).join('');
+}
+
+function renderRow(c, colClass, today) {
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+  const planLabel = c.plan==='pro_annuel'||c.plan==='pro' ? 'PRO AN' : c.plan==='pro_mensuel' ? 'PRO MOIS' : 'STARTER';
+  const planColor = c.plan==='pro'||c.plan==='pro_annuel' ? 'bp' : c.plan==='pro_mensuel' ? 'bp' : '';
+
+  const trialEnd = c.trial_end ? new Date(c.trial_end + 'T00:00:00') : null;
+  const daysLeft = trialEnd ? Math.ceil((trialEnd - today) / (1000*60*60*24)) : null;
+  const isStarter = !c.plan || c.plan === 'starter';
+
+  const waMsg = encodeURIComponent(`Bonjour ${c.name}, votre abonnement ReservaPlus`);
+  const waLink = c.phone ? `https://wa.me/${c.phone.replace(/[^0-9]/g,'')}?text=${waMsg}` : `https://wa.me/212607784715`;
+
+  if (currentTab === 'actifs') {
+    const endStr = isStarter ? '<span style="color:var(--muted);font-size:.72rem">Gratuit ∞</span>'
+      : daysLeft !== null && daysLeft <= 7
+        ? `<span class="badge by">⚠️ ${daysLeft}j</span>`
+        : fmtDate(c.trial_end);
+    return `<div class="t-row ${colClass}">
+      <span>
+        <div style="font-weight:600">${c.name}</div>
+        <div style="color:var(--muted);font-size:.72rem">${c.phone||''}</div>
+        ${c.secteur ? `<span style="background:var(--accent-bg);color:var(--accent);font-size:.65rem;padding:.1rem .4rem;border-radius:4px;">${c.secteur}</span>` : ''}
+      </span>
+      <span style="color:var(--muted);font-size:.78rem">${c.email}</span>
+      <span style="color:var(--muted);font-size:.78rem">${fmtDate(c.created_at)}</span>
+      <span>${endStr}</span>
+      <span><span class="badge ${planColor}">${planLabel}</span></span>
+      <span class="acts">
+        <button class="ab" onclick="openResetPwd('${c.user_id}','${c.name}')">🔄 Pwd</button>
+        <button class="ab g" onclick="openExtend('${c.id}','${c.name}','${c.trial_end}','${c.plan||'pro'}')">⏱️ Renouveler</button>
+        <button class="ab r" onclick="toggleBlock('${c.id}',false)">🔒 Bloquer</button>
+        <a class="ab wa" href="${waLink}" target="_blank">💬 WA</a>
+        <button class="ab r" onclick="deleteClient('${c.id}','${c.name}')">🗑️</button>
+      </span>
+    </div>`;
+  }
+
+  if (currentTab === 'pending') {
+    return `<div class="t-row ${colClass}">
+      <span>
+        <div style="font-weight:600">${c.name}</div>
+        <div style="color:var(--muted);font-size:.72rem">${c.phone||''}</div>
+        ${c.secteur ? `<span style="background:var(--accent-bg);color:var(--accent);font-size:.65rem;padding:.1rem .4rem;border-radius:4px;">${c.secteur}</span>` : ''}
+      </span>
+      <span style="color:var(--muted);font-size:.78rem">${c.email}</span>
+      <span>${c.payment_method ? `<span class="badge by">${c.payment_method}</span>` : '<span style="color:var(--muted);font-size:.75rem">—</span>'}</span>
+      <span><span class="badge ${planColor}">${planLabel}</span></span>
+      <span class="acts">
+        <button class="ab activate" onclick="openActivate('${c.id}','${c.name}','${c.email}','${c.plan||'pro'}')">✅ Activer</button>
+        <a class="ab wa" href="${waLink}" target="_blank">💬 WA</a>
+        <button class="ab r" onclick="deleteClient('${c.id}','${c.name}')">🗑️</button>
+      </span>
+    </div>`;
+  }
+
+  // blocked
+  return `<div class="t-row ${colClass}">
+    <span>
+      <div style="font-weight:600">${c.name}</div>
+      <div style="color:var(--muted);font-size:.72rem">${c.phone||''}</div>
+      ${c.secteur ? `<span style="background:var(--accent-bg);color:var(--accent);font-size:.65rem;padding:.1rem .4rem;border-radius:4px;">${c.secteur}</span>` : ''}
+    </span>
+    <span style="color:var(--muted);font-size:.78rem">${c.email}</span>
+    <span style="color:var(--muted);font-size:.78rem">${fmtDate(c.created_at)}</span>
+    <span style="font-size:.78rem;color:var(--red)">${fmtDate(c.trial_end)}</span>
+    <span><span class="badge ${planColor}">${planLabel}</span></span>
+    <span class="acts">
+      <button class="ab activate" onclick="openActivate('${c.id}','${c.name}','${c.email}','${c.plan||'pro'}')">✅ Activer</button>
+      <button class="ab" onclick="openResetPwd('${c.user_id}','${c.name}')">🔄 Pwd</button>
+      <a class="ab wa" href="${waLink}" target="_blank">💬 WA</a>
+      <button class="ab r" onclick="deleteClient('${c.id}','${c.name}')">🗑️</button>
+    </span>
+  </div>`;
+}
+
+function filterClients(q) { renderCurrentTab(q); }
+
+// ---- ACTIVATE MODAL ----
+function openActivate(id, name, email, plan) {
+  document.getElementById('act-id').value = id;
+  document.getElementById('act-name').textContent = name;
+  document.getElementById('act-email').textContent = email;
+  document.getElementById('act-plan').value = plan || 'pro';
+  selectedDur = 365;
+  document.querySelectorAll('.dur-pill').forEach((p,i) => p.classList.toggle('sel', i===3));
+  calcActEnd();
+  document.getElementById('activate-modal').classList.add('open');
+}
+
+function selectDur(el, dur) {
+  document.querySelectorAll('#activate-modal .dur-pill').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedDur = dur;
+  document.getElementById('custom-dur-field').style.display = (dur === 'custom') ? 'block' : 'none';
+  calcActEnd();
+}
+
+function calcActEnd() {
+  const days = selectedDur === 'custom'
+    ? (parseInt(document.getElementById('act-custom-days')?.value) || 0)
+    : selectedDur;
+  if (!days) return;
+  const end = new Date();
+  end.setDate(end.getDate() + days);
+  document.getElementById('act-end-preview').textContent =
+    `📅 Fin d\'abonnement : ${end.toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'})} (${days} jours)`;
+}
+
+async function doActivate() {
+  const id = document.getElementById('act-id').value;
+  const plan = document.getElementById('act-plan').value;
+  const days = selectedDur === 'custom'
+    ? (parseInt(document.getElementById('act-custom-days')?.value) || 0)
+    : selectedDur;
+  if (!days) return alert('Choisissez une durée');
+
+  const end = new Date();
+  end.setDate(end.getDate() + days);
+
+  await sb.from('businesses').update({
+    is_active: true,
+    plan: plan,
+    payment_status: 'payé',
+    trial_end: end.toISOString().split('T')[0]
+  }).eq('id', id);
+
+  closeModal('activate-modal');
+  await loadClients();
+  showToast('✅ Compte activé !');
+}
+
+// ---- EXTEND MODAL ----
+function openExtend(id, name, curEnd, plan) {
+  document.getElementById('extend-id').value = id;
+  document.getElementById('extend-name').textContent = name;
+  document.getElementById('extend-cur-end').textContent = 'Fin actuelle : ' + (curEnd || '—');
+  document.getElementById('extend-plan').value = plan || 'pro';
+  selectedExtDur = 365;
+  document.querySelectorAll('#extend-modal .dur-pill').forEach((p,i) => p.classList.toggle('sel', i===3));
+  calcExtEnd(curEnd);
+  document.getElementById('extend-modal').classList.add('open');
+}
+
+function selectExtDur(el, dur) {
+  document.querySelectorAll('#extend-modal .dur-pill').forEach(p => p.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedExtDur = dur;
+  document.getElementById('custom-ext-field').style.display = (dur === 'custom') ? 'block' : 'none';
+  const curEnd = document.getElementById('extend-cur-end').textContent.replace('Fin actuelle : ','').trim();
+  calcExtEnd(curEnd);
+}
+
+function calcExtEnd(curEnd) {
+  const days = selectedExtDur === 'custom'
+    ? (parseInt(document.getElementById('ext-custom-days')?.value) || 0)
+    : selectedExtDur;
+  if (!days) return;
+  const base = curEnd && curEnd !== '—' ? new Date(curEnd + 'T00:00:00') : new Date();
+  const now = new Date(); now.setHours(0,0,0,0);
+  const start = base > now ? base : now;
+  const end = new Date(start);
+  end.setDate(end.getDate() + days);
+  document.getElementById('ext-end-preview').textContent =
+    `📅 Nouvelle fin : ${end.toLocaleDateString('fr-FR', {day:'2-digit',month:'long',year:'numeric'})}`;
+}
+
+async function saveExtend() {
+  const id = document.getElementById('extend-id').value;
+  const plan = document.getElementById('extend-plan').value;
+  const days = selectedExtDur === 'custom'
+    ? (parseInt(document.getElementById('ext-custom-days')?.value) || 0)
+    : selectedExtDur;
+  if (!days) return;
+
+  const { data: biz } = await sb.from('businesses').select('trial_end').eq('id', id).single();
+  const curEnd = biz?.trial_end;
+  const base = curEnd ? new Date(curEnd + 'T00:00:00') : new Date();
+  const now = new Date(); now.setHours(0,0,0,0);
+  const start = base > now ? base : now;
+  const end = new Date(start);
+  end.setDate(end.getDate() + days);
+
+  await sb.from('businesses').update({
+    trial_end: end.toISOString().split('T')[0],
+    plan: plan,
+    is_active: true,
+    payment_status: 'payé'
+  }).eq('id', id);
+
+  closeModal('extend-modal');
+  await loadClients();
+  showToast('✅ Abonnement renouvelé !');
+}
+
+// ---- ADD CLIENT ----
+function calcNewEnd() {
+  const dur = document.getElementById('new-duration').value;
+  document.getElementById('custom-days-field').style.display = dur === 'custom' ? 'block' : 'none';
+  const days = dur === 'custom' ? (parseInt(document.getElementById('new-custom-days')?.value)||0) : parseInt(dur)||0;
+  if (!days) { document.getElementById('new-end-preview').value = 'Gratuit (sans fin)'; return; }
+  const end = new Date(); end.setDate(end.getDate() + days);
+  document.getElementById('new-end-preview').value = end.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+async function addNewClient() {
+  const name = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const password = document.getElementById('new-password').value.trim();
+  const phone = document.getElementById('new-phone').value.trim();
+  const plan = document.getElementById('new-plan').value;
+  const dur = document.getElementById('new-duration').value;
+  const alertEl = document.getElementById('add-alert');
+
+  if (!name||!email||!password) { alertEl.innerHTML='<div class="alert-e">Remplissez les champs obligatoires.</div>'; return; }
+
+  const { data, error } = await fetch(`https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/users`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY},
+    body: JSON.stringify({ email, password, email_confirm: true })
+  }).then(r=>r.json()).then(d=>({data:d,error:d.error}));
+
+  if (error || !data.id) { alertEl.innerHTML=`<div class="alert-e">${error?.message||data?.msg||'Erreur'}</div>`; return; }
+
+  const days = dur === 'custom' ? (parseInt(document.getElementById('new-custom-days')?.value)||0) : parseInt(dur)||0;
+  const trialEnd = new Date();
+  if (days > 0) trialEnd.setDate(trialEnd.getDate() + days);
+  else trialEnd.setFullYear(trialEnd.getFullYear() + 10);
+
+  await sb.from('businesses').insert({
+    name, email, phone,
+    user_id: data.id,
+    plan, is_active: true,
+    payment_status: plan === 'starter' ? 'gratuit' : 'payé',
+    trial_end: trialEnd.toISOString().split('T')[0]
+  });
+
+  alertEl.innerHTML='<div class="alert-s">✅ Compte créé avec succès !</div>';
+  ['new-name','new-email','new-password','new-phone'].forEach(id => document.getElementById(id).value='');
+  await loadClients();
+}
+
+// ---- TOGGLE BLOCK ----
+async function toggleBlock(id, active) {
+  await sb.from('businesses').update({ is_active: active }).eq('id', id);
+  await loadClients();
+}
+
+// ---- RESET PASSWORD ----
+function openResetPwd(userId, name) {
+  document.getElementById('resetpwd-id').value = userId;
+  document.getElementById('resetpwd-name').value = name;
+  document.getElementById('resetpwd-new').value = '';
+  document.getElementById('resetpwd-alert').innerHTML = '';
+  document.getElementById('resetpwd-modal').classList.add('open');
+}
+
+async function saveResetPwd() {
+  const userId = document.getElementById('resetpwd-id').value;
+  const newPwd = document.getElementById('resetpwd-new').value;
+  if (newPwd.length < 6) { document.getElementById('resetpwd-alert').innerHTML='<div class="alert-e">Minimum 6 caractères.</div>'; return; }
+  const res = await fetch(`https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/users/${userId}`, {
+    method:'PUT',
+    headers:{'Content-Type':'application/json','apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY},
+    body: JSON.stringify({ password: newPwd })
+  });
+  if (res.ok) { document.getElementById('resetpwd-alert').innerHTML='<div class="alert-s">✅ Mot de passe mis à jour.</div>'; }
+  else { document.getElementById('resetpwd-alert').innerHTML='<div class="alert-e">Erreur.</div>'; }
+}
+
+// ---- DELETE ----
+async function deleteClient(id, name) {
+  if (!confirm(`Supprimer "${name}" ?\nToutes ses données seront perdues définitivement.`)) return;
+  const { data: biz } = await sb.from('businesses').select('user_id').eq('id', id).single();
+  const { data: staffList } = await sb.from('staff').select('id').eq('business_id', id);
+  if (staffList?.length) await sb.from('staff_services').delete().in('staff_id', staffList.map(s=>s.id));
+  await sb.from('staff').delete().eq('business_id', id);
+  await sb.from('reservations').delete().eq('business_id', id);
+  await sb.from('services').delete().eq('business_id', id);
+  await sb.from('businesses').delete().eq('id', id);
+  if (biz?.user_id) {
+    await fetch(`https://uewtdxkpsraufzjsebnh.supabase.co/auth/v1/admin/users/${biz.user_id}`, {
+      method:'DELETE', headers:{'apikey':SERVICE_KEY,'Authorization':'Bearer '+SERVICE_KEY}
+    });
+  }
+  await loadClients();
+  showToast('✅ Compte supprimé.');
+}
+
+// ---- CHANGE ADMIN PWD ----
+function openChangePwd() {
+  document.getElementById('changepwd-modal').classList.add('open');
+  ['pwd-current','pwd-new','pwd-confirm'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('changepwd-alert').innerHTML='';
+}
+function saveNewPwd() {
+  const cur = document.getElementById('pwd-current').value;
+  const nw = document.getElementById('pwd-new').value;
+  const cf = document.getElementById('pwd-confirm').value;
+  if (cur !== ADMIN_PASSWORD) { document.getElementById('changepwd-alert').innerHTML='<div class="alert-e">Mot de passe actuel incorrect.</div>'; return; }
+  if (nw.length < 6) { document.getElementById('changepwd-alert').innerHTML='<div class="alert-e">Minimum 6 caractères.</div>'; return; }
+  if (nw !== cf) { document.getElementById('changepwd-alert').innerHTML='<div class="alert-e">Les mots de passe ne correspondent pas.</div>'; return; }
+  ADMIN_PASSWORD = nw;
+  localStorage.setItem('admin_pwd', nw);
+  document.getElementById('changepwd-alert').innerHTML='<div class="alert-s">✅ Mot de passe changé.</div>';
+}
+
+// ---- UTILS ----
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:2rem;right:2rem;background:#7c6af7;color:#fff;padding:.8rem 1.5rem;border-radius:10px;font-size:.85rem;font-weight:500;z-index:999;box-shadow:0 8px 25px rgba(124,106,247,.4);animation:fadeUp .3s ease';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+</script>
 </body>
 </html>
