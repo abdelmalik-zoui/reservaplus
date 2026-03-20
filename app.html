@@ -658,42 +658,110 @@
             </div>
           </div>
 
-          <!-- Pro -->
-          <div onclick="pickPlanReg(this,'pro')" data-plan="pro"
+          <!-- Pro Annual -->
+          <div onclick="pickPlanReg(this,'pro_annuel')" data-plan="pro_annuel"
             style="border:1.5px solid var(--accent);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;background:rgba(124,106,247,0.08);position:relative">
             <div style="position:absolute;top:-1px;right:1rem;background:var(--accent);color:#fff;font-size:.58rem;font-weight:700;padding:.15rem .5rem;border-radius:0 0 6px 6px;letter-spacing:.05em">RECOMMANDÉ</div>
-            <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.5rem">PRO</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text)">199 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
-            <div style="font-size:.72rem;color:var(--muted);margin:.3rem 0 .8rem">Pour les pros sérieux</div>
+            <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.5rem">PRO ANNUEL</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text)">1 990 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/an</span></div>
+            <div style="font-size:.72rem;color:#4ade80;margin:.3rem 0 .1rem;font-weight:600">≈ 166 MAD/mois · 2 mois offerts 🎁</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-bottom:.8rem">Payez une fois, tranquille 1 an</div>
             <div style="display:flex;flex-direction:column;gap:.3rem">
               <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>RDV illimités</div>
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Services illimités</div>
-              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Staff illimité</div>
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Services & Staff illimités</div>
               <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Stats & Calendrier</div>
+              <div style="font-size:.75rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Support prioritaire</div>
+            </div>
+          </div>
+
+          <!-- Pro Mensuel -->
+          <div onclick="pickPlanReg(this,'pro')" data-plan="pro"
+            style="border:1.5px solid var(--border);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;background:var(--surface);grid-column:1/-1">
+            <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.1em;margin-bottom:.5rem">PRO MENSUEL</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--text)">199 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
+                <div style="font-size:.72rem;color:var(--muted);margin-top:.2rem">Flexibilité maximale</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:.2rem;text-align:right">
+                <div style="font-size:.75rem;color:var(--muted)"><span style="color:#4ade80">✓</span> RDV illimités</div>
+                <div style="font-size:.75rem;color:var(--muted)"><span style="color:#4ade80">✓</span> Staff & Services</div>
+              </div>
             </div>
           </div>
 
         </div>
-        <input type="hidden" id="rp-plan" value="pro">
+
+        <!-- Payment info -->
+        <div style="background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.2);border-radius:10px;padding:.9rem 1rem;margin-top:.5rem;font-size:.78rem;color:var(--muted);line-height:1.7">
+          💳 <strong style="color:var(--text)">Paiement après inscription :</strong> Virement bancaire · Wafacash · CIH · Barid<br>
+          Votre compte sera activé dans les <strong style="color:var(--text)">24h</strong> après réception du paiement.
+        </div>
+
+        <input type="hidden" id="rp-plan" value="pro_annuel">
       </div>
 
-      <button id="rp-btn" onclick="doRegisterPage()"
-        style="width:100%;background:var(--accent);color:#fff;border:none;padding:.9rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;margin-bottom:.8rem"
-        onmouseenter="this.style.background='#5a4bd1'" onmouseleave="this.style.background='var(--accent)'">
-        Créer mon compte →
-      </button>
-
-      <div style="text-align:center;font-size:.78rem;color:var(--muted)">
-        Déjà un compte ?
-        <span onclick="showAuthPage()" style="color:var(--accent);cursor:pointer;font-weight:600"> Se connecter</span>
+      <!-- PAYMENT METHOD (shown for Pro plans) -->
+      <div id="payment-method-section" style="margin-bottom:1.5rem;display:none">
+        <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.6rem;font-weight:500">Méthode de paiement</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem" id="payment-btns">
+          <div onclick="pickPayment(this,'Virement bancaire')" style="border:1.5px solid var(--border);border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-align:center">
+            <div style="font-size:1.2rem;margin-bottom:.2rem">🏦</div>
+            <div style="font-size:.78rem;font-weight:600;color:var(--text)">Virement bancaire</div>
+          </div>
+          <div onclick="pickPayment(this,'Wafacash')" style="border:1.5px solid var(--border);border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-align:center">
+            <div style="font-size:1.2rem;margin-bottom:.2rem">💸</div>
+            <div style="font-size:.78rem;font-weight:600;color:var(--text)">Wafacash</div>
+          </div>
+          <div onclick="pickPayment(this,'CIH Mobile')" style="border:1.5px solid var(--border);border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-align:center">
+            <div style="font-size:1.2rem;margin-bottom:.2rem">📱</div>
+            <div style="font-size:.78rem;font-weight:600;color:var(--text)">CIH Mobile</div>
+          </div>
+          <div onclick="pickPayment(this,'Barid Bank')" style="border:1.5px solid var(--border);border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-align:center">
+            <div style="font-size:1.2rem;margin-bottom:.2rem">📮</div>
+            <div style="font-size:.78rem;font-weight:600;color:var(--text)">Barid Bank</div>
+          </div>
+        </div>
+        <input type="hidden" id="rp-payment" value="">
       </div>
 
-      <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:.5rem">
-        <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20cr%C3%A9er%20un%20compte%20ReservaPlus." target="_blank"
-          style="display:flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.78rem;text-decoration:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
-          Ou s'inscrire via WhatsApp
+      <!-- FORM STEP -->
+      <div id="reg-form-step">
+        <button id="rp-btn" onclick="doRegisterPage()"
+          style="width:100%;background:var(--accent);color:#fff;border:none;padding:.9rem;border-radius:12px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;margin-bottom:.8rem"
+          onmouseenter="this.style.background='#5a4bd1'" onmouseleave="this.style.background='var(--accent)'">
+          Créer mon compte →
+        </button>
+        <div style="text-align:center;font-size:.78rem;color:var(--muted)">
+          Déjà un compte ?
+          <span onclick="showAuthPage()" style="color:var(--accent);cursor:pointer;font-weight:600"> Se connecter</span>
+        </div>
+      </div>
+
+      <!-- SUCCESS STEP (shown after registration) -->
+      <div id="reg-success-step" style="display:none;text-align:center;padding:1rem 0">
+        <div style="font-size:3rem;margin-bottom:1rem">⏳</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:.5rem;color:var(--text)">Compte créé avec succès !</div>
+        <div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem">
+          Votre demande a été reçue. Votre compte sera activé dans les <strong style="color:var(--text)">24h</strong> après réception du paiement.
+        </div>
+
+        <!-- Payment instructions -->
+        <div id="payment-instructions" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:1.5rem;text-align:left">
+          <div style="font-weight:700;font-size:.88rem;margin-bottom:.8rem;color:var(--text)">📋 Instructions de paiement</div>
+          <div id="payment-details-text" style="font-size:.82rem;color:var(--muted);line-height:1.8"></div>
+        </div>
+
+        <!-- WhatsApp button -->
+        <a id="reg-wa-btn" href="#" target="_blank"
+          style="display:flex;align-items:center;justify-content:center;gap:.6rem;background:#25D366;color:#fff;padding:.9rem 1.5rem;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;margin-bottom:.8rem">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
+          Confirmer le paiement via WhatsApp
         </a>
+
+        <div style="font-size:.75rem;color:var(--muted)">
+          En attente d'activation · <span onclick="showAuthPage()" style="color:var(--accent);cursor:pointer">Retour à la connexion</span>
+        </div>
       </div>
 
     </div>
@@ -781,6 +849,7 @@
     <div class="dash-logo">Reserva<span>Plus</span></div>
     <div class="dash-user">
       <span id="plan-badge" style="font-size:0.72rem;font-weight:600;border:1px solid;padding:0.2rem 0.7rem;border-radius:100px;margin-right:0.5rem;">Starter</span>
+      <button id="renew-btn" onclick="showRenewModal()" style="display:none;background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;border:none;padding:0.2rem 0.8rem;border-radius:100px;font-size:0.72rem;font-weight:700;cursor:pointer;margin-right:0.3rem;animation:pulse 2s infinite">⚡ Renouveler</button>
       <span class="user-email" id="user-email-display"></span>
 
       <!-- NOTIFICATION BELL -->
@@ -1576,6 +1645,19 @@
     el.style.borderColor = 'var(--accent)';
     el.style.background = 'rgba(124,106,247,0.08)';
     document.getElementById('rp-plan').value = plan;
+    // Show payment method only for paid plans
+    const paySection = document.getElementById('payment-method-section');
+    paySection.style.display = (plan === 'starter') ? 'none' : 'block';
+  }
+
+  function pickPayment(el, method) {
+    document.querySelectorAll('#payment-btns > div').forEach(d => {
+      d.style.borderColor = 'var(--border)';
+      d.style.background = 'transparent';
+    });
+    el.style.borderColor = 'var(--accent)';
+    el.style.background = 'rgba(124,106,247,0.08)';
+    document.getElementById('rp-payment').value = method;
   }
 
   async function doRegisterPage() {
@@ -1583,8 +1665,9 @@
     const email = document.getElementById('rp-email').value.trim();
     const phone = document.getElementById('rp-phone').value.trim();
     const pwd = document.getElementById('rp-pwd').value;
-    const plan = document.getElementById('rp-plan').value || 'pro';
+    const plan = document.getElementById('rp-plan').value || 'starter';
     const secteur = document.getElementById('rp-secteur').value;
+    const payment = document.getElementById('rp-payment').value;
     const alertBox = document.getElementById('reg-page-alert');
 
     if (!name || !email || !pwd) {
@@ -1592,7 +1675,11 @@
       return;
     }
     if (pwd.length < 6) {
-      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">Le mot de passe doit contenir au moins 6 caractères.</div>';
+      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">Minimum 6 caractères pour le mot de passe.</div>';
+      return;
+    }
+    if (plan !== 'starter' && !payment) {
+      alertBox.innerHTML = '<div style="background:#450a0a;border:1px solid #f87171;color:#f87171;padding:.6rem 1rem;border-radius:9px;font-size:.82rem;margin-bottom:1rem">Veuillez choisir une méthode de paiement.</div>';
       return;
     }
 
@@ -1608,26 +1695,63 @@
     }
 
     currentUser = data.user;
-
-    // Pro: 30 jours d'essai — Starter: gratuit sans trial
+    const isStarter = plan === 'starter';
     const trialEnd = new Date();
-    if (plan === 'pro') {
-      trialEnd.setDate(trialEnd.getDate() + 30);
-    } else {
-      trialEnd.setFullYear(trialEnd.getFullYear() + 10); // Starter = gratuit permanent
-    }
+    if (plan === 'pro_annuel') trialEnd.setFullYear(trialEnd.getFullYear() + 1);
+    else if (plan === 'pro') trialEnd.setDate(trialEnd.getDate() + 30);
+    else trialEnd.setFullYear(trialEnd.getFullYear() + 10);
 
+    // Starter = actif direct, Pro = en attente de paiement
     await sb.from('businesses').insert({
       name, email, phone, secteur,
       user_id: currentUser.id,
       plan: plan,
-      is_active: true,
+      is_active: isStarter,
+      payment_method: payment || null,
+      payment_status: isStarter ? 'gratuit' : 'en_attente',
       trial_end: trialEnd.toISOString().split('T')[0]
     });
 
-    await loadBusiness();
-    document.getElementById('register-page').style.display = 'none';
-    showDashboard();
+    if (isStarter) {
+      // Starter → direct dashboard
+      await loadBusiness();
+      document.getElementById('register-page').style.display = 'none';
+      showDashboard();
+    } else {
+      // Pro → show payment instructions
+      showRegisterSuccess(name, plan, payment);
+    }
+  }
+
+  function showRegisterSuccess(name, plan, paymentMethod) {
+    document.getElementById('reg-form-step').style.display = 'none';
+    document.getElementById('payment-method-section').style.display = 'none';
+
+    const planLabel = plan === 'pro_annuel' ? 'Pro Annuel' : 'Pro Mensuel';
+    const planPrice = plan === 'pro_annuel' ? '1 990 MAD' : '199 MAD';
+
+    // Payment details per method
+    const details = {
+      'Virement bancaire': `RIB : <strong style="color:var(--text)">007 780 0000123456789012</strong><br>Banque : Attijariwafa Bank<br>Nom : ReservaPlus SARL<br>Montant : <strong style="color:var(--accent)">${planPrice}</strong><br>Référence : <strong style="color:var(--text)">${name.replace(/\s/g,'_')}_${plan}</strong>`,
+      'Wafacash': `Envoyez <strong style="color:var(--accent)">${planPrice}</strong> via Wafacash au :<br>Numéro : <strong style="color:var(--text)">0607784715</strong><br>Nom : Abdelmalik E.<br>Référence : <strong style="color:var(--text)">${name.replace(/\s/g,'_')}</strong>`,
+      'CIH Mobile': `Transfert CIH Mobile au :<br>Numéro : <strong style="color:var(--text)">0607784715</strong><br>Montant : <strong style="color:var(--accent)">${planPrice}</strong><br>Référence : <strong style="color:var(--text)">${name.replace(/\s/g,'_')}</strong>`,
+      'Barid Bank': `Envoyez <strong style="color:var(--accent)">${planPrice}</strong> via Barid Bank au :<br>Numéro : <strong style="color:var(--text)">0607784715</strong><br>Nom : Abdelmalik E.<br>Référence : <strong style="color:var(--text)">${name.replace(/\s/g,'_')}</strong>`
+    };
+
+    document.getElementById('payment-details-text').innerHTML =
+      `Méthode choisie : <strong style="color:var(--text)">${paymentMethod}</strong><br><br>${details[paymentMethod] || ''}`;
+
+    // WA message
+    const waMsg = encodeURIComponent(
+      'Bonjour, je viens de créer mon compte ReservaPlus.\n' +
+      'Nom : ' + name + '\n' +
+      'Plan : ' + planLabel + ' (' + planPrice + ')\n' +
+      'Paiement : ' + paymentMethod + '\n\n' +
+      'Merci de confirmer la réception du paiement.'
+    );
+    document.getElementById('reg-wa-btn').href = 'https://wa.me/212607784715?text=' + waMsg;
+
+    document.getElementById('reg-success-step').style.display = 'block';
   }
 
   // old modal functions kept for compat
@@ -1799,6 +1923,14 @@
       document.getElementById('dash-date').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
     }
     document.getElementById('my-link-url').textContent = window.location.origin + '/booking.html?id=' + (currentBusiness?.id || currentUser.id);
+
+    // Show renew button if less than 7 days left (pro only)
+    const renewBtn = document.getElementById('renew-btn');
+    if (renewBtn && currentBusiness?.plan && currentBusiness.plan !== 'starter') {
+      const trialEnd = new Date(currentBusiness.trial_end + 'T00:00:00');
+      const daysLeft = Math.ceil((trialEnd - new Date()) / (1000*60*60*24));
+      renewBtn.style.display = daysLeft <= 7 ? 'inline-block' : 'none';
+    }
     loadReservations();
     loadServices();
     startRealtime();
