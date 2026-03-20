@@ -763,33 +763,56 @@
 </div>
 
 <!-- BLOCKED PAGE: ABONNEMENT EXPIRÉ -->
-<div id="blocked-expired-page" style="display:none;min-height:100vh;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:2rem;text-align:center">
-  <div style="max-width:480px;width:100%">
-    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--accent);margin-bottom:.3rem">ReservaPlus</div>
-    <div style="width:80px;height:80px;background:rgba(248,113,113,0.1);border:2px solid rgba(248,113,113,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:1.5rem auto">🔒</div>
-    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:.6rem;color:var(--text)">Votre abonnement est terminé</div>
-    <div style="font-size:.9rem;color:var(--muted);line-height:1.8;margin-bottom:2rem">
-      Votre période d'abonnement Pro est expirée.<br>
-      Renouvelez pour continuer à recevoir des réservations et gérer votre planning.
+<div id="blocked-expired-page" style="display:none;min-height:100vh;background:var(--bg);overflow-y:auto;">
+  <div style="max-width:520px;margin:0 auto;padding:2.5rem 1.5rem;text-align:center">
+
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--accent);margin-bottom:2rem">ReservaPlus</div>
+
+    <div style="width:70px;height:70px;background:rgba(248,113,113,0.1);border:2px solid rgba(248,113,113,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 1.2rem">🔒</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;margin-bottom:.5rem;color:var(--text)">Votre abonnement est terminé</div>
+    <div style="font-size:.88rem;color:var(--muted);line-height:1.8;margin-bottom:2rem">Renouvelez pour continuer à gérer votre planning et recevoir des réservations.</div>
+
+    <!-- Step 1: Choisir méthode -->
+    <div id="exp-step1">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:1rem;color:var(--text);text-align:left">Choisissez votre méthode de paiement :</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.5rem">
+        <div onclick="pickExpPayment(this,'Virement bancaire')"
+          style="border:1.5px solid var(--border-color,#1e1e2e);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;background:var(--surface-color,#111118);text-align:center">
+          <div style="font-size:1.8rem;margin-bottom:.4rem">🏦</div>
+          <div style="font-size:.85rem;font-weight:600;color:var(--text-color,#f0f0f5)">Virement bancaire</div>
+          <div style="font-size:.7rem;color:#7070a0;margin-top:.2rem">CIH, Attijariwafa...</div>
+        </div>
+        <div onclick="pickExpPayment(this,'Wafacash')"
+          style="border:1.5px solid var(--border-color,#1e1e2e);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;background:var(--surface-color,#111118);text-align:center">
+          <div style="font-size:1.8rem;margin-bottom:.4rem">💸</div>
+          <div style="font-size:.85rem;font-weight:600;color:var(--text-color,#f0f0f5)">Wafacash</div>
+          <div style="font-size:.7rem;color:#7070a0;margin-top:.2rem">Transfert rapide</div>
+        </div>
+      </div>
+      <button onclick="showExpStep2()"
+        style="width:100%;background:#7c6af7;color:#fff;border:none;padding:.9rem;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:1rem">
+        Continuer →
+      </button>
     </div>
 
-    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:1.8rem;margin-bottom:1.5rem;text-align:left">
-      <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.8rem">RENOUVELER MON ABONNEMENT</div>
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:var(--text);margin-bottom:.2rem">Pro Annuel</div>
-      <div style="font-size:.78rem;color:var(--muted);margin-bottom:1.2rem">Paiement unique · Valable 1 an</div>
-      <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.3rem">
-        <div style="font-size:.82rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>RDV & services illimités</div>
-        <div style="font-size:.82rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Staff illimité</div>
-        <div style="font-size:.82rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Stats & Calendrier</div>
-        <div style="font-size:.82rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Support prioritaire</div>
+    <!-- Step 2: Instructions + WA -->
+    <div id="exp-step2" style="display:none">
+      <div style="background:#13131c;border:1.5px solid #1e1e2e;border-radius:14px;padding:1.3rem;margin-bottom:1.2rem;text-align:left">
+        <div style="font-size:.78rem;font-weight:700;margin-bottom:.8rem;color:#f0f0f5">📋 Instructions de paiement</div>
+        <div id="exp-payment-details" style="font-size:.82rem;color:#7070a0;line-height:1.9"></div>
       </div>
-      <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20renouveler%20mon%20abonnement%20ReservaPlus%20Pro." target="_blank"
-        style="display:flex;align-items:center;justify-content:center;gap:.5rem;background:#25D366;color:#fff;padding:.9rem;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none">
+      <a id="exp-wa-btn" href="#" target="_blank"
+        style="display:flex;align-items:center;justify-content:center;gap:.5rem;background:#25D366;color:#fff;padding:.9rem;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;margin-bottom:.8rem">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
-        Renouveler via WhatsApp
+        J'ai payé — Confirmer via WhatsApp
       </a>
+      <button onclick="document.getElementById('exp-step2').style.display='none';document.getElementById('exp-step1').style.display='block'"
+        style="background:none;border:none;color:#7070a0;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline;margin-bottom:.5rem">
+        ← Changer de méthode
+      </button>
     </div>
-    <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">Se déconnecter</button>
+
+    <button onclick="logout()" style="display:block;margin:0 auto;background:none;border:none;color:#7070a0;font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline;margin-top:.5rem">Se déconnecter</button>
   </div>
 </div>
 
@@ -1747,6 +1770,48 @@
       if (btn) btn.innerHTML = '🌙 Dark';
     }
   })();
+
+  // ---- EXPIRED PAGE PAYMENT FLOW ----
+  let expPaymentMethod = '';
+
+  function pickExpPayment(el, method) {
+    document.querySelectorAll('#exp-step1 > div:nth-child(2) > div').forEach(d => {
+      d.style.borderColor = '#1e1e2e';
+      d.style.background = '#111118';
+    });
+    el.style.borderColor = '#7c6af7';
+    el.style.background = 'rgba(124,106,247,0.08)';
+    expPaymentMethod = method;
+  }
+
+  function showExpStep2() {
+    if (!expPaymentMethod) { alert('Choisissez une méthode de paiement'); return; }
+    const bizName = currentBusiness?.name || '';
+    const details = expPaymentMethod === 'Wafacash'
+      ? `Envoyez le montant via <strong style="color:#f0f0f5">Wafacash</strong> au :<br>
+         Numéro : <strong style="color:#f0f0f5">0607784715</strong><br>
+         Nom : Abdelmalik E.<br>
+         Référence : <strong style="color:#f0f0f5">${bizName.replace(/\s/g,'_')}_renouvellement</strong>`
+      : `Virement bancaire :<br>
+         RIB : <strong style="color:#f0f0f5">007 780 0000123456789012</strong><br>
+         Banque : Attijariwafa Bank<br>
+         Bénéficiaire : ReservaPlus SARL<br>
+         Référence : <strong style="color:#f0f0f5">${bizName.replace(/\s/g,'_')}_renouvellement</strong>`;
+
+    document.getElementById('exp-payment-details').innerHTML = details;
+
+    const waMsg = encodeURIComponent(
+      'Bonjour, je veux renouveler mon abonnement ReservaPlus.\n' +
+      'Établissement : ' + bizName + '\n' +
+      'Email : ' + (currentBusiness?.email || '') + '\n' +
+      'Méthode : ' + expPaymentMethod + '\n\n' +
+      'Merci de confirmer la réception et activer mon compte.'
+    );
+    document.getElementById('exp-wa-btn').href = 'https://wa.me/212607784715?text=' + waMsg;
+
+    document.getElementById('exp-step1').style.display = 'none';
+    document.getElementById('exp-step2').style.display = 'block';
+  }
 
   async function logout() {
     await sb.auth.signOut();
