@@ -6,6 +6,7 @@
 <title>ReservaPlus — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --bg:#0a0a0f; --surface:#111118; --border:#1e1e2e;
@@ -122,6 +123,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .t-row{display:flex;flex-direction:column;gap:.4rem;padding:.9rem 1rem;}
   .search-input{width:100%;}
   .tabs{overflow-x:auto;}
+  #analytics-section{grid-template-columns:1fr!important;}
+  #analytics-section + div{grid-template-columns:1fr!important;}
 }
 </style>
 </head>
@@ -183,6 +186,74 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <div class="kpi-val" style="color:var(--red)" id="kpi-expiring">—</div>
         <div class="kpi-sub">À renouveler</div>
       </div>
+    </div>
+
+    <!-- KPI ROW 2: RDV + Revenue -->
+    <div class="kpi-grid" style="margin-bottom:1.5rem;">
+      <div class="kpi" style="border-color:rgba(124,106,247,.2);">
+        <div class="kpi-label">📅 RDV Aujourd'hui</div>
+        <div class="kpi-val" style="color:var(--accent)" id="kpi-rdv-today">—</div>
+        <div class="kpi-sub">Réservations du jour</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(124,106,247,.2);">
+        <div class="kpi-label">📅 RDV Ce mois</div>
+        <div class="kpi-val" style="color:var(--accent)" id="kpi-rdv-month">—</div>
+        <div class="kpi-sub">Total ce mois</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(74,222,128,.2);">
+        <div class="kpi-label">💰 Revenus estimés</div>
+        <div class="kpi-val" style="color:var(--green);font-size:1.4rem" id="kpi-revenue">—</div>
+        <div class="kpi-sub">Clients Pro actifs</div>
+      </div>
+      <div class="kpi" style="border-color:rgba(124,106,247,.2);">
+        <div class="kpi-label">📊 RDV Total</div>
+        <div class="kpi-val" style="color:var(--accent)" id="kpi-rdv-total">—</div>
+        <div class="kpi-sub">Toutes plateformes</div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS SECTION -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;" id="analytics-section">
+
+      <!-- Chart 1: Inscriptions par mois -->
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.3rem;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
+          📈 Inscriptions (6 derniers mois)
+          <span id="chart1-loading" style="font-size:.72rem;color:var(--muted)">Chargement...</span>
+        </div>
+        <canvas id="chartInscriptions" height="180"></canvas>
+      </div>
+
+      <!-- Chart 2: RDV par jour (7 derniers jours) -->
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.3rem;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
+          📅 Réservations / Jour (7j)
+          <span id="chart2-loading" style="font-size:.72rem;color:var(--muted)">Chargement...</span>
+        </div>
+        <canvas id="chartRdvJour" height="180"></canvas>
+      </div>
+
+    </div>
+
+    <!-- TOP COMPANIES + RECENT ACTIVITY -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+
+      <!-- Top companies -->
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.3rem;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:1rem;">🏆 Top Établissements</div>
+        <div id="top-companies">
+          <div style="color:var(--muted);font-size:.82rem;padding:.5rem 0">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- Recent activity -->
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.3rem;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;margin-bottom:1rem;">🔔 Activité récente</div>
+        <div id="recent-activity">
+          <div style="color:var(--muted);font-size:.82rem;padding:.5rem 0">Chargement...</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- EXPIRING ALERT -->
@@ -436,6 +507,7 @@ async function loadClients() {
   allClients = data || [];
   updateKPIs();
   renderCurrentTab();
+  loadAnalytics();
 }
 
 function updateKPIs() {
@@ -451,11 +523,16 @@ function updateKPIs() {
     return te >= today && te <= in7;
   });
 
+  // Revenus estimés (Pro actifs)
+  const proActifs = actifs.filter(c => c.plan && c.plan !== 'starter');
+  const revenue = proActifs.length * 199; // MAD estimé
+
   document.getElementById('kpi-total').textContent = allClients.length;
   document.getElementById('kpi-active').textContent = actifs.length;
   document.getElementById('kpi-pending').textContent = pending.length;
   document.getElementById('kpi-blocked').textContent = blocked.length;
   document.getElementById('kpi-expiring').textContent = expiring.length;
+  document.getElementById('kpi-revenue').textContent = revenue.toLocaleString('fr-FR') + ' MAD';
   document.getElementById('cnt-actifs').textContent = actifs.length;
   document.getElementById('cnt-pending').textContent = pending.length;
   document.getElementById('cnt-blocked').textContent = blocked.length;
@@ -468,6 +545,147 @@ function updateKPIs() {
     ).join('');
   } else {
     document.getElementById('expiring-alert').style.display = 'none';
+  }
+}
+
+// ---- ANALYTICS ----
+let chartInscr = null, chartRdv = null;
+
+async function loadAnalytics() {
+  // Load RDV stats
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+
+  const { data: rdvAll } = await sb.from('reservations').select('date, business_id, created_at');
+
+  const rdvToday = (rdvAll||[]).filter(r => r.date === todayStr).length;
+  const rdvMonth = (rdvAll||[]).filter(r => r.date >= monthStart).length;
+
+  document.getElementById('kpi-rdv-today').textContent = rdvToday;
+  document.getElementById('kpi-rdv-month').textContent = rdvMonth;
+  document.getElementById('kpi-rdv-total').textContent = (rdvAll||[]).length;
+
+  document.getElementById('chart1-loading').textContent = '';
+  document.getElementById('chart2-loading').textContent = '';
+
+  // Chart 1: Inscriptions par mois (6 derniers mois)
+  const months = [];
+  const inscCounts = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const label = d.toLocaleDateString('fr-FR', {month:'short', year:'2-digit'});
+    const mStr = d.toISOString().slice(0, 7); // YYYY-MM
+    months.push(label);
+    inscCounts.push(allClients.filter(c => c.created_at?.startsWith(mStr)).length);
+  }
+
+  if (chartInscr) chartInscr.destroy();
+  chartInscr = new Chart(document.getElementById('chartInscriptions'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Inscriptions',
+        data: inscCounts,
+        backgroundColor: 'rgba(124,106,247,0.6)',
+        borderColor: '#7c6af7',
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7070a0', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7070a0', font: { size: 11 }, stepSize: 1 }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Chart 2: RDV par jour (7 derniers jours)
+  const days = [], rdvCounts = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dStr = d.toISOString().split('T')[0];
+    days.push(d.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'}));
+    rdvCounts.push((rdvAll||[]).filter(r => r.date === dStr).length);
+  }
+
+  if (chartRdv) chartRdv.destroy();
+  chartRdv = new Chart(document.getElementById('chartRdvJour'), {
+    type: 'line',
+    data: {
+      labels: days,
+      datasets: [{
+        label: 'RDV',
+        data: rdvCounts,
+        borderColor: '#4ade80',
+        backgroundColor: 'rgba(74,222,128,0.08)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#4ade80',
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7070a0', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7070a0', font: { size: 11 }, stepSize: 1 }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Top companies by RDV count
+  const bizCounts = {};
+  (rdvAll||[]).forEach(r => { bizCounts[r.business_id] = (bizCounts[r.business_id]||0) + 1; });
+  const sorted = Object.entries(bizCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const topDiv = document.getElementById('top-companies');
+  if (!sorted.length) {
+    topDiv.innerHTML = '<div style="color:var(--muted);font-size:.82rem">Aucune donnée</div>';
+  } else {
+    topDiv.innerHTML = sorted.map(([bizId, count], i) => {
+      const biz = allClients.find(c => c.id === bizId);
+      const name = biz?.name || 'Inconnu';
+      const maxCount = sorted[0][1];
+      const pct = Math.round(count / maxCount * 100);
+      return `<div style="margin-bottom:.8rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+          <span style="font-size:.82rem;font-weight:600">${i+1}. ${name}</span>
+          <span style="font-size:.78rem;color:var(--accent);font-weight:700">${count} RDV</span>
+        </div>
+        <div style="background:var(--surface);border-radius:4px;height:5px;overflow:hidden">
+          <div style="background:var(--accent);height:100%;width:${pct}%;border-radius:4px;transition:width .5s"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Recent activity (last 8 reservations)
+  const { data: recentRdv } = await sb.from('reservations')
+    .select('client_name, service_name, date, time, business_id')
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  const actDiv = document.getElementById('recent-activity');
+  if (!recentRdv?.length) {
+    actDiv.innerHTML = '<div style="color:var(--muted);font-size:.82rem">Aucune activité récente</div>';
+  } else {
+    actDiv.innerHTML = recentRdv.map(r => {
+      const biz = allClients.find(c => c.id === r.business_id);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid rgba(30,30,46,.5)">
+        <div>
+          <div style="font-size:.82rem;font-weight:500">${r.client_name||'—'}</div>
+          <div style="font-size:.72rem;color:var(--muted)">${r.service_name||''} · ${biz?.name||''}</div>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);text-align:right">${r.date||''}<br>${r.time?.slice(0,5)||''}</div>
+      </div>`;
+    }).join('');
   }
 }
 
