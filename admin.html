@@ -324,7 +324,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
           <div class="kpi" style="border-color:rgba(52,211,153,.2)">
             <div class="kl">💰 Revenus est.</div>
             <div class="kv" style="color:var(--gn);font-size:1.25rem" id="k-revenue">—</div>
-            <div class="ks">Tous clients Pro payés</div>
+            <div class="ks">Pro An: 1990 · Pro Mois: 199 MAD</div>
           </div>
         </div>
 
@@ -384,8 +384,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
             <div class="fg"><label>Plan</label>
               <select id="new-plan">
                 <option value="starter">Starter — Gratuit</option>
-                <option value="pro" selected>Pro Annuel</option>
-                <option value="pro_mensuel">Pro Mensuel</option>
+                <option value="pro_annuel" selected>Pro Annuel</option>
+                <option value="pro">Pro Mensuel</option>
               </select>
             </div>
             <div class="fg"><label>Durée</label>
@@ -536,8 +536,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
     <div class="fg" style="margin-bottom:.85rem"><label>Plan</label>
       <select id="act-plan">
         <option value="starter">Starter — Gratuit</option>
-        <option value="pro" selected>Pro Annuel</option>
-        <option value="pro_mensuel">Pro Mensuel</option>
+        <option value="pro_annuel" selected>Pro Annuel</option>
+        <option value="pro">Pro Mensuel</option>
       </select>
     </div>
     <div class="ep" id="act-preview"></div>
@@ -571,8 +571,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
     <div class="fg" style="margin-bottom:.85rem"><label>Plan</label>
       <select id="ext-plan">
         <option value="starter">Starter — Gratuit</option>
-        <option value="pro" selected>Pro Annuel</option>
-        <option value="pro_mensuel">Pro Mensuel</option>
+        <option value="pro_annuel" selected>Pro Annuel</option>
+        <option value="pro">Pro Mensuel</option>
       </select>
     </div>
     <div style="background:rgba(124,106,247,.07);border:1px solid rgba(124,106,247,.2);border-radius:8px;padding:.5rem .85rem;font-size:.76rem;color:var(--ac);margin-bottom:.85rem" id="ext-preview"></div>
@@ -692,10 +692,12 @@ function updateKPIs() {
     const te = new Date(c.trial_end + 'T00:00:00');
     return te >= today && te <= in7;
   });
-  // Revenus = tous les clients avec payment_status='payé' (actifs OU pas)
+  // Revenus = tous les clients avec payment_status='payé'
+  // Pro Annuel = 1990 MAD / Pro Mensuel = 199 MAD
+  const PRIX = { pro_annuel: 1990, pro: 199 };
   const proPayes = allClients.filter(c => c.payment_status === 'payé' && c.plan && c.plan !== 'starter');
-  const proActifsCount = actifs.filter(c => c.plan && c.plan !== 'starter').length;
-  const revenue = proPayes.length * 199;
+  const proActifsCount = actifs.filter(c => c.plan === 'pro_annuel' || c.plan === 'pro').length;
+  const revenue = proPayes.reduce((sum, c) => sum + (PRIX[c.plan] || 0), 0);
 
   set('k-total', allClients.length);
   set('k-active', actifs.length);
@@ -842,8 +844,8 @@ function renderAnalyticsCharts() {
 
   // Plans donut
   const starter = allClients.filter(c=>!c.plan||c.plan==='starter').length;
-  const proA = allClients.filter(c=>c.plan==='pro'||c.plan==='pro_annuel').length;
-  const proM = allClients.filter(c=>c.plan==='pro_mensuel').length;
+  const proA = allClients.filter(c=>c.plan==='pro_annuel').length;
+  const proM = allClients.filter(c=>c.plan==='pro').length;
   if(charts['c-plans']) charts['c-plans'].destroy();
   const pl = document.getElementById('c-plans');
   if(pl) charts['c-plans'] = new Chart(pl,{
@@ -915,8 +917,8 @@ function renderCurrentTab(filter='') {
 
 function renderClientRow(c, colClass, today) {
   const fmt = d => d ? new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
-  const planLabel = (c.plan==='pro'||c.plan==='pro_annuel') ? 'PRO AN' : c.plan==='pro_mensuel' ? 'PRO MOIS' : 'STARTER';
-  const planCls = (!c.plan||c.plan==='starter') ? '' : 'bp';
+  const planLabel = c.plan==='pro_annuel' ? 'PRO AN' : c.plan==='pro' ? 'PRO MOIS' : 'STARTER';
+  const planCls = (c.plan==='pro_annuel'||c.plan==='pro') ? 'bp' : '';
   const trialEnd = c.trial_end ? new Date(c.trial_end+'T00:00:00') : null;
   const daysLeft = trialEnd ? Math.ceil((trialEnd-today)/(86400000)) : null;
   const isStarter = !c.plan || c.plan==='starter';
@@ -1021,8 +1023,8 @@ function renderBilling() {
   if(!allClients.length) { el.innerHTML='<div class="empty">Aucun client</div>'; return; }
 
   el.innerHTML = allClients.map(c => {
-    const planLabel = (c.plan==='pro'||c.plan==='pro_annuel') ? 'PRO AN' : c.plan==='pro_mensuel' ? 'PRO MOIS' : 'STARTER';
-    const planCls = (!c.plan||c.plan==='starter') ? '' : 'bp';
+    const planLabel = c.plan==='pro_annuel' ? 'PRO AN' : c.plan==='pro' ? 'PRO MOIS' : 'STARTER';
+    const planCls = (c.plan==='pro_annuel'||c.plan==='pro') ? 'bp' : '';
     const psCls = c.payment_status==='payé' ? 'bg' : c.payment_status==='en_attente' ? 'by' : 'br';
     const psLbl = c.payment_status==='payé' ? '✓ Payé' : c.payment_status==='en_attente' ? '⏳ En attente' : c.payment_status||'Gratuit';
     return `<div class="trow cbl" style="display:grid">
