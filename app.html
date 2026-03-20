@@ -705,21 +705,15 @@
       <div id="payment-method-section" style="margin-bottom:1.5rem;display:none">
         <label style="display:block;font-size:.78rem;color:var(--muted);margin-bottom:.6rem;font-weight:500">Méthode de paiement</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem" id="payment-btns">
-          <div onclick="pickPayment(this,'Virement bancaire')" style="border:1.5px solid var(--border);border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-align:center">
-            <div style="font-size:1.2rem;margin-bottom:.2rem">🏦</div>
-            <div style="font-size:.78rem;font-weight:600;color:var(--text)">Virement bancaire</div>
+          <div onclick="pickPayment(this,'Virement bancaire')" style="border:1.5px solid var(--border);border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;text-align:center">
+            <div style="font-size:1.5rem;margin-bottom:.3rem">🏦</div>
+            <div style="font-size:.82rem;font-weight:600;color:var(--text)">Virement bancaire</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">CIH, Attijariwafa...</div>
           </div>
-          <div onclick="pickPayment(this,'Wafacash')" style="border:1.5px solid var(--border);border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-align:center">
-            <div style="font-size:1.2rem;margin-bottom:.2rem">💸</div>
-            <div style="font-size:.78rem;font-weight:600;color:var(--text)">Wafacash</div>
-          </div>
-          <div onclick="pickPayment(this,'CIH Mobile')" style="border:1.5px solid var(--border);border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-align:center">
-            <div style="font-size:1.2rem;margin-bottom:.2rem">📱</div>
-            <div style="font-size:.78rem;font-weight:600;color:var(--text)">CIH Mobile</div>
-          </div>
-          <div onclick="pickPayment(this,'Barid Bank')" style="border:1.5px solid var(--border);border-radius:10px;padding:.8rem;cursor:pointer;transition:all .2s;text-align:center">
-            <div style="font-size:1.2rem;margin-bottom:.2rem">📮</div>
-            <div style="font-size:.78rem;font-weight:600;color:var(--text)">Barid Bank</div>
+          <div onclick="pickPayment(this,'Wafacash')" style="border:1.5px solid var(--border);border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;text-align:center">
+            <div style="font-size:1.5rem;margin-bottom:.3rem">💸</div>
+            <div style="font-size:.82rem;font-weight:600;color:var(--text)">Wafacash</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:.2rem">Transfert rapide</div>
           </div>
         </div>
         <input type="hidden" id="rp-payment" value="">
@@ -768,82 +762,64 @@
   </div>
 </div>
 
-<!-- BLOCKED PAGE -->
-<div id="blocked-page" class="page" style="display:none;flex-direction:row;min-height:100vh;">
-  <!-- Left purple panel -->
-  <div class="auth-left" style="display:flex;flex-direction:column;justify-content:space-between;">
-    <div class="auth-left-logo">ReservaPlus</div>
-    <div class="auth-left-body">
-      <div style="font-size:3rem;margin-bottom:1.2rem;">🔒</div>
-      <div class="auth-left-title" style="font-size:clamp(1.5rem,2.5vw,2.2rem)" id="blocked-title">Abonnement<br>terminé.</div>
-      <div class="auth-left-desc" style="margin-top:1rem" id="blocked-desc">Votre abonnement est terminé. Choisissez un plan pour continuer à recevoir des réservations.</div>
+<!-- BLOCKED PAGE: ABONNEMENT EXPIRÉ -->
+<div id="blocked-expired-page" style="display:none;min-height:100vh;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:2rem;text-align:center">
+  <div style="max-width:480px;width:100%">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--accent);margin-bottom:.3rem">ReservaPlus</div>
+    <div style="width:80px;height:80px;background:rgba(248,113,113,0.1);border:2px solid rgba(248,113,113,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:1.5rem auto">🔒</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:.6rem;color:var(--text)">Votre abonnement est terminé</div>
+    <div style="font-size:.9rem;color:var(--muted);line-height:1.8;margin-bottom:2rem">
+      Votre période d'abonnement Pro est expirée.<br>
+      Renouvelez pour continuer à recevoir des réservations et gérer votre planning.
     </div>
-    <div class="auth-left-footer">
-      <span>© 2026 ReservaPlus</span><span>Maroc 🇲🇦</span>
+
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:1.8rem;margin-bottom:1.5rem;text-align:left">
+      <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.1em;margin-bottom:.8rem">RENOUVELER MON ABONNEMENT</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:var(--text);margin-bottom:.2rem">Pro Annuel</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:1.2rem">Paiement unique · Valable 1 an</div>
+      <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.3rem">
+        <div style="font-size:.82rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>RDV & services illimités</div>
+        <div style="font-size:.82rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Staff illimité</div>
+        <div style="font-size:.82rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Stats & Calendrier</div>
+        <div style="font-size:.82rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:#4ade80">✓</span>Support prioritaire</div>
+      </div>
+      <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20renouveler%20mon%20abonnement%20ReservaPlus%20Pro." target="_blank"
+        style="display:flex;align-items:center;justify-content:center;gap:.5rem;background:#25D366;color:#fff;padding:.9rem;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
+        Renouveler via WhatsApp
+      </a>
     </div>
+    <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">Se déconnecter</button>
   </div>
+</div>
 
-  <!-- Right: pricing -->
-  <div class="auth-right" style="overflow-y:auto;padding:2.5rem 2rem;align-items:flex-start;justify-content:flex-start;flex-direction:column;gap:0">
-    <div style="width:100%;max-width:640px;margin:0 auto;">
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;margin-bottom:.4rem;color:var(--text)">Choisissez votre plan</div>
-      <div style="font-size:.85rem;color:var(--muted);margin-bottom:2rem">Continuez à gérer vos réservations sans interruption.</div>
-
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
-
-        <!-- Starter -->
-        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:1.5rem;transition:all .2s;cursor:pointer" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">STARTER</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">0 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
-          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Pour démarrer</div>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>30 réservations/mois</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>3 services max</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Lien de réservation</li>
-            <li style="font-size:.78rem;color:var(--muted);opacity:.45;display:flex;gap:.4rem"><span>–</span>Staff illimité</li>
-          </ul>
-          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20le%20plan%20Starter%20ReservaPlus." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;border:1.5px solid var(--border2);color:var(--text);font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">Choisir Starter</a>
-        </div>
-
-        <!-- Pro (popular) -->
-        <div style="background:var(--accent-bg,#1e1a3d);border:1.5px solid var(--accent);border-radius:18px;padding:1.5rem;position:relative">
-          <div style="position:absolute;top:-1px;right:1.2rem;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;padding:.2rem .6rem;border-radius:0 0 7px 7px;letter-spacing:.04em">POPULAIRE</div>
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">PRO</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">199 <span style="font-size:.8rem;font-weight:400;color:var(--muted)">MAD/mois</span></div>
-          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Pour les pros sérieux</div>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Réservations illimitées</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Services illimités</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Staff illimité</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Stats &amp; Calendrier</li>
-          </ul>
-          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20activer%20le%20plan%20Pro%20ReservaPlus." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;background:var(--accent);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.background='#5a4bd1'" onmouseleave="this.style.background='var(--accent)'">Choisir Pro →</a>
-        </div>
-
-        <!-- Entreprise -->
-        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:1.5rem;transition:all .2s;cursor:pointer" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem">ENTREPRISE</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;margin-bottom:.2rem;color:var(--text)">Sur <span style="font-size:.85rem;font-weight:400;color:var(--muted)">devis</span></div>
-          <div style="font-size:.75rem;color:var(--muted);margin-bottom:1.2rem">Chaînes &amp; franchises</div>
-          <ul style="list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.4rem">
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Multi-établissements</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Dashboard centralisé</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Support 24/7</li>
-            <li style="font-size:.78rem;color:var(--muted);display:flex;gap:.4rem"><span style="color:var(--green)">✓</span>Onboarding dédié</li>
-          </ul>
-          <a href="https://wa.me/212607784715?text=Bonjour%2C%20je%20veux%20un%20devis%20ReservaPlus%20Entreprise." target="_blank" style="display:block;text-align:center;padding:.65rem;border-radius:9px;border:1.5px solid var(--border2);color:var(--text);font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:'DM Sans',sans-serif" onmouseenter="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">Nous contacter</a>
-        </div>
-
-      </div>
-
-      <div style="text-align:center;margin-top:.5rem">
-        <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">Se déconnecter</button>
-      </div>
+<!-- BLOCKED PAGE: EN ATTENTE DE PAIEMENT -->
+<div id="blocked-pending-page" style="display:none;min-height:100vh;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;padding:2rem;text-align:center">
+  <div style="max-width:480px;width:100%">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--accent);margin-bottom:.3rem">ReservaPlus</div>
+    <div style="width:80px;height:80px;background:rgba(245,158,11,0.1);border:2px solid rgba(245,158,11,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:1.5rem auto">⏳</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:.6rem;color:var(--text)">En attente de paiement</div>
+    <div style="font-size:.9rem;color:var(--muted);line-height:1.8;margin-bottom:2rem">
+      Votre compte a été créé avec succès.<br>
+      Votre accès sera activé dans les <strong style="color:var(--text)">24h</strong> après réception de votre paiement.
     </div>
+
+    <div style="background:var(--card);border:1.5px solid rgba(245,158,11,0.3);border-radius:18px;padding:1.5rem;margin-bottom:1.5rem;text-align:left">
+      <div style="font-size:.82rem;font-weight:700;margin-bottom:1rem;color:var(--text)">📋 Rappel des instructions</div>
+      <div id="pending-payment-details" style="font-size:.82rem;color:var(--muted);line-height:1.8"></div>
+    </div>
+
+    <a id="pending-wa-btn" href="https://wa.me/212607784715?text=Bonjour%2C%20j%27ai%20effectu%C3%A9%20le%20paiement%20ReservaPlus.%20Merci%20d%27activer%20mon%20compte." target="_blank"
+      style="display:flex;align-items:center;justify-content:center;gap:.5rem;background:#25D366;color:#fff;padding:.9rem;border-radius:12px;font-weight:700;font-size:.9rem;text-decoration:none;margin-bottom:1rem">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.845L.057 23.927a.5.5 0 0 0 .609.61l6.163-1.481A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.956 9.956 0 0 1-5.03-1.356l-.36-.214-3.733.897.913-3.641-.233-.374A9.956 9.956 0 0 1 2 12C2 6.478 6.478 2 12 2s10 4.478 10 10-4.478 10-10 10z"/></svg>
+      J'ai payé — Activer mon compte
+    </a>
+    <button onclick="logout()" style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline">Se déconnecter</button>
   </div>
 </div>
 
 <!-- DASHBOARD PAGE -->
+
 <div id="dashboard-page" class="page">
   <nav class="dash-nav">
     <div class="dash-logo">Reserva<span>Plus</span></div>
@@ -1891,18 +1867,27 @@
 
   // ---- SHOW DASHBOARD ----
   function showDashboard() {
+    // Hide all blocked pages
+    document.getElementById('blocked-expired-page').style.display = 'none';
+    document.getElementById('blocked-pending-page').style.display = 'none';
+
     // Check if blocked
     if (currentBusiness?.is_active === false) {
       document.getElementById('auth-page').classList.remove('active');
-      // Update blocked page text based on plan
-      const isPro = currentBusiness?.plan === 'pro';
-      const titleEl = document.getElementById('blocked-title');
-      const descEl = document.getElementById('blocked-desc');
-      if (titleEl) titleEl.innerHTML = isPro ? 'Abonnement<br>Pro terminé.' : 'Compte<br>bloqué.';
-      if (descEl) descEl.textContent = isPro
-        ? 'Votre abonnement Pro de 30 jours est terminé. Renouvelez pour continuer.'
-        : 'Votre compte a été suspendu. Contactez-nous pour continuer.';
-      document.getElementById('blocked-page').style.display = 'flex';
+      document.getElementById('register-page').style.display = 'none';
+
+      if (currentBusiness?.payment_status === 'en_attente') {
+        // En attente de paiement
+        const details = currentBusiness.payment_method === 'Wafacash'
+          ? `Envoyez le montant via <strong>Wafacash</strong> au :<br>Numéro : <strong style="color:var(--text)">0607784715</strong><br>Nom : Abdelmalik E.`
+          : `Virement bancaire :<br>RIB : <strong style="color:var(--text)">007 780 0000123456789012</strong><br>Banque : Attijariwafa Bank`;
+        const el = document.getElementById('pending-payment-details');
+        if (el) el.innerHTML = details;
+        document.getElementById('blocked-pending-page').style.display = 'flex';
+      } else {
+        // Abonnement expiré
+        document.getElementById('blocked-expired-page').style.display = 'flex';
+      }
       return;
     }
     document.getElementById('blocked-page').style.display = 'none';
