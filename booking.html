@@ -615,10 +615,10 @@ async function confirmBooking(){
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Confirmation...';
 
   const code='RES-'+Math.random().toString(36).substr(2,6).toUpperCase();
-  const ins={business_id:bizId,client_name:name,client_phone:phone,service_name:selSvc,date,time:selTime,status:'en_attente',reservation_code:code};
+  const ins={business_id:bizId,client_name:name,client_phone:phone,service_name:selSvc,date,time:selTime,statut:'en_attente',reservation_code:code};
 
   if(!selStaffId&&staffPool.length>0){
-    const{data:allRes}=await sb.from('reservations').select('time,staff_id').eq('business_id',bizId).eq('date',date).neq('status','annule');
+    const{data:allRes}=await sb.from('reservations').select('time,staff_id').eq('business_id',bizId).eq('date',date).neq('statut','annule');
     const free=staffPool.find(s=>{
       const ss=genSlots(s.opening_time?.slice(0,5)||bizOpen,s.closing_time?.slice(0,5)||bizClose,bizDur);
       return ss.includes(selTime)&&!(allRes||[]).some(r=>r.staff_id===s.id&&r.time?.slice(0,5)===selTime);
