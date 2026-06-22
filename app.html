@@ -1477,20 +1477,23 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Connexion...';
 
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-      showAlert('auth-alert', 'Email ou mot de passe incorrect.', 'error');
-      btn.disabled = false; btn.textContent = "S'identifier";
-      return;
-    }
+    const resetBtn = () => { btn.disabled = false; btn.textContent = "S'identifier"; };
 
-    currentUser = data.user;
-    await loadBusiness();
-    if (!currentBusiness) {
-      btn.disabled = false; btn.textContent = "S'identifier";
-      return;
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        showAlert('auth-alert', 'Email ou mot de passe incorrect.', 'error');
+        resetBtn(); return;
+      }
+
+      currentUser = data.user;
+      await loadBusiness();
+      if (!currentBusiness) { resetBtn(); return; }
+      showDashboard();
+    } catch(e) {
+      showAlert('auth-alert', 'Erreur de connexion. Réessayez.', 'error');
+      resetBtn();
     }
-    showDashboard();
   }
 
   // ---- FORGOT PASSWORD ----
@@ -1839,8 +1842,8 @@
     if (!data) {
       // No business found — show error
       await sb.auth.signOut();
-      const loginBtn = document.querySelector('#login-form .btn-submit');
-      if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Se connecter'; }
+      const loginBtn = document.getElementById('btn-login');
+      if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = "S'identifier"; }
       showAlert('auth-alert', 'Compte non configuré. Contactez le support.', 'error');
       return;
     }
@@ -1955,7 +1958,8 @@
       }
       return;
     }
-    document.getElementById('blocked-page').style.display = 'none';
+    const bp = document.getElementById('blocked-page');
+    if (bp) bp.style.display = 'none';
     document.getElementById('auth-page').classList.remove('active');
     document.getElementById('dashboard-page').classList.add('active');
     const plan = getPlan();
