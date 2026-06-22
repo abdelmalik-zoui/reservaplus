@@ -550,17 +550,25 @@ async function loadSlots(){
 
   if(hasStaff&&staffPool.length>0){
     const{data:allRes}=await sb.from('reservations').select('time,staff_id').eq('business_id',bizId).eq('date',date).neq('status','annule');
+
+    // إذا الكليان اختار staff معين، نشوفو فقط
+    const relevantStaff = selStaffId ? staffPool.filter(s=>s.id===selStaffId) : staffPool;
+
     const allSet=new Set();
-    staffPool.forEach(s=>genSlots(s.opening_time?.slice(0,5)||bizOpen,s.closing_time?.slice(0,5)||bizClose,bizDur).forEach(sl=>allSet.add(sl)));
+    relevantStaff.forEach(s=>genSlots(s.opening_time?.slice(0,5)||bizOpen,s.closing_time?.slice(0,5)||bizClose,bizDur).forEach(sl=>allSet.add(sl)));
     const slots = Array.from(allSet).sort();
-    const availableSlots = slots.filter(sl => {
-      const slotMinutes = parseInt(sl.split(':')[0])*60 + parseInt(sl.split(':')[1]);
-      if(isToday && slotMinutes <= nowMinutes) return false; // اليوم - الأوقات اللي فاتت
-      const free=staffPool.filter(s=>{
+
+    const isFreeSlot = (sl) => {
+      return relevantStaff.some(s=>{
         const ss=genSlots(s.opening_time?.slice(0,5)||bizOpen,s.closing_time?.slice(0,5)||bizClose,bizDur);
         return ss.includes(sl)&&!(allRes||[]).some(r=>r.staff_id===s.id&&r.time?.slice(0,5)===sl);
       });
-      return free.length > 0;
+    };
+
+    const availableSlots = slots.filter(sl => {
+      const slotMinutes = parseInt(sl.split(':')[0])*60 + parseInt(sl.split(':')[1]);
+      if(isToday && slotMinutes <= nowMinutes) return false;
+      return isFreeSlot(sl);
     });
     if(availableSlots.length === 0){
       g.innerHTML='<div style="color:var(--sub);font-size:.78rem;padding:.5rem 0">Aucun créneau disponible ce jour, choisissez une autre date.</div>';
@@ -569,11 +577,9 @@ async function loadSlots(){
     g.innerHTML=slots.map(sl=>{
       const slotMinutes2 = parseInt(sl.split(':')[0])*60 + parseInt(sl.split(':')[1]);
       if(isToday && slotMinutes2 <= nowMinutes) return '';
-      const free=staffPool.filter(s=>{
-        const ss=genSlots(s.opening_time?.slice(0,5)||bizOpen,s.closing_time?.slice(0,5)||bizClose,bizDur);
-        return ss.includes(sl)&&!(allRes||[]).some(r=>r.staff_id===s.id&&r.time?.slice(0,5)===sl);
-      });
-      return free.length?`<div class="sl" onclick="pickSlot(this,'${sl}')">${sl}</div>`:`<div class="sl occ">${sl}</div>`;
+      return isFreeSlot(sl)
+        ? `<div class="sl" onclick="pickSlot(this,'${sl}')">${sl}</div>`
+        : `<div class="sl occ">${sl}</div>`;
     }).filter(Boolean).join('');
   } else {
     const{data:res}=await sb.from('reservations').select('time').eq('business_id',bizId).eq('date',date).neq('status','annule');
