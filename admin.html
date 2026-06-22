@@ -1223,15 +1223,15 @@ async function fixDates() {
   const el = document.getElementById('fix-alert');
   el.innerHTML = '<div style="color:var(--mu);font-size:.8rem">Analyse en cours...</div>';
 
-  // Pro Mensuel = plan 'pro' → max 60 jours après created_at
-  // Si trial_end > created_at + 365 jours → date incorrecte
+  // Tous les clients Pro Mensuel (plan='pro') avec trial_end > 1 an après aujourd'hui
+  const today = new Date();
+  const oneYearFromNow = new Date(today); oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
   const toFix = allClients.filter(c => {
-    if (c.plan !== 'pro') return false; // Pro Mensuel uniquement
-    if (!c.trial_end || !c.created_at) return false;
-    const created = new Date(c.created_at);
-    const end = new Date(c.trial_end);
-    const diffDays = (end - created) / (1000 * 60 * 60 * 24);
-    return diffDays > 60; // Plus de 60 jours = date incorrecte pour Pro Mensuel
+    if (c.plan !== 'pro') return false;
+    if (!c.trial_end) return false;
+    const end = new Date(c.trial_end + 'T00:00:00');
+    return end > oneYearFromNow; // date > 1 an dans le futur = incorrecte pour Pro Mensuel
   });
 
   if (!toFix.length) {
@@ -1240,14 +1240,13 @@ async function fixDates() {
   }
 
   if (!confirm(`Corriger ${toFix.length} client(s) Pro Mensuel ?\n${toFix.map(c=>c.name).join(', ')}`)) {
-    el.innerHTML = '';
-    return;
+    el.innerHTML = ''; return;
   }
 
   let fixed = 0;
   for (const c of toFix) {
-    // Nouvelle date = created_at + 30 jours
-    const newEnd = new Date(c.created_at);
+    // Nouvelle date = aujourd'hui + 30 jours
+    const newEnd = new Date();
     newEnd.setDate(newEnd.getDate() + 30);
     await sb.from('businesses').update({
       trial_end: newEnd.toISOString().split('T')[0]
