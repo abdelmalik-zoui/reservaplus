@@ -489,8 +489,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
             <div class="fg" style="margin-bottom:.9rem"><label>Confirmer</label><input type="password" id="s-confirm"></div>
             <button class="btn-p" onclick="saveSettings()">Enregistrer</button>
           </div>
-          <div class="panel">
-            <div class="pnt">ℹ️ Informations plateforme</div>
+          <div class="panel" style="margin-bottom:1rem;border-color:rgba(251,191,36,.2)">
+            <div class="pnt">🔧 Corriger les dates d'abonnement</div>
+            <div style="font-size:.79rem;color:var(--mu);margin-bottom:.9rem;line-height:1.7">
+              Corrige les clients Pro Mensuel qui ont une date à +10 ans au lieu de +30 jours.<br>
+              <strong style="color:var(--yw)">⚠️ Action irréversible — vérifiez avant de lancer.</strong>
+            </div>
+            <div id="fix-alert"></div>
+            <button class="btn-p" style="background:var(--yw);color:#000" onclick="fixDates()">🔧 Lancer la correction</button>
+          </div>
             <div style="font-size:.79rem;color:var(--mu);line-height:2.1">
               <div>Plateforme : <strong style="color:var(--tx)">ReservaPlus</strong></div>
               <div>Supabase : <strong style="color:var(--ac)">uewtdxkpsraufzjsebnh</strong></div>
@@ -1074,7 +1081,9 @@ async function addNewClient() {
     const u = await reg.json();
     if(!u.id) throw new Error(u.message||'Erreur création');
 
-    const end = new Date(); end.setDate(end.getDate()+(days||3650));
+    const isStarter = plan === 'starter';
+    const trialDays = isStarter ? 3650 : (days || 365); // Starter = 10 ans gratuit, Pro = durée choisie
+    const end = new Date(); end.setDate(end.getDate() + trialDays);
     await sb.from('businesses').insert({
       name, email, phone: phone||null, user_id: u.id,
       plan: plan, is_active: plan==='starter',
@@ -1207,6 +1216,48 @@ async function deleteClient(bizId, name) {
     });
   }
   await loadAll(); showToast('🗑️ Client supprimé');
+}
+
+// ──────────── FIX DATES ────────────
+async function fixDates() {
+  const el = document.getElementById('fix-alert');
+  el.innerHTML = '<div style="color:var(--mu);font-size:.8rem">Analyse en cours...</div>';
+
+  // Pro Mensuel = plan 'pro' → max 60 jours après created_at
+  // Si trial_end > created_at + 365 jours → date incorrecte
+  const toFix = allClients.filter(c => {
+    if (c.plan !== 'pro') return false; // Pro Mensuel uniquement
+    if (!c.trial_end || !c.created_at) return false;
+    const created = new Date(c.created_at);
+    const end = new Date(c.trial_end);
+    const diffDays = (end - created) / (1000 * 60 * 60 * 24);
+    return diffDays > 60; // Plus de 60 jours = date incorrecte pour Pro Mensuel
+  });
+
+  if (!toFix.length) {
+    el.innerHTML = '<div class="alert-s">✅ Aucune correction nécessaire !</div>';
+    return;
+  }
+
+  if (!confirm(`Corriger ${toFix.length} client(s) Pro Mensuel ?\n${toFix.map(c=>c.name).join(', ')}`)) {
+    el.innerHTML = '';
+    return;
+  }
+
+  let fixed = 0;
+  for (const c of toFix) {
+    // Nouvelle date = created_at + 30 jours
+    const newEnd = new Date(c.created_at);
+    newEnd.setDate(newEnd.getDate() + 30);
+    await sb.from('businesses').update({
+      trial_end: newEnd.toISOString().split('T')[0]
+    }).eq('id', c.id);
+    fixed++;
+  }
+
+  await loadAll();
+  el.innerHTML = `<div class="alert-s">✅ ${fixed} client(s) corrigé(s) !</div>`;
+  setTimeout(() => el.innerHTML = '', 4000);
 }
 
 // ──────────── SETTINGS ────────────
