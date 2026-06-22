@@ -2035,7 +2035,7 @@
     // فلتر — موعدهم بين دابا و 2h من دابا + مش annulé + ماتذكروش بعد
     const upcoming = rdvs.filter(r => {
       if (!r.time) return false;
-      if (r.statut === 'annule') return false;
+      if (r.status === 'annule') return false;
       if (r.reminded_at) return false;
       const rdvDateTime = new Date(todayStr + 'T' + r.time.slice(0,5) + ':00');
       const diffMs = rdvDateTime - now;
