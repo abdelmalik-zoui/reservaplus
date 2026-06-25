@@ -463,6 +463,10 @@
     vertical-align: middle;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+  }
 
   @media (max-width: 768px) {
     .sidebar { display: none; }
@@ -893,39 +897,93 @@
 
       <!-- OVERVIEW -->
       <div id="view-overview" class="view active">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-          <div class="view-title" style="margin-bottom:0;">Tableau de bord</div>
-          <div style="color:var(--muted);font-size:0.82rem;" id="dash-date"></div>
-        </div>
-        <div class="kpi-grid">
-          <div class="kpi">
-            <div class="kpi-label">Total</div>
-            <div class="kpi-val" id="kpi-total">—</div>
-            <div class="kpi-sub">Toutes réservations</div>
+
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
+          <div>
+            <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.2rem" id="dash-date"></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--text)" id="dash-greeting">Bonjour 👋</div>
           </div>
-          <div class="kpi">
-            <div class="kpi-label">Confirmées</div>
-            <div class="kpi-val" id="kpi-confirmed" style="color:var(--green)">—</div>
-            <div class="kpi-sub" style="color:var(--green);">✓ Confirmées</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">En attente</div>
-            <div class="kpi-val" id="kpi-pending" style="color:var(--yellow)">—</div>
-            <div class="kpi-sub" style="color:var(--yellow);">⏳ En attente</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Annulées</div>
-            <div class="kpi-val" id="kpi-annule" style="color:var(--red)">—</div>
-            <div class="kpi-sub" style="color:var(--red);">✗ Annulées</div>
+          <div style="display:flex;gap:.5rem;">
+            <button onclick="copyPublicLink()" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:.45rem 1rem;border-radius:8px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:.4rem;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              🔗 Lien public
+            </button>
+            <button onclick="showView('new-reservation',document.querySelector('.nav-item:nth-child(5)'))" style="background:var(--accent);border:none;color:#fff;padding:.45rem 1.1rem;border-radius:8px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;display:flex;align-items:center;gap:.4rem;">
+              + Nouveau RDV
+            </button>
           </div>
         </div>
-        <div class="view-title" style="font-size:1rem;">Dernières réservations</div>
-        <div class="table-wrap" id="overview-table">
-          <div class="table-head">
-            <span>CLIENT</span><span>SERVICE</span><span>DATE</span><span>HEURE</span><span>STATUT</span>
+
+        <!-- KPI Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.75rem;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem;">
+            <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;">RDV Aujourd'hui</div>
+            <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--text);line-height:1" id="kpi-today">—</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.4rem" id="kpi-today-sub">reservations</div>
           </div>
-          <div class="table-empty">Chargement...</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem;">
+            <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;">Confirmées</div>
+            <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#4ade80;line-height:1" id="kpi-confirmed">—</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.4rem" id="kpi-confirmed-sub">total</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem;">
+            <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;">En attente</div>
+            <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#fbbf24;line-height:1" id="kpi-pending">—</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">à confirmer</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem;">
+            <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem;">Total</div>
+            <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--text);line-height:1" id="kpi-total">—</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">toutes périodes</div>
+          </div>
         </div>
+
+        <!-- Main grid: Prochains RDV + Staff -->
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:.75rem;margin-bottom:.75rem;">
+
+          <!-- Prochains RDV -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.3rem;border-bottom:1px solid var(--border);">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;">Prochains rendez-vous</div>
+              <div style="display:flex;align-items:center;gap:.35rem;font-size:.65rem;color:#4ade80;font-weight:600;letter-spacing:.05em;">
+                <span style="width:6px;height:6px;background:#4ade80;border-radius:50%;display:inline-block;animation:pulse-dot 1.5s infinite"></span>
+                LIVE
+              </div>
+            </div>
+            <div id="overview-upcoming">
+              <div style="padding:2rem;text-align:center;color:var(--muted);font-size:.82rem;">Chargement...</div>
+            </div>
+          </div>
+
+          <!-- Staff -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <div style="padding:1rem 1.3rem;border-bottom:1px solid var(--border);">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;">Équipe en service</div>
+            </div>
+            <div id="overview-staff" style="padding:.5rem 0;">
+              <div style="padding:1rem 1.3rem;color:var(--muted);font-size:.82rem;">Chargement...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Plan bar bottom -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.3rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Plan actuel</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;" id="plan-label-dash">—</div>
+          </div>
+          <div style="flex:1;max-width:300px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:.3rem;">
+              <span style="font-size:.68rem;color:var(--muted)" id="plan-days-dash"></span>
+            </div>
+            <div style="background:var(--border);border-radius:100px;height:4px;overflow:hidden;">
+              <div id="plan-bar-dash" style="background:var(--accent);height:100%;border-radius:100px;width:0%;transition:width .5s;"></div>
+            </div>
+          </div>
+          <button onclick="showView('change-pwd',null)" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.35rem .85rem;border-radius:7px;font-size:.72rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Gérer</button>
+        </div>
+
       </div>
 
       <!-- STATS -->
@@ -2168,16 +2226,132 @@
     }
 
     // KPIs — كيحسب كل شي حتى done و annule
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayRdv = reservations.filter(r => r.date === todayStr && r.status !== 'annule');
+    document.getElementById('kpi-today').textContent = todayRdv.length;
+    document.getElementById('kpi-today-sub').textContent = todayRdv.length === 1 ? 'rendez-vous' : 'rendez-vous';
     document.getElementById('kpi-total').textContent = reservations.filter(r => r.status !== 'done').length;
     document.getElementById('kpi-confirmed').textContent = reservations.filter(r => r.status === 'confirme').length;
+    document.getElementById('kpi-confirmed-sub').textContent = reservations.filter(r => r.status === 'confirme').length + ' au total';
     document.getElementById('kpi-pending').textContent = reservations.filter(r => r.status === 'en_attente').length;
     if (document.getElementById('kpi-annule'))
       document.getElementById('kpi-annule').textContent = reservations.filter(r => r.status === 'annule').length;
 
+    // Greeting
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+    const bizName = currentBusiness?.name || '';
+    if (document.getElementById('dash-greeting'))
+      document.getElementById('dash-greeting').textContent = greet + ', ' + bizName + ' 👋';
+
+    // Upcoming RDV (aujourd'hui + futur, triés)
+    renderUpcomingRdv(reservations);
+
+    // Staff
+    renderOverviewStaff();
+
+    // Plan bar
+    renderPlanBar();
+
     // Tables — ما تبانش done و annule
     const visible = reservations.filter(r => r.status !== 'done' && r.status !== 'annule');
-    renderTable('overview-table', visible.slice(0, 5));
+    if (document.getElementById('overview-table')) renderTable('overview-table', visible.slice(0, 5));
     renderTable('all-reservations-table', visible);
+  }
+
+  function renderUpcomingRdv(reservations) {
+    const el = document.getElementById('overview-upcoming');
+    if (!el) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const nowTime = new Date().toTimeString().slice(0,5);
+
+    const upcoming = reservations
+      .filter(r => r.status !== 'annule' && r.status !== 'done')
+      .filter(r => r.date > todayStr || (r.date === todayStr && (r.time||'') >= nowTime))
+      .sort((a,b) => (a.date+a.time) < (b.date+b.time) ? -1 : 1)
+      .slice(0, 6);
+
+    if (!upcoming.length) {
+      el.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted);font-size:.82rem;">Aucun rendez-vous à venir 🎉</div>';
+      return;
+    }
+
+    el.innerHTML = upcoming.map(r => {
+      const isToday = r.date === todayStr;
+      const dateLabel = isToday ? 'Aujourd\'hui' : new Date(r.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+      const sBg = r.status==='confirme' ? 'rgba(74,222,128,.1)' : 'rgba(251,191,36,.1)';
+      const sClr = r.status==='confirme' ? '#4ade80' : '#fbbf24';
+      const sLbl = r.status==='confirme' ? 'CONFIRMÉ' : 'EN ATTENTE';
+      const staffName = r.staff_id && window.staffMap?.[r.staff_id] ? window.staffMap[r.staff_id] : null;
+      const phone = (r.client_phone||'').replace(/\s/g,'').replace(/^\+/,'');
+      const waMsg = encodeURIComponent(`Bonjour ${r.client_name}! Rappel de votre RDV:\n📅 ${r.date} à ${r.time?.slice(0,5)}\n💈 ${r.service_name||''}\nMerci — ${currentBusiness?.name}`);
+      return `<div style="display:flex;align-items:center;gap:1rem;padding:.85rem 1.3rem;border-bottom:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='rgba(124,106,247,.03)'" onmouseout="this.style.background='none'">
+        <div style="font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:var(--accent);min-width:38px">${r.time?.slice(0,5)||'—'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.84rem;font-weight:600;color:var(--text);margin-bottom:.1rem">${r.client_name||'—'}</div>
+          <div style="font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:.4rem">
+            ${r.service_name||''}
+            ${staffName ? `<span style="color:var(--accent)">· ${staffName}</span>` : ''}
+            ${!isToday ? `<span style="color:var(--muted)">· ${dateLabel}</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.35rem">
+          ${phone ? `<a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" style="background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);color:#25D366;border-radius:6px;padding:.18rem .45rem;font-size:.65rem;text-decoration:none;white-space:nowrap">💬 WA</a>` : ''}
+          <span style="background:${sBg};color:${sClr};padding:.18rem .55rem;border-radius:100px;font-size:.6rem;font-weight:700;letter-spacing:.04em;white-space:nowrap">${sLbl}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function renderOverviewStaff() {
+    const el = document.getElementById('overview-staff');
+    if (!el || !currentBusiness) return;
+    const { data: staffList } = await sb.from('staff').select('id,name').eq('business_id', currentBusiness.id);
+    if (!staffList?.length) {
+      el.innerHTML = '<div style="padding:1rem 1.3rem;color:var(--muted);font-size:.8rem">Aucun staff configuré</div>';
+      return;
+    }
+    const colors = ['#7c6af7','#4ade80','#fbbf24','#f87171','#60a5fa','#a78bfa'];
+    const todayStr = new Date().toISOString().split('T')[0];
+    const { data: todayRdv } = await sb.from('reservations').select('staff_id').eq('business_id', currentBusiness.id).eq('date', todayStr).neq('status','annule');
+    el.innerHTML = staffList.map((s,i) => {
+      const rdvCount = (todayRdv||[]).filter(r=>r.staff_id===s.id).length;
+      const clr = colors[i % colors.length];
+      const initial = s.name?.charAt(0)?.toUpperCase() || '?';
+      const dotClr = rdvCount > 0 ? '#fbbf24' : '#4ade80';
+      return `<div style="display:flex;align-items:center;gap:.75rem;padding:.7rem 1.3rem;border-bottom:1px solid rgba(255,255,255,.04)">
+        <div style="width:32px;height:32px;border-radius:50%;background:${clr}22;border:1.5px solid ${clr}44;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:${clr};flex-shrink:0">${initial}</div>
+        <div style="flex:1">
+          <div style="font-size:.82rem;font-weight:600;color:var(--text)">${s.name}</div>
+          <div style="font-size:.68rem;color:var(--muted)">${rdvCount} RDV aujourd'hui</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:${dotClr};flex-shrink:0"></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderPlanBar() {
+    if (!currentBusiness) return;
+    const planEl = document.getElementById('plan-label-dash');
+    const daysEl = document.getElementById('plan-days-dash');
+    const barEl  = document.getElementById('plan-bar-dash');
+    if (!planEl) return;
+    const plan = currentBusiness.plan;
+    const planLabel = plan==='pro_annuel' ? 'Pro Annuel' : plan==='pro' ? 'Pro Mensuel' : 'Starter';
+    planEl.textContent = planLabel;
+    if (!plan || plan==='starter') {
+      if(daysEl) daysEl.textContent = 'Gratuit — illimité';
+      if(barEl) barEl.style.width = '100%';
+      return;
+    }
+    if (!currentBusiness.trial_end) return;
+    const end = new Date(currentBusiness.trial_end+'T00:00:00');
+    const now = new Date();
+    const daysLeft = Math.ceil((end-now)/(1000*60*60*24));
+    const total = plan==='pro' ? 30 : 365;
+    const pct = Math.max(0, Math.min(100, Math.round(daysLeft/total*100)));
+    if(daysEl) daysEl.textContent = `${daysLeft} jours restants`;
+    if(barEl) { barEl.style.width = pct+'%'; barEl.style.background = daysLeft<=7 ? '#f87171' : 'var(--accent)'; }
   }
 
   function renderTable(id, reservations) {
