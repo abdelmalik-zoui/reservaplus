@@ -283,45 +283,13 @@
   .alert.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); display: block; }
 
   /* ---- DASHBOARD ---- */
-  #dashboard-page { flex-direction: column; }
+  #dashboard-page { flex-direction: row !important; padding: 0 !important; }
 
-  /* NAV */
-  .dash-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    position: sticky; top: 0; z-index: 50;
-  }
-  .dash-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; }
-  .dash-logo span { color: var(--accent); }
-  .dash-user { display: flex; align-items: center; gap: 1rem; }
-  .user-email { color: var(--muted); font-size: 0.82rem; }
-  .btn-logout {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 0.4rem 1rem;
-    border-radius: 7px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .btn-logout:hover { border-color: var(--red); color: var(--red); }
-
-  /* DASH CONTENT */
-  .dash-content { display: flex; flex: 1; }
-
-  .sidebar {
-    width: 220px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 1.5rem 1rem;
-    flex-shrink: 0;
-  }
+  /* OLD NAV — hidden, replaced by topbar */
+  .dash-nav { display: none !important; }
+  .dash-content { display: none !important; }
+  .sidebar { display: none !important; }
+  .main-area { padding: 0 !important; }
 
   .si {
     display:flex;align-items:center;gap:.6rem;
@@ -847,7 +815,6 @@
 <!-- DASHBOARD PAGE -->
 
 <div id="dashboard-page" class="page">
-<div style="display:flex;min-height:100vh;">
 
   <!-- SIDEBAR -->
   <aside style="width:220px;background:#0d0d16;border-right:1px solid #1a1a2e;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;flex-shrink:0;">
@@ -1427,7 +1394,6 @@
 
     </div><!-- /views area -->
   </div><!-- /main -->
-</div><!-- /layout -->
 </div><!-- /dashboard-page -->
 
 <!-- EDIT MODAL -->
