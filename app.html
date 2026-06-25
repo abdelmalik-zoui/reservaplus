@@ -323,20 +323,19 @@
     flex-shrink: 0;
   }
 
-  .nav-item {
-    display: flex; align-items: center; gap: 0.7rem;
-    padding: 0.65rem 0.9rem;
-    border-radius: 8px;
-    font-size: 0.83rem;
-    color: var(--muted);
-    margin-bottom: 0.3rem;
-    cursor: pointer;
-    transition: all 0.15s;
-    border: none; background: none; width: 100%; text-align: left;
-    font-family: 'DM Sans', sans-serif;
+  .si {
+    display:flex;align-items:center;gap:.6rem;
+    padding:.52rem .75rem;border-radius:8px;
+    font-size:.8rem;color:var(--muted);
+    cursor:pointer;transition:all .15s;
+    border:none;background:none;width:100%;
+    text-align:left;font-family:'DM Sans',sans-serif;
+    margin-bottom:.08rem;
   }
-  .nav-item:hover { background: rgba(124,106,247,0.08); color: var(--text); }
-  .nav-item.active { background: rgba(124,106,247,0.12); color: var(--accent); }
+  .si:hover { background:rgba(124,106,247,.08);color:var(--text); }
+  .si.active { background:rgba(124,106,247,.14);color:var(--accent);font-weight:600; }
+  .si svg { flex-shrink:0;opacity:.7; }
+  .si.active svg { opacity:1; }
 
   .main-area { flex: 1; padding: 2rem; overflow-y: auto; }
 
@@ -848,54 +847,113 @@
 <!-- DASHBOARD PAGE -->
 
 <div id="dashboard-page" class="page">
-  <nav class="dash-nav">
-    <div class="dash-logo">Reserva<span>Plus</span></div>
-    <div class="dash-user">
-      <span id="plan-badge" style="font-size:0.72rem;font-weight:600;border:1px solid;padding:0.2rem 0.7rem;border-radius:100px;margin-right:0.5rem;">Starter</span>
-      <button id="renew-btn" onclick="showRenewModal()" style="display:none;background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;border:none;padding:0.2rem 0.8rem;border-radius:100px;font-size:0.72rem;font-weight:700;cursor:pointer;margin-right:0.3rem;animation:pulse 2s infinite">⚡ Renouveler</button>
-      <span class="user-email" id="user-email-display"></span>
+<div style="display:flex;min-height:100vh;">
 
-      <!-- NOTIFICATION BELL -->
-      <div style="position:relative;display:inline-block">
-        <button id="notif-bell" onclick="toggleNotifPanel()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;padding:0.3rem 0.5rem;border-radius:8px;position:relative;transition:background .2s" onmouseenter="this.style.background='var(--surface)'" onmouseleave="this.style.background='none'">
-          🔔
-          <span id="notif-badge" style="display:none;position:absolute;top:0;right:0;background:#f87171;color:#fff;font-size:0.55rem;font-weight:700;padding:0.1rem 0.35rem;border-radius:100px;min-width:14px;text-align:center">0</span>
+  <!-- SIDEBAR -->
+  <aside style="width:220px;background:#0d0d16;border-right:1px solid #1a1a2e;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;flex-shrink:0;">
+
+    <!-- Logo -->
+    <div style="padding:1.3rem 1.2rem 1rem;border-bottom:1px solid #1a1a2e;">
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <div style="width:28px;height:28px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;font-family:'Syne',sans-serif;">R</div>
+        <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;color:var(--text);">ReservaPlus</span>
+      </div>
+    </div>
+
+    <!-- Nav items -->
+    <nav style="flex:1;padding:.8rem .7rem;overflow-y:auto;">
+      <button class="si active" id="si-overview" onclick="navDash('overview',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Tableau de bord
+      </button>
+      <button class="si" id="si-reservations" onclick="navDash('reservations',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Réservations
+        <span id="si-pending-badge" style="display:none;margin-left:auto;background:rgba(251,191,36,.2);color:#fbbf24;font-size:.58rem;font-weight:700;padding:.08rem .35rem;border-radius:100px;">0</span>
+      </button>
+      <button class="si" id="si-services" onclick="navDash('services',this);loadServices()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Services
+      </button>
+      <button class="si" id="si-staff" onclick="navDash('staff',this);loadStaff()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Équipe
+      </button>
+      <button class="si" id="si-billing" onclick="navDash('billing',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Facturation
+      </button>
+      <div style="height:1px;background:#1a1a2e;margin:.6rem 0;"></div>
+      <button class="si" id="si-link" onclick="navDash('my-link',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Mon lien public
+      </button>
+      <button class="si" id="si-settings" onclick="navDash('change-pwd',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Paramètres
+      </button>
+    </nav>
+
+    <!-- Footer: plan + actions -->
+    <div style="padding:.8rem .7rem;border-top:1px solid #1a1a2e;">
+
+      <!-- Notifications bell -->
+      <div style="position:relative;margin-bottom:.5rem;">
+        <button onclick="toggleNotifPanel()" style="display:flex;align-items:center;gap:.5rem;width:100%;background:none;border:none;color:var(--muted);padding:.5rem .7rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-family:'DM Sans',sans-serif;transition:all .15s;" onmouseover="this.style.background='rgba(124,106,247,.08)';this.style.color='var(--text)'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Rappels
+          <span id="notif-badge" style="display:none;margin-left:auto;background:#f87171;color:#fff;font-size:.58rem;font-weight:700;padding:.08rem .35rem;border-radius:100px;">0</span>
         </button>
-        <div id="notif-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:300px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:200;overflow:hidden">
-          <div style="padding:0.9rem 1.1rem;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;display:flex;justify-content:space-between;align-items:center">
-            🔔 Rappels
-            <span id="notif-count" style="font-size:0.72rem;color:var(--muted);font-weight:400"></span>
+        <div id="notif-panel" style="display:none;position:absolute;bottom:calc(100% + 8px);left:0;width:300px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:200;overflow:hidden">
+          <div style="padding:.9rem 1.1rem;border-bottom:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;display:flex;justify-content:space-between;align-items:center">
+            🔔 Rappels <span id="notif-count" style="font-size:.72rem;color:var(--muted);font-weight:400"></span>
           </div>
-          <div id="notif-list" style="max-height:340px;overflow-y:auto;padding:0.5rem"></div>
+          <div id="notif-list" style="max-height:340px;overflow-y:auto;padding:.5rem"></div>
         </div>
       </div>
 
-      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">☀️ Light</button>
-      <button class="btn-logout" onclick="logout()">Déconnexion</button>
-    </div>
-  </nav>
+      <!-- Plan info -->
+      <div style="background:rgba(124,106,247,.06);border:1px solid rgba(124,106,247,.15);border-radius:10px;padding:.7rem .85rem;">
+        <div style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.15rem;">Plan actuel</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--text);margin-bottom:.4rem;" id="plan-label-sb">—</div>
+        <div style="background:rgba(255,255,255,.08);border-radius:100px;height:3px;overflow:hidden;margin-bottom:.25rem;">
+          <div id="plan-bar-sb" style="background:var(--accent);height:100%;border-radius:100px;width:50%;transition:width .5s;"></div>
+        </div>
+        <div style="font-size:.62rem;color:var(--muted);" id="plan-days-sb">—</div>
+      </div>
 
-  <div class="dash-content">
-    <div class="sidebar">
-      <button class="nav-item active" onclick="showView('overview', this)">📊 &nbsp;Vue générale</button>
-      <button class="nav-item" onclick="if(checkAccess('hasStats')){showView('stats', this); loadStats()}">📈 &nbsp;Statistiques</button>
-      <button class="nav-item" onclick="if(checkAccess('hasCalendar')){showView('calendrier', this); renderCalendar()}">📅 &nbsp;Calendrier</button>
-      <button class="nav-item" onclick="showView('reservations', this)">📋 &nbsp;Réservations</button>
-      <button class="nav-item" onclick="showView('new-reservation', this)">➕ &nbsp;Nouveau RDV</button>
-      <button class="nav-item" onclick="showView('services', this); loadServices()">⚙️ &nbsp;Mes services</button>
-      <button class="nav-item" onclick="showView('staff', this); loadStaff()">👥 &nbsp;Mon staff</button>
-      <button class="nav-item" onclick="showView('my-link', this)">🔗 &nbsp;Mon lien</button>
-      <button class="nav-item" onclick="showView('change-pwd', this)">🔑 &nbsp;Changer mot de passe</button>
-      <div style="margin-top:auto;padding-top:1rem;border-top:1px solid var(--border);margin-top:2rem;">
-        <a href="https://wa.me/212632506969?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20avec%20ReservaPlus." target="_blank" style="display:flex;align-items:center;gap:0.7rem;padding:0.65rem 0.9rem;border-radius:8px;font-size:0.83rem;color:#4ade80;text-decoration:none;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.2);">
-          💬 &nbsp;Support WhatsApp
-        </a>
+      <!-- Logout -->
+      <button onclick="logout()" style="display:flex;align-items:center;gap:.5rem;width:100%;background:none;border:none;color:var(--muted);padding:.55rem .7rem;border-radius:8px;cursor:pointer;font-size:.8rem;font-family:'DM Sans',sans-serif;margin-top:.4rem;transition:all .15s" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='var(--muted)'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Déconnexion
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div style="margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;">
+
+    <!-- TOP BAR -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.8rem;border-bottom:1px solid #1a1a2e;background:#0d0d16;position:sticky;top:0;z-index:50;">
+      <div>
+        <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;" id="dash-date"></div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:var(--text);" id="dash-greeting">Bonjour 👋</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span id="plan-badge" style="display:none"></span>
+        <button id="renew-btn" onclick="showRenewModal()" style="display:none;background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;border:none;padding:.3rem .85rem;border-radius:100px;font-size:.72rem;font-weight:700;cursor:pointer;">⚡ Renouveler</button>
+        <button onclick="copyPublicLink()" style="background:transparent;border:1px solid #1e1e2e;color:var(--text);padding:.4rem 1rem;border-radius:8px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='#1e1e2e'">
+          🔗 Lien public
+        </button>
+        <button onclick="navDash('reservations',document.getElementById('si-reservations'))" style="background:var(--accent);border:none;color:#fff;padding:.4rem 1.1rem;border-radius:8px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">
+          + Nouveau RDV
+        </button>
       </div>
     </div>
 
-    <div class="main-area">
+    <!-- VIEWS AREA -->
+    <div style="flex:1;padding:1.6rem 1.8rem;overflow-y:auto;">
 
-      <!-- OVERVIEW -->
       <div id="view-overview" class="view active">
 
         <!-- Header -->
@@ -1075,7 +1133,52 @@
       </div>
 
       <!-- RESERVATIONS -->
+      <!-- RÉSERVATIONS KANBAN -->
       <div id="view-reservations" class="view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem;flex-wrap:wrap;gap:.7rem;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;">Réservations</div>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+            <input type="date" id="rdv-filter-date" onchange="renderKanban()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:.38rem .75rem;border-radius:8px;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none;">
+            <button onclick="document.getElementById('rdv-filter-date').value='';renderKanban()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.38rem .75rem;border-radius:8px;font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Tout voir</button>
+            <button onclick="navDash('new-reservation',null)" style="background:var(--accent);border:none;color:#fff;padding:.38rem 1rem;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Nouveau RDV</button>
+          </div>
+        </div>
+
+        <!-- Kanban columns -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;align-items:start;">
+
+          <!-- EN ATTENTE -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:.5rem;padding:.85rem 1rem;border-bottom:1px solid var(--border);">
+              <div style="width:8px;height:8px;border-radius:50%;background:#fbbf24;flex-shrink:0;"></div>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;">En attente</span>
+              <span id="kb-count-pending" style="margin-left:auto;background:rgba(251,191,36,.12);color:#fbbf24;font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:100px;">0</span>
+            </div>
+            <div id="kb-pending" style="padding:.5rem;min-height:120px;display:flex;flex-direction:column;gap:.4rem;"></div>
+          </div>
+
+          <!-- CONFIRMÉ -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:.5rem;padding:.85rem 1rem;border-bottom:1px solid var(--border);">
+              <div style="width:8px;height:8px;border-radius:50%;background:#7c6af7;flex-shrink:0;"></div>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;">Confirmé</span>
+              <span id="kb-count-confirme" style="margin-left:auto;background:rgba(124,106,247,.12);color:#7c6af7;font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:100px;">0</span>
+            </div>
+            <div id="kb-confirme" style="padding:.5rem;min-height:120px;display:flex;flex-direction:column;gap:.4rem;"></div>
+          </div>
+
+          <!-- TERMINÉ -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:.5rem;padding:.85rem 1rem;border-bottom:1px solid var(--border);">
+              <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0;"></div>
+              <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;">Terminé</span>
+              <span id="kb-count-done" style="margin-left:auto;background:rgba(74,222,128,.12);color:#4ade80;font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:100px;">0</span>
+            </div>
+            <div id="kb-done" style="padding:.5rem;min-height:120px;display:flex;flex-direction:column;gap:.4rem;"></div>
+          </div>
+
+        </div>
+      </div>
         <div class="view-title">Toutes les réservations</div>
         <div class="table-wrap" id="all-reservations-table">
           <div class="table-head">
@@ -1327,9 +1430,10 @@
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
+    </div><!-- /views area -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /dashboard-page -->
 
 <!-- EDIT MODAL -->
 <!-- STAFF EDIT MODAL -->
@@ -2225,6 +2329,17 @@
       await sb.from('reservations').update({ status: 'done' }).in('id', idsToMarkDone);
     }
 
+    // Save globally for kanban
+    window._allReservations = reservations;
+
+    // Update sidebar pending badge
+    const pendingCount = reservations.filter(r => r.status === 'en_attente').length;
+    const sibadge = document.getElementById('si-pending-badge');
+    if (sibadge) { sibadge.textContent = pendingCount; sibadge.style.display = pendingCount ? 'inline' : 'none'; }
+
+    // Refresh kanban if visible
+    if (document.getElementById('view-reservations')?.classList.contains('active')) renderKanban();
+
     // KPIs — كيحسب كل شي حتى done و annule
     const todayStr = new Date().toISOString().split('T')[0];
     const todayRdv = reservations.filter(r => r.date === todayStr && r.status !== 'annule');
@@ -2332,16 +2447,21 @@
 
   function renderPlanBar() {
     if (!currentBusiness) return;
-    const planEl = document.getElementById('plan-label-dash');
-    const daysEl = document.getElementById('plan-days-dash');
-    const barEl  = document.getElementById('plan-bar-dash');
-    if (!planEl) return;
     const plan = currentBusiness.plan;
     const planLabel = plan==='pro_annuel' ? 'Pro Annuel' : plan==='pro' ? 'Pro Mensuel' : 'Starter';
-    planEl.textContent = planLabel;
+
+    // sidebar
+    const lsb = document.getElementById('plan-label-sb');
+    const bsb = document.getElementById('plan-bar-sb');
+    const dsb = document.getElementById('plan-days-sb');
+    if (lsb) lsb.textContent = planLabel;
+
     if (!plan || plan==='starter') {
-      if(daysEl) daysEl.textContent = 'Gratuit — illimité';
-      if(barEl) barEl.style.width = '100%';
+      if(dsb) dsb.textContent = 'Gratuit — illimité';
+      if(bsb) bsb.style.width = '100%';
+      if(document.getElementById('plan-label-dash')) document.getElementById('plan-label-dash').textContent = planLabel;
+      if(document.getElementById('plan-days-dash')) document.getElementById('plan-days-dash').textContent = 'Gratuit — illimité';
+      if(document.getElementById('plan-bar-dash')) document.getElementById('plan-bar-dash').style.width = '100%';
       return;
     }
     if (!currentBusiness.trial_end) return;
@@ -2350,8 +2470,13 @@
     const daysLeft = Math.ceil((end-now)/(1000*60*60*24));
     const total = plan==='pro' ? 30 : 365;
     const pct = Math.max(0, Math.min(100, Math.round(daysLeft/total*100)));
-    if(daysEl) daysEl.textContent = `${daysLeft} jours restants`;
-    if(barEl) { barEl.style.width = pct+'%'; barEl.style.background = daysLeft<=7 ? '#f87171' : 'var(--accent)'; }
+    const clr = daysLeft<=7 ? '#f87171' : 'var(--accent)';
+
+    if(bsb) { bsb.style.width=pct+'%'; bsb.style.background=clr; }
+    if(dsb) dsb.textContent = `${Math.max(0,daysLeft)} jours restants`;
+    if(document.getElementById('plan-label-dash')) document.getElementById('plan-label-dash').textContent = planLabel;
+    if(document.getElementById('plan-days-dash')) document.getElementById('plan-days-dash').textContent = `${Math.max(0,daysLeft)} jours restants`;
+    if(document.getElementById('plan-bar-dash')) { document.getElementById('plan-bar-dash').style.width=pct+'%'; document.getElementById('plan-bar-dash').style.background=clr; }
   }
 
   function renderTable(id, reservations) {
@@ -2758,6 +2883,75 @@
   }
 
   // ---- NAVIGATION ----
+  // ── SIDEBAR NAVIGATION ──
+  function navDash(view, btn) {
+    // hide all views
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    // deactivate all si buttons
+    document.querySelectorAll('.si').forEach(s => s.classList.remove('active'));
+    // show target view
+    const el = document.getElementById('view-' + view);
+    if (el) el.classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (view === 'reservations') renderKanban();
+    if (view === 'services') loadServices();
+    if (view === 'staff') loadStaff();
+  }
+
+  // ── KANBAN ──
+  function renderKanban() {
+    const filterDate = document.getElementById('rdv-filter-date')?.value;
+    let rdvList = [...(window._allReservations || [])];
+    if (filterDate) rdvList = rdvList.filter(r => r.date === filterDate);
+
+    const cols = {
+      pending:  rdvList.filter(r => r.status === 'en_attente'),
+      confirme: rdvList.filter(r => r.status === 'confirme'),
+      done:     rdvList.filter(r => r.status === 'done' || r.status === 'annule'),
+    };
+
+    const set = (id, n) => { const el=document.getElementById(id); if(el) el.textContent=n; };
+    set('kb-count-pending', cols.pending.length);
+    set('kb-count-confirme', cols.confirme.length);
+    set('kb-count-done', cols.done.length);
+
+    const renderCol = (colId, items) => {
+      const el = document.getElementById(colId);
+      if (!el) return;
+      if (!items.length) {
+        el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:.75rem;padding:1.5rem 0;">Aucune réservation</div>';
+        return;
+      }
+      el.innerHTML = items.map(r => {
+        const phone = (r.client_phone||'').replace(/\s/g,'').replace(/^\+/,'');
+        const waMsg = encodeURIComponent(`Bonjour ${r.client_name}! Votre RDV:\n📅 ${r.date} à ${r.time?.slice(0,5)}\n💈 ${r.service_name||''}\n— ${currentBusiness?.name}`);
+        const staffName = r.staff_id && window.staffMap?.[r.staff_id] ? window.staffMap[r.staff_id] : null;
+        const isDone = r.status === 'done' || r.status === 'annule';
+        const dotClr = r.status==='confirme' ? '#7c6af7' : r.status==='en_attente' ? '#fbbf24' : r.status==='done' ? '#4ade80' : '#f87171';
+        return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.75rem .85rem;transition:all .15s;" onmouseover="this.style.borderColor='rgba(124,106,247,.3)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem;">
+            <div style="font-size:.82rem;font-weight:600;color:var(--text);">${r.client_name||'—'}</div>
+            <div style="width:7px;height:7px;border-radius:50%;background:${dotClr};flex-shrink:0;margin-top:3px;"></div>
+          </div>
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem;">${r.service_name||'—'}${staffName ? ' · <span style="color:var(--accent)">'+staffName+'</span>' : ''}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:.7rem;color:var(--muted);">📅 ${r.date||''} · ⏰ ${r.time?.slice(0,5)||''}</div>
+          </div>
+          ${!isDone ? `<div style="display:flex;gap:.3rem;margin-top:.55rem;flex-wrap:wrap;">
+            ${r.status==='en_attente' ? `<button onclick="changeStatus('${r.id}','confirme')" style="background:rgba(124,106,247,.1);border:1px solid rgba(124,106,247,.25);color:var(--accent);border-radius:6px;padding:.18rem .55rem;font-size:.65rem;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ Confirmer</button>` : ''}
+            ${r.status==='confirme' ? `<button onclick="changeStatus('${r.id}','done')" style="background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:#4ade80;border-radius:6px;padding:.18rem .55rem;font-size:.65rem;cursor:pointer;font-family:'DM Sans',sans-serif;">✔ Terminé</button>` : ''}
+            <button onclick="changeStatus('${r.id}','annule')" style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:#f87171;border-radius:6px;padding:.18rem .45rem;font-size:.65rem;cursor:pointer;font-family:'DM Sans',sans-serif;">✕</button>
+            ${phone ? `<a href="https://wa.me/${phone}?text=${waMsg}" target="_blank" style="background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);color:#25D366;border-radius:6px;padding:.18rem .45rem;font-size:.65rem;text-decoration:none;">💬</a>` : ''}
+          </div>` : `<div style="font-size:.65rem;color:var(--muted);margin-top:.4rem;">${r.status==='annule'?'❌ Annulé':'✅ Terminé'}</div>`}
+        </div>`;
+      }).join('');
+    };
+
+    renderCol('kb-pending', cols.pending);
+    renderCol('kb-confirme', cols.confirme);
+    renderCol('kb-done', cols.done);
+  }
+
   function showView(view, btn) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
