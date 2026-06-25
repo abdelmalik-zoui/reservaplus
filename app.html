@@ -956,22 +956,6 @@
 
       <div id="view-overview" class="view active">
 
-        <!-- Header -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-          <div>
-            <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.2rem" id="dash-date"></div>
-            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;color:var(--text)" id="dash-greeting">Bonjour 👋</div>
-          </div>
-          <div style="display:flex;gap:.5rem;">
-            <button onclick="copyPublicLink()" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:.45rem 1rem;border-radius:8px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:.4rem;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-              🔗 Lien public
-            </button>
-            <button onclick="showView('new-reservation',document.querySelector('.nav-item:nth-child(5)'))" style="background:var(--accent);border:none;color:#fff;padding:.45rem 1.1rem;border-radius:8px;font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;display:flex;align-items:center;gap:.4rem;">
-              + Nouveau RDV
-            </button>
-          </div>
-        </div>
-
         <!-- KPI Cards -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.75rem;">
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem 1.3rem;">
@@ -1427,6 +1411,17 @@
             <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem;">Partagez aussi via:</div>
             <button class="btn-copy" onclick="shareWhatsApp()" style="margin-right:0.5rem;">💬 WhatsApp</button>
           </div>
+        </div>
+      </div>
+
+      <!-- BILLING VIEW -->
+      <div id="view-billing" class="view">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;margin-bottom:1.3rem;">Facturation</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.07em;">Plan actuel</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:.5rem;" id="billing-plan-label">—</div>
+          <div style="font-size:.82rem;color:var(--muted);margin-bottom:1.2rem;" id="billing-plan-end">—</div>
+          <button onclick="showRenewModal()" style="background:var(--accent);border:none;color:#fff;padding:.55rem 1.3rem;border-radius:9px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">⚡ Renouveler l'abonnement</button>
         </div>
       </div>
 
@@ -2097,6 +2092,9 @@
 
   // ---- SHOW DASHBOARD ----
   function showDashboard() {
+    // Update top bar with name and date
+    updateTopBar();
+
     // Hide all blocked pages
     document.getElementById('blocked-expired-page').style.display = 'none';
     document.getElementById('blocked-pending-page').style.display = 'none';
@@ -2477,6 +2475,11 @@
     if(document.getElementById('plan-label-dash')) document.getElementById('plan-label-dash').textContent = planLabel;
     if(document.getElementById('plan-days-dash')) document.getElementById('plan-days-dash').textContent = `${Math.max(0,daysLeft)} jours restants`;
     if(document.getElementById('plan-bar-dash')) { document.getElementById('plan-bar-dash').style.width=pct+'%'; document.getElementById('plan-bar-dash').style.background=clr; }
+    // billing view
+    const bl = document.getElementById('billing-plan-label');
+    const be = document.getElementById('billing-plan-end');
+    if (bl) bl.textContent = planLabel;
+    if (be) be.textContent = currentBusiness.trial_end ? `Expire le : ${currentBusiness.trial_end}` : 'Illimité';
   }
 
   function renderTable(id, reservations) {
@@ -3301,6 +3304,25 @@
       btn.disabled = false; btn.textContent = '🗑️ Supprimer';
       console.error(e);
     }
+  }
+
+  function copyPublicLink() {
+    const link = window.location.origin + '/booking.html?id=' + (currentBusiness?.id || '');
+    navigator.clipboard.writeText(link).then(() => {
+      showAlert('', '🔗 Lien copié !', 'success');
+    });
+  }
+
+  function updateTopBar() {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+    const el = document.getElementById('dash-date');
+    if (el) el.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1) + ' · /DASHBOARD';
+    const hour = now.getHours();
+    const greet = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+    const name = currentBusiness?.name || '';
+    const gEl = document.getElementById('dash-greeting');
+    if (gEl) gEl.textContent = greet + ', ' + name;
   }
 
   function copyLink() {
